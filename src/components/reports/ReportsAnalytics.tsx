@@ -1,0 +1,499 @@
+import React, { useState } from 'react';
+import { BarChart3, TrendingUp, Download, Calendar, DollarSign, Users, Activity, Star, Filter, FileText, Mail, MessageSquare, Eye, RefreshCw } from 'lucide-react';
+import { PDFGenerator, ReportData } from '../../utils/pdfGenerator';
+
+interface ReportData {
+  period: string;
+  revenue: number;
+  clients: number;
+  services: number;
+  nps: number;
+}
+
+const mockReportData: ReportData[] = [
+  { period: 'Jan 2024', revenue: 180000, clients: 35, services: 65, nps: 8.2 },
+  { period: 'Fev 2024', revenue: 195000, clients: 38, services: 70, nps: 8.4 },
+  { period: 'Mar 2024', revenue: 210000, clients: 42, services: 75, nps: 8.6 },
+  { period: 'Abr 2024', revenue: 225000, clients: 45, services: 78, nps: 8.3 },
+  { period: 'Mai 2024', revenue: 240000, clients: 48, services: 82, nps: 8.7 },
+  { period: 'Jun 2024', revenue: 255000, clients: 52, services: 85, nps: 8.5 }
+];
+
+const reportTypes = [
+  { id: 'revenue', name: 'Relatório de Receitas', description: 'Análise detalhada das receitas por período' },
+  { id: 'clients', name: 'Relatório de Clientes', description: 'Crescimento e retenção de clientes' },
+  { id: 'services', name: 'Relatório de Serviços', description: 'Performance e utilização dos serviços' },
+  { id: 'nps', name: 'Relatório NPS', description: 'Análise de satisfação dos clientes' }
+];
+
+export const ReportsAnalytics: React.FC = () => {
+  const [selectedPeriod, setSelectedPeriod] = useState('6months');
+  const [selectedReport, setSelectedReport] = useState('revenue');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [selectedClients, setSelectedClients] = useState<string[]>([]);
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [showExportModal, setShowExportModal] = useState(false);
+
+  const currentData = mockReportData[mockReportData.length - 1];
+  const previousData = mockReportData[mockReportData.length - 2];
+
+  const calculateGrowth = (current: number, previous: number) => {
+    return ((current - previous) / previous * 100).toFixed(1);
+  };
+
+  const getMetricCards = () => [
+    {
+      title: 'Receita Total',
+      value: `${currentData.revenue.toLocaleString()} MT`,
+      growth: calculateGrowth(currentData.revenue, previousData.revenue),
+      icon: DollarSign,
+      color: 'green'
+    },
+    {
+      title: 'Total de Clientes',
+      value: currentData.clients.toString(),
+      growth: calculateGrowth(currentData.clients, previousData.clients),
+      icon: Users,
+      color: 'blue'
+    },
+    {
+      title: 'Serviços Ativos',
+      value: currentData.services.toString(),
+      growth: calculateGrowth(currentData.services, previousData.services),
+      icon: Activity,
+      color: 'purple'
+    },
+    {
+      title: 'NPS Médio',
+      value: currentData.nps.toString(),
+      growth: calculateGrowth(currentData.nps, previousData.nps),
+      icon: Star,
+      color: 'orange'
+    }
+  ];
+
+  const getColorClasses = (color: string) => {
+    const colors = {
+      green: 'bg-green-100 text-green-600',
+      blue: 'bg-blue-100 text-blue-600',
+      purple: 'bg-purple-100 text-purple-600',
+      orange: 'bg-orange-100 text-orange-600'
+    };
+    return colors[color as keyof typeof colors] || colors.blue;
+  };
+
+  const handleGenerateReport = () => {
+    const reportData = {
+      type: selectedReport,
+      period: selectedPeriod,
+      dateRange,
+      clients: selectedClients,
+      services: selectedServices,
+      data: mockReportData
+    };
+    
+    console.log('Generating report:', reportData);
+    alert(`Relatório ${reportTypes.find(r => r.id === selectedReport)?.name} gerado com sucesso!`);
+  };
+
+  const handleExportReport = (format: 'pdf' | 'excel' | 'csv') => {
+    if (format === 'pdf') {
+      const reportName = reportTypes.find(r => r.id === selectedReport)?.name || 'Relatório';
+      const reportData: ReportData = {
+        title: reportName,
+        type: selectedReport,
+        period: selectedPeriod,
+        startDate: dateRange.start || '2024-01-01',
+        endDate: dateRange.end || new Date().toISOString().split('T')[0],
+        totalClients: currentData.clients,
+        totalRevenue: currentData.revenue,
+        averageNPS: currentData.nps,
+        data: mockReportData
+      };
+      PDFGenerator.generateReport(reportData);
+    }
+    setShowExportModal(false);
+  };
+
+  const handleScheduleReport = () => {
+    alert('Funcionalidade de agendamento de relatórios será implementada em breve.');
+  };
+
+  const mockClients = [
+    { id: '1', name: 'Transportes Maputo Lda' },
+    { id: '2', name: 'Construções Beira SA' },
+    { id: '3', name: 'Farmácia Central' }
+  ];
+
+  const mockServices = [
+    { id: '1', name: 'Contabilidade Mensal' },
+    { id: '2', name: 'Auditoria Anual' },
+    { id: '3', name: 'Consultoria Fiscal' }
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Relatórios e Analytics</h2>
+          <p className="text-gray-600 mt-1">Análise detalhada do desempenho do negócio</p>
+        </div>
+        <div className="flex gap-3">
+          <button 
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center gap-2">
+            <Filter size={20} />
+            {showAdvancedFilters ? 'Ocultar Filtros' : 'Filtros Avançados'}
+          </button>
+          <button 
+            onClick={handleScheduleReport}
+            className="border border-blue-300 text-blue-700 px-4 py-2 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2">
+            <Calendar size={20} />
+            Agendar
+          </button>
+          <button 
+            onClick={() => setShowExportModal(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2">
+            <Download size={20} />
+            Exportar
+          </button>
+        </div>
+      </div>
+
+      {/* Advanced Filters */}
+      {showAdvancedFilters && (
+        <React.Fragment>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Filtros Avançados</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Data Início</label>
+              <input
+                type="date"
+                value={dateRange.start}
+                onChange={(e) => setDateRange({...dateRange, start: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Data Fim</label>
+              <input
+                type="date"
+                value={dateRange.end}
+                onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Clientes</label>
+              <select
+                multiple
+                value={selectedClients}
+                onChange={(e) => setSelectedClients(Array.from(e.target.selectedOptions, option => option.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {mockClients.map(client => (
+                  <option key={client.id} value={client.id}>{client.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Serviços</label>
+              <select
+                multiple
+                value={selectedServices}
+                onChange={(e) => setSelectedServices(Array.from(e.target.selectedOptions, option => option.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {mockServices.map(service => (
+                  <option key={service.id} value={service.id}>{service.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="flex gap-3 mt-4">
+            <button
+              onClick={handleGenerateReport}
+              className="bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <RefreshCw size={16} />
+              Gerar Relatório
+            </button>
+            <button
+              onClick={() => {
+                setDateRange({ start: '', end: '' });
+                setSelectedClients([]);
+                setSelectedServices([]);
+              }}
+              className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Limpar Filtros
+            </button>
+          </div>
+        </div>
+        </React.Fragment>
+      )}
+
+      {/* Period Selector */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Período de Análise</h3>
+            <div className="flex gap-2">
+              {[
+                { id: '1month', label: '1 Mês' },
+                { id: '3months', label: '3 Meses' },
+                { id: '6months', label: '6 Meses' },
+                { id: '1year', label: '1 Ano' }
+              ].map((period) => (
+                <button
+                  key={period.id}
+                  onClick={() => setSelectedPeriod(period.id)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    selectedPeriod === period.id
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {period.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Calendar size={16} />
+            <span>Última atualização: {new Date().toLocaleDateString('pt-PT')}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Metrics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {getMetricCards().map((metric, index) => {
+          const Icon = metric.icon;
+          const isPositive = parseFloat(metric.growth) >= 0;
+          
+          return (
+            <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${getColorClasses(metric.color)}`}>
+                  <Icon size={24} />
+                </div>
+                <div className={`flex items-center gap-1 text-sm font-medium ${
+                  isPositive ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  <TrendingUp size={14} className={isPositive ? '' : 'rotate-180'} />
+                  {metric.growth}%
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">{metric.title}</p>
+                <p className="text-2xl font-bold text-gray-900">{metric.value}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Revenue Chart */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-900">Evolução da Receita</h3>
+            <BarChart3 className="text-gray-400" size={20} />
+          </div>
+          <div className="h-64 bg-gradient-to-t from-blue-50 to-transparent rounded-lg flex items-end justify-between p-4">
+            {mockReportData.map((data, index) => (
+              <div key={index} className="flex flex-col items-center gap-2">
+                <div 
+                  className="bg-blue-600 rounded-t-md w-8 transition-all hover:bg-blue-700"
+                  style={{ height: `${(data.revenue / 255000) * 200}px` }}
+                ></div>
+                <span className="text-xs text-gray-600 transform -rotate-45 origin-left">
+                  {data.period.split(' ')[0]}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* NPS Trend */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-900">Tendência NPS</h3>
+            <Star className="text-gray-400" size={20} />
+          </div>
+          <div className="h-64 bg-gradient-to-t from-orange-50 to-transparent rounded-lg flex items-end justify-between p-4">
+            {mockReportData.map((data, index) => (
+              <div key={index} className="flex flex-col items-center gap-2">
+                <div 
+                  className="bg-orange-500 rounded-full w-3 h-3 relative"
+                  style={{ marginBottom: `${(data.nps / 10) * 200}px` }}
+                >
+                  {index > 0 && (
+                    <div 
+                      className="absolute top-1/2 right-3 h-0.5 bg-orange-500"
+                      style={{ width: '24px' }}
+                    ></div>
+                  )}
+                </div>
+                <span className="text-xs text-gray-600 transform -rotate-45 origin-left">
+                  {data.period.split(' ')[0]}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Report Types */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Relatórios Disponíveis</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {reportTypes.map((report) => (
+            <div 
+              key={report.id}
+              className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                selectedReport === report.id
+                  ? 'border-blue-600 bg-blue-50'
+                  : 'border-gray-200 hover:border-blue-300'
+              }`}
+              onClick={() => setSelectedReport(report.id)}
+            >
+              <div className="flex justify-between items-start mb-2">
+                <h4 className="font-medium text-gray-900">{report.name}</h4>
+                <div className="flex gap-1">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      alert(`Visualizando ${report.name}`);
+                    }}
+                    className="text-green-600 hover:text-green-700 p-1"
+                    title="Visualizar"
+                  >
+                    <Eye size={16} />
+                  </button>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowExportModal(true);
+                    }}
+                    className="text-blue-600 hover:text-blue-700 p-1"
+                    title="Baixar"
+                  >
+                    <Download size={16} />
+                  </button>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600">{report.description}</p>
+              <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
+                <span className="flex items-center gap-1">
+                  <Calendar size={12} />
+                  Última atualização: hoje
+                </span>
+                <span className="flex items-center gap-1">
+                  <FileText size={12} />
+                  {Math.floor(Math.random() * 50) + 10} registros
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Communication Analytics */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Analytics de Comunicação</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="text-center p-4 bg-blue-50 rounded-lg col-span-1 md:col-span-1">
+            <Mail className="text-blue-600 mx-auto mb-2" size={32} />
+            <p className="text-2xl font-bold text-blue-900">2,847</p>
+            <p className="text-sm text-blue-700">Emails Enviados</p>
+            <p className="text-xs text-blue-600 mt-1">Taxa de abertura: 68%</p>
+          </div>
+          <div className="text-center p-4 bg-green-50 rounded-lg col-span-1 md:col-span-2">
+            <MessageSquare className="text-purple-600 mx-auto mb-2" size={32} />
+            <p className="text-2xl font-bold text-purple-900">567</p>
+            <p className="text-sm text-purple-700">WhatsApp Enviados</p>
+            <p className="text-xs text-purple-600 mt-1">Taxa de leitura: 89%</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Detailed Analytics */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Análise Detalhada</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Período</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receita</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Clientes</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Serviços</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">NPS</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Crescimento</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {mockReportData.map((data, index) => {
+                const previousPeriod = index > 0 ? mockReportData[index - 1] : null;
+                const growth = previousPeriod ? calculateGrowth(data.revenue, previousPeriod.revenue) : '0';
+                const isPositive = parseFloat(growth) >= 0;
+                
+                return (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{data.period}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900">{data.revenue.toLocaleString()} MT</td>
+                    <td className="px-4 py-3 text-sm text-gray-900">{data.clients}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900">{data.services}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900">{data.nps}</td>
+                    <td className="px-4 py-3 text-sm">
+                      <span className={`flex items-center gap-1 ${
+                        isPositive ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        <TrendingUp size={12} className={isPositive ? '' : 'rotate-180'} />
+                        {growth}%
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Export Modal */}
+      {showExportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Exportar Relatório</h3>
+            <p className="text-gray-600 mb-6">
+              Escolha o formato para exportar o relatório "{reportTypes.find(r => r.id === selectedReport)?.name}":
+            </p>
+            
+            <div className="space-y-3">
+              <button
+                onClick={() => handleExportReport('pdf')}
+                className="w-full bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <FileText size={16} />
+                Exportar como PDF
+              </button>
+              <button
+                onClick={() => setShowExportModal(false)}
+                className="w-full border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
