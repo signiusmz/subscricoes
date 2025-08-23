@@ -191,8 +191,17 @@ export const SuperAdminDashboard: React.FC = () => {
   const [showAddPlanModal, setShowAddPlanModal] = useState(false);
   const [showAddCompanyModal, setShowAddCompanyModal] = useState(false);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [showMPesaConfigModal, setShowMPesaConfigModal] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
   const [users, setUsers] = useState(mockSystemUsers);
+  const [mpesaConfig, setMPesaConfig] = useState({
+    apiKey: '',
+    publicKey: '',
+    serviceProviderCode: '',
+    initiatorIdentifier: '',
+    securityCredential: '',
+    environment: 'sandbox' as 'sandbox' | 'production'
+  });
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-PT');
@@ -315,6 +324,12 @@ export const SuperAdminDashboard: React.FC = () => {
         : u
     ));
     alert('Status do utilizador atualizado!');
+  };
+
+  const handleSaveMPesaConfig = (configData: any) => {
+    setMPesaConfig(configData);
+    setShowMPesaConfigModal(false);
+    alert('Configurações M-Pesa salvas com sucesso!');
   };
 
   const handleSaveUser = (userData: any) => {
@@ -914,7 +929,8 @@ export const SuperAdminDashboard: React.FC = () => {
     { id: 'companies', label: 'Empresas' },
     { id: 'users', label: 'Utilizadores' },
     { id: 'plans', label: 'Planos' },
-    { id: 'subscriptions', label: 'Subscrições' }
+    { id: 'subscriptions', label: 'Subscrições' },
+    { id: 'payments', label: 'Pagamentos' }
   ];
 
   return (
