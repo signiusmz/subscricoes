@@ -25,7 +25,10 @@ import {
   Wifi,
   Car,
   Dumbbell,
-  Calculator
+  Calculator,
+  BarChart3,
+  TrendingUp,
+  MessageSquare
 } from 'lucide-react';
 
 interface LandingPageProps {
