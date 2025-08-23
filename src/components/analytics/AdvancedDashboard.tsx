@@ -25,7 +25,8 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowRight,
-  Info
+  Info,
+  ArrowLeft
 } from 'lucide-react';
 
 interface ChartData {
@@ -252,6 +253,13 @@ export const AdvancedDashboard: React.FC = () => {
           <p className="text-gray-600">Dashboard inteligente com análise preditiva e segmentação automática</p>
         </div>
         <div className="flex gap-3">
+          <button
+            onClick={() => window.history.back()}
+            className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+          >
+            <ArrowLeft size={16} />
+            Voltar ao Dashboard
+          </button>
           <button
             onClick={refreshData}
             disabled={isLoading}

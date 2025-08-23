@@ -26,7 +26,8 @@ import {
   AlertCircle,
   ArrowRight,
   RefreshCw,
-  Download
+  Download,
+  ArrowLeft
 } from 'lucide-react';
 
 interface SegmentClient {
@@ -366,6 +367,13 @@ export const ClientSegmentation: React.FC = () => {
           <p className="text-gray-600">Classificação inteligente baseada em valor, comportamento e potencial</p>
         </div>
         <div className="flex gap-3">
+          <button
+            onClick={() => window.history.back()}
+            className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+          >
+            <ArrowLeft size={16} />
+            Voltar ao Dashboard
+          </button>
           <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
             <Download size={16} />
             Exportar Segmentos

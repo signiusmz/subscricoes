@@ -20,7 +20,8 @@ import {
   Download,
   RefreshCw,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  ArrowLeft
 } from 'lucide-react';
 
 interface ChurnClient {
@@ -258,6 +259,13 @@ export const ChurnAnalysis: React.FC = () => {
           <p className="text-gray-600">Previsão inteligente de cancelamentos e ações preventivas</p>
         </div>
         <div className="flex gap-3">
+          <button
+            onClick={() => window.history.back()}
+            className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+          >
+            <ArrowLeft size={16} />
+            Voltar ao Dashboard
+          </button>
           <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
             <Download size={16} />
             Exportar Análise
