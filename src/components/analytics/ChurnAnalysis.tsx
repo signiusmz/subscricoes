@@ -18,7 +18,9 @@ import {
   Eye,
   Filter,
   Download,
-  RefreshCw
+  RefreshCw,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 interface ChurnClient {
