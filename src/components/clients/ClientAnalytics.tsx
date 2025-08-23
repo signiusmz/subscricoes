@@ -907,4 +907,4 @@ export const ClientAnalytics: React.FC<ClientAnalyticsProps> = ({ onBack }) => {
                   </td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getRiskColor(client.riskLevel)}`}>
-                      {client.riskLevel === 'low' ? '
+                      {client.riskLevel === 'low' ? 'Baixo' : client.riskLevel === 'medium' ? 'Médio' : 'Alto'}
