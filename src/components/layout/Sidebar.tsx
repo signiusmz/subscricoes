@@ -13,7 +13,7 @@ import {
   Edit,
   Camera,
   Upload,
-  Star,
+  Star
   Send
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
