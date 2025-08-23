@@ -1,424 +1,269 @@
 import React, { useState } from 'react';
-import { 
-  Calculator, 
-  FileText, 
-  Settings, 
-  Save, 
-  Plus, 
-  Edit, 
-  Trash2,
-  DollarSign,
-  Percent,
-  Calendar,
-  Building,
-  AlertCircle,
-  CheckCircle,
-  Download,
-  Upload,
-  Eye,
-  Filter,
-  Search,
-  BarChart3
-} from 'lucide-react';
+import { Search, Plus, Edit, Trash2, DollarSign, Calendar, CheckCircle, AlertCircle, Eye, Filter, Download, Percent, FileText, Clock } from 'lucide-react';
+import { Service } from '../../types';
+import { useAuth } from '../../context/AuthContext';
+import { Pagination } from '../common/Pagination';
 
-interface TaxRate {
-  id: string;
-  name: string;
-  rate: number;
-  type: 'iva' | 'irps' | 'irpc' | 'sisa' | 'custom';
-  description: string;
-  isActive: boolean;
-  validFrom: string;
-  validTo?: string;
-  applicableServices: string[];
-}
-
-interface TaxCalculation {
-  id: string;
-  invoiceId: string;
-  clientName: string;
-  serviceName: string;
-  baseAmount: number;
-  taxType: string;
-  taxRate: number;
-  taxAmount: number;
-  totalAmount: number;
-  date: string;
-  status: 'calculated' | 'applied' | 'paid';
-}
-
-interface TaxReport {
-  period: string;
-  totalTaxCollected: number;
-  ivaCollected: number;
-  irpsCollected: number;
-  totalInvoices: number;
-  averageTaxRate: number;
-}
-
-const mockTaxRates: TaxRate[] = [
+const mockServices: Service[] = [
   {
     id: '1',
-    name: 'IVA Padrão',
-    rate: 16,
-    type: 'iva',
-    description: 'Imposto sobre Valor Acrescentado - Taxa padrão',
-    isActive: true,
-    validFrom: '2024-01-01',
-    applicableServices: ['1', '2', '3']
+    companyId: '1',
+    name: 'Contabilidade Mensal',
+    description: 'Serviço completo de contabilidade mensal incluindo balancetes e demonstrações financeiras',
+    price: 5000,
+    ivaType: 'additional',
+    ivaAmount: 800,
+    totalPrice: 5800,
+    validity: 1,
+    status: 'active',
+    autoRenew: true,
+    createdAt: '2024-01-15'
   },
   {
     id: '2',
-    name: 'IVA Reduzido',
-    rate: 10,
-    type: 'iva',
-    description: 'IVA com taxa reduzida para serviços específicos',
-    isActive: true,
-    validFrom: '2024-01-01',
-    applicableServices: ['4']
-  }
-];
-
-const mockTaxCalculations: TaxCalculation[] = [
-  {
-    id: '1',
-    invoiceId: 'FAC-2024-001',
-    clientName: 'Transportes Maputo Lda',
-    serviceName: 'Contabilidade Mensal',
-    baseAmount: 5000,
-    taxType: 'IVA Padrão',
-    taxRate: 16,
-    taxAmount: 800,
-    totalAmount: 5800,
-    date: '2024-03-01',
-    status: 'paid'
-  },
-  {
-    id: '2',
-    invoiceId: 'FAC-2024-002',
-    clientName: 'Construções Beira SA',
-    serviceName: 'Auditoria Anual',
-    baseAmount: 15000,
-    taxType: 'IVA Padrão',
-    taxRate: 16,
-    taxAmount: 2400,
-    totalAmount: 17400,
-    date: '2024-03-15',
-    status: 'applied'
+    companyId: '1',
+    name: 'Auditoria Anual',
+    description: 'Auditoria externa completa das contas anuais da empresa',
+    price: 15000,
+    ivaType: 'additional',
+    ivaAmount: 2400,
+    totalPrice: 17400,
+    validity: 12,
+    status: 'active',
+    autoRenew: false,
+    createdAt: '2024-01-20'
   },
   {
     id: '3',
-    invoiceId: 'FAC-2024-003',
-    clientName: 'Hotel Polana',
-    serviceName: 'Consultoria Fiscal',
-    baseAmount: 8000,
-    taxType: 'IVA Reduzido',
-    taxRate: 10,
-    taxAmount: 800,
-    totalAmount: 8800,
-    date: '2024-03-20',
-    status: 'calculated'
+    companyId: '1',
+    name: 'Consultoria Fiscal',
+    description: 'Consultoria especializada em questões fiscais e tributárias',
+    price: 8000,
+    ivaType: 'included',
+    ivaAmount: 1103.45,
+    totalPrice: 8000,
+    validity: 6,
+    status: 'active',
+    autoRenew: true,
+    createdAt: '2024-02-01'
+  },
+  {
+    id: '4',
+    companyId: '1',
+    name: 'Declaração de IVA',
+    description: 'Preparação e submissão da declaração mensal de IVA',
+    price: 2000,
+    ivaType: 'included',
+    ivaAmount: 275.86,
+    totalPrice: 2000,
+    validity: 1,
+    status: 'active',
+    autoRenew: true,
+    createdAt: '2024-02-10'
+  },
+  {
+    id: '5',
+    companyId: '1',
+    name: 'Folha de Salários',
+    description: 'Processamento completo da folha de salários mensal',
+    price: 4000,
+    ivaType: 'additional',
+    ivaAmount: 640,
+    totalPrice: 4640,
+    validity: 1,
+    status: 'inactive',
+    autoRenew: false,
+    createdAt: '2024-02-15'
   }
 ];
 
-const mockServices = [
-  { id: '1', name: 'Contabilidade Mensal' },
-  { id: '2', name: 'Auditoria Anual' },
-  { id: '3', name: 'Consultoria Fiscal' },
-  { id: '4', name: 'Declaração de IVA' },
-  { id: '5', name: 'Folha de Salários' }
-];
-
-export const TaxManagement: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('rates');
-  const [taxRates, setTaxRates] = useState<TaxRate[]>(mockTaxRates);
-  const [taxCalculations, setTaxCalculations] = useState<TaxCalculation[]>(mockTaxCalculations);
-  const [showAddRateModal, setShowAddRateModal] = useState(false);
-  const [editingRate, setEditingRate] = useState<TaxRate | null>(null);
-  const [showCalculator, setShowCalculator] = useState(false);
+export const ServicesTable: React.FC = () => {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'calculated' | 'applied' | 'paid'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingService, setEditingService] = useState<Service | null>(null);
+  const [services, setServices] = useState<Service[]>(mockServices);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Form calculation states
+  const [servicePrice, setServicePrice] = useState<number>(0);
+  const [ivaType, setIvaType] = useState<'additional' | 'included'>('additional');
+
+  const calculateIVA = (price: number, type: 'additional' | 'included') => {
+    if (type === 'additional') {
+      const ivaAmount = (price * 16) / 100;
+      return {
+        basePrice: price,
+        ivaAmount: Math.round(ivaAmount * 100) / 100,
+        totalPrice: Math.round((price + ivaAmount) * 100) / 100
+      };
+    } else {
+      // IVA incluído - calcular o valor base
+      const basePrice = price / 1.16;
+      const ivaAmount = price - basePrice;
+      return {
+        basePrice: Math.round(basePrice * 100) / 100,
+        ivaAmount: Math.round(ivaAmount * 100) / 100,
+        totalPrice: price
+      };
+    }
+  };
+
+  const { basePrice, ivaAmount, totalPrice } = calculateIVA(servicePrice, ivaType);
+
+  const filteredServices = services.filter(service => {
+    const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         service.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || service.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredServices.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedServices = filteredServices.slice(startIndex, startIndex + itemsPerPage);
+
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-PT');
   };
 
   const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      calculated: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Calculado' },
-      applied: { bg: 'bg-orange-100', text: 'text-orange-800', label: 'Aplicado' },
-      paid: { bg: 'bg-green-100', text: 'text-green-800', label: 'Pago' }
-    };
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.calculated;
     return (
-      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${config.bg} ${config.text}`}>
-        {config.label}
+      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+        status === 'active'
+          ? 'bg-green-100 text-green-800'
+          : 'bg-red-100 text-red-800'
+      }`}>
+        {status === 'active' ? 'Ativo' : 'Inativo'}
       </span>
     );
   };
 
-  const getTaxTypeBadge = (type: string) => {
-    const typeConfig = {
-      iva: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'IVA' }
-    };
-    const config = typeConfig[type as keyof typeof typeConfig] || typeConfig.iva;
+  const getIVABadge = (ivaType: string) => {
     return (
-      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${config.bg} ${config.text}`}>
-        {config.label}
+      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+        ivaType === 'additional'
+          ? 'bg-blue-100 text-blue-800'
+          : 'bg-green-100 text-green-800'
+      }`}>
+        {ivaType === 'additional' ? 'IVA Adicional' : 'IVA Incluído'}
       </span>
     );
   };
 
-  const calculateTax = (baseAmount: number, taxRateId: string) => {
-    const taxRate = taxRates.find(tr => tr.id === taxRateId);
-    if (!taxRate) return { taxAmount: 0, totalAmount: baseAmount };
-    
-    const taxAmount = (baseAmount * taxRate.rate) / 100;
-    const totalAmount = baseAmount + taxAmount;
-    
-    return { taxAmount, totalAmount };
+  const getValidityLabel = (validity: number) => {
+    if (validity === 1) return 'Mensal';
+    if (validity === 3) return 'Trimestral';
+    if (validity === 6) return 'Semestral';
+    if (validity === 12) return 'Anual';
+    return `${validity} meses`;
   };
 
-  const handleSaveTaxRate = (rateData: Partial<TaxRate>) => {
-    if (editingRate) {
-      setTaxRates(taxRates.map(tr => 
-        tr.id === editingRate.id 
-          ? { ...tr, ...rateData }
-          : tr
+  const handleAddService = () => {
+    setEditingService(null);
+    setServicePrice(0);
+    setIvaType('additional');
+    setShowAddModal(true);
+  };
+
+  const handleEditService = (service: Service) => {
+    setEditingService(service);
+    setServicePrice(service.ivaType === 'additional' ? service.price : service.totalPrice);
+    setIvaType(service.ivaType);
+    setShowAddModal(true);
+  };
+
+  const handleDeleteService = (serviceId: string) => {
+    if (confirm('Tem certeza que deseja eliminar este serviço?')) {
+      setServices(services.filter(s => s.id !== serviceId));
+      alert('Serviço eliminado com sucesso!');
+    }
+  };
+
+  const handleToggleStatus = (serviceId: string) => {
+    setServices(services.map(s => 
+      s.id === serviceId 
+        ? { ...s, status: s.status === 'active' ? 'inactive' : 'active' }
+        : s
+    ));
+    alert('Status do serviço atualizado!');
+  };
+
+  const handleSaveService = (serviceData: any) => {
+    const calculations = calculateIVA(serviceData.price, serviceData.ivaType);
+    
+    if (editingService) {
+      // Update existing service
+      setServices(services.map(s => 
+        s.id === editingService.id 
+          ? { 
+              ...s, 
+              ...serviceData,
+              price: serviceData.ivaType === 'additional' ? serviceData.price : calculations.basePrice,
+              ivaAmount: calculations.ivaAmount,
+              totalPrice: calculations.totalPrice
+            }
+          : s
       ));
-      alert(`✅ Taxa de imposto "${rateData.name}" atualizada!\n\n📊 Taxa: ${rateData.rate}%\n📋 Tipo: ${rateData.type?.toUpperCase()}\n📅 Válida desde: ${rateData.validFrom}\n🟢 Status: ${rateData.isActive ? 'Ativa' : 'Inativa'}`);
+      alert(`✅ Serviço "${serviceData.name}" atualizado!\n\n💰 Preço: ${serviceData.price.toLocaleString()} MT\n📊 IVA: ${serviceData.ivaType === 'additional' ? 'Adicional' : 'Incluído'}\n💸 Valor do IVA: ${calculations.ivaAmount.toLocaleString()} MT\n💵 Total: ${calculations.totalPrice.toLocaleString()} MT\n⏰ Validade: ${getValidityLabel(serviceData.validity)}\n🔄 Renovação: ${serviceData.autoRenew ? 'Automática' : 'Manual'}`);
     } else {
-      const newRate: TaxRate = {
+      // Add new service
+      const newService: Service = {
         id: Date.now().toString(),
-        name: rateData.name || '',
-        rate: rateData.rate || 0,
-        type: rateData.type || 'custom',
-        description: rateData.description || '',
-        isActive: true,
-        validFrom: rateData.validFrom || new Date().toISOString().split('T')[0],
-        applicableServices: rateData.applicableServices || []
+        companyId: '1',
+        name: serviceData.name,
+        description: serviceData.description,
+        price: serviceData.ivaType === 'additional' ? serviceData.price : calculations.basePrice,
+        ivaType: serviceData.ivaType,
+        ivaAmount: calculations.ivaAmount,
+        totalPrice: calculations.totalPrice,
+        validity: serviceData.validity,
+        status: 'active',
+        autoRenew: serviceData.autoRenew,
+        createdAt: new Date().toISOString()
       };
-      setTaxRates([...taxRates, newRate]);
-      alert(`✅ Nova taxa de imposto "${newRate.name}" criada!\n\n📊 Taxa: ${newRate.rate}%\n📋 Tipo: ${newRate.type.toUpperCase()}\n📅 Válida desde: ${newRate.validFrom}\n🟢 Status: Ativa`);
+      setServices([...services, newService]);
+      alert(`✅ Novo serviço "${newService.name}" criado!\n\n💰 Preço: ${serviceData.price.toLocaleString()} MT\n📊 IVA: ${serviceData.ivaType === 'additional' ? 'Adicional' : 'Incluído'}\n💸 Valor do IVA: ${calculations.ivaAmount.toLocaleString()} MT\n💵 Total: ${calculations.totalPrice.toLocaleString()} MT\n⏰ Validade: ${getValidityLabel(serviceData.validity)}\n🔄 Renovação: ${serviceData.autoRenew ? 'Automática' : 'Manual'}\n🟢 Status: Ativo`);
     }
-    setShowAddRateModal(false);
-    setEditingRate(null);
+    setShowAddModal(false);
+    setEditingService(null);
   };
 
-  const handleDeleteTaxRate = (rateId: string) => {
-    if (confirm('Tem certeza que deseja eliminar esta taxa de imposto?')) {
-      setTaxRates(taxRates.filter(tr => tr.id !== rateId));
-      alert('Taxa de imposto eliminada com sucesso!');
-    }
-  };
-
-  const generateTaxReport = () => {
-    const report: TaxReport = {
-      period: 'Março 2024',
-      totalTaxCollected: taxCalculations.reduce((sum, tc) => sum + tc.taxAmount, 0),
-      ivaCollected: taxCalculations.filter(tc => tc.taxType.includes('IVA')).reduce((sum, tc) => sum + tc.taxAmount, 0),
-      irpsCollected: taxCalculations.filter(tc => tc.taxType.includes('IRPS')).reduce((sum, tc) => sum + tc.taxAmount, 0),
-      totalInvoices: taxCalculations.length,
-      averageTaxRate: taxCalculations.reduce((sum, tc) => sum + tc.taxRate, 0) / taxCalculations.length
-    };
-
-    alert(`📊 Relatório Fiscal - ${report.period}\n\n💰 Total de Impostos: ${report.totalTaxCollected.toLocaleString()} MT\n📋 IVA Coletado: ${report.ivaCollected.toLocaleString()} MT\n👥 IRPS Coletado: ${report.irpsCollected.toLocaleString()} MT\n📄 Total de Faturas: ${report.totalInvoices}\n📈 Taxa Média: ${report.averageTaxRate.toFixed(1)}%\n\n📥 Relatório gerado com sucesso!`);
-  };
-
-  const filteredCalculations = taxCalculations.filter(calc => {
-    const matchesSearch = calc.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         calc.serviceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         calc.invoiceId.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || calc.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
-
-  const renderTaxRates = () => (
+  return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-900">Configuração de Impostos</h3>
-        <button
-          onClick={() => setShowAddRateModal(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Gestão de Serviços</h2>
+          <p className="text-gray-600 mt-1">Gerir serviços oferecidos pela empresa</p>
+        </div>
+        <button 
+          onClick={handleAddService}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
         >
-          <Plus size={16} />
-          Nova Taxa
+          <Plus size={20} />
+          Novo Serviço
         </button>
       </div>
 
-      {/* Tax Rates Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Taxa</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Válido Desde</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Serviços</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {taxRates.map((rate) => (
-                <tr key={rate.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{rate.name}</div>
-                      <div className="text-sm text-gray-500">{rate.description}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">{getTaxTypeBadge(rate.type)}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-1">
-                      <Percent size={12} className="text-gray-400" />
-                      <span className="text-sm font-medium text-gray-900">{rate.rate}%</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{formatDate(rate.validFrom)}</td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-gray-900">
-                      {rate.applicableServices.length === 0 ? 'Todos' : `${rate.applicableServices.length} serviços`}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      rate.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {rate.isActive ? 'Ativa' : 'Inativa'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          setEditingRate(rate);
-                          setShowAddRateModal(true);
-                        }}
-                        className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteTaxRate(rate.id)}
-                        className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Tax Calculator */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Calculator className="text-green-600" size={20} />
-          Calculadora de Impostos
-        </h4>
-        
-        <div className="grid md:grid-cols-3 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Valor Base (MT)</label>
-            <input
-              type="number"
-              id="baseAmount"
-              placeholder="Ex: 5000"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Taxa de Imposto</label>
-            <select
-              id="taxRate"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">Selecionar taxa</option>
-              {taxRates.filter(tr => tr.isActive).map((rate) => (
-                <option key={rate.id} value={rate.id}>
-                  {rate.name} ({rate.rate}%)
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-end">
-            <button
-              onClick={() => {
-                const baseAmountInput = document.getElementById('baseAmount') as HTMLInputElement;
-                const taxRateSelect = document.getElementById('taxRate') as HTMLSelectElement;
-                
-                const baseAmount = parseFloat(baseAmountInput.value);
-                const selectedRateId = taxRateSelect.value;
-                
-                if (!baseAmount || !selectedRateId) {
-                  alert('Preencha todos os campos');
-                  return;
-                }
-                
-                const { taxAmount, totalAmount } = calculateTax(baseAmount, selectedRateId);
-                const selectedRate = taxRates.find(tr => tr.id === selectedRateId);
-                
-                alert(`🧮 Cálculo de Impostos\n\n💰 Valor Base: ${baseAmount.toLocaleString()} MT\n📊 Taxa: ${selectedRate?.name} (${selectedRate?.rate}%)\n💸 Imposto: ${taxAmount.toLocaleString()} MT\n💵 Total: ${totalAmount.toLocaleString()} MT`);
-              }}
-              className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-            >
-              <Calculator size={16} />
-              Calcular
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderCalculations = () => (
-    <div className="space-y-6">
-      {/* Summary Cards */}
+      {/* Status Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Total Calculado</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {taxCalculations.reduce((sum, tc) => sum + tc.taxAmount, 0).toLocaleString()} MT
-              </p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Total de Serviços</p>
+              <p className="text-2xl font-bold text-gray-900">{services.length}</p>
             </div>
             <div className="w-12 h-12 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
-              <Calculator size={24} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">IVA Coletado</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {taxCalculations.filter(tc => tc.taxType.includes('IVA')).reduce((sum, tc) => sum + tc.taxAmount, 0).toLocaleString()} MT
-              </p>
-            </div>
-            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-green-100 text-green-600">
-              <DollarSign size={24} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Faturas com Imposto</p>
-              <p className="text-2xl font-bold text-gray-900">{taxCalculations.length}</p>
-            </div>
-            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-purple-100 text-purple-600">
               <FileText size={24} />
             </div>
           </div>
@@ -427,12 +272,40 @@ export const TaxManagement: React.FC = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Taxa Média</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Serviços Ativos</p>
               <p className="text-2xl font-bold text-gray-900">
-                {(taxCalculations.reduce((sum, tc) => sum + tc.taxRate, 0) / taxCalculations.length).toFixed(1)}%
+                {services.filter(s => s.status === 'active').length}
               </p>
             </div>
-            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-orange-100 text-orange-600">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-green-100 text-green-600">
+              <CheckCircle size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Receita Potencial</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {services.filter(s => s.status === 'active').reduce((total, s) => total + s.totalPrice, 0).toLocaleString()} MT
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-emerald-100 text-emerald-600">
+              <DollarSign size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">IVA Total</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {services.filter(s => s.status === 'active').reduce((total, s) => total + s.ivaAmount, 0).toLocaleString()} MT
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-purple-100 text-purple-600">
               <Percent size={24} />
             </div>
           </div>
@@ -445,7 +318,7 @@ export const TaxManagement: React.FC = () => {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           <input
             type="text"
-            placeholder="Pesquisar cálculos..."
+            placeholder="Pesquisar serviços..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -457,58 +330,93 @@ export const TaxManagement: React.FC = () => {
           className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           <option value="all">Todos os Status</option>
-          <option value="calculated">Calculado</option>
-          <option value="applied">Aplicado</option>
-          <option value="paid">Pago</option>
+          <option value="active">Ativos</option>
+          <option value="inactive">Inativos</option>
         </select>
-        <button
-          onClick={generateTaxReport}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-        >
-          <BarChart3 size={16} />
-          Gerar Relatório
-        </button>
       </div>
 
-      {/* Calculations Table */}
+      {/* Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fatura</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Serviço</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor Base</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Imposto</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Preço Base</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">IVA</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Validade</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Renovação</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredCalculations.map((calc) => (
-                <tr key={calc.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{calc.invoiceId}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{calc.clientName}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{calc.serviceName}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{calc.baseAmount.toLocaleString()} MT</td>
+              {paginatedServices.map((service) => (
+                <tr key={service.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900">
-                      {calc.taxAmount.toLocaleString()} MT
-                      <div className="text-xs text-gray-500">({calc.taxRate}% {calc.taxType})</div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{service.name}</div>
+                      <div className="text-sm text-gray-500">{service.description}</div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{calc.totalAmount.toLocaleString()} MT</td>
-                  <td className="px-6 py-4">{getStatusBadge(calc.status)}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                    {service.ivaType === 'additional' ? service.price.toLocaleString() : (service.totalPrice / 1.16).toFixed(0)} MT
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="space-y-1">
+                      {getIVABadge(service.ivaType)}
+                      <div className="text-xs text-gray-600">
+                        {service.ivaAmount.toLocaleString()} MT (16%)
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                    {service.totalPrice.toLocaleString()} MT
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                    <div className="flex items-center gap-1">
+                      <Clock size={12} className="text-gray-400" />
+                      {getValidityLabel(service.validity)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                      service.autoRenew
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-orange-100 text-orange-800'
+                    }`}>
+                      {service.autoRenew ? 'Automática' : 'Manual'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">{getStatusBadge(service.status)}</td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
-                      <button className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded">
-                        <Eye size={16} />
+                      <button 
+                        onClick={() => handleEditService(service)}
+                        className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
+                        title="Editar"
+                      >
+                        <Edit size={16} />
                       </button>
-                      <button className="text-green-600 hover:text-green-900 p-1 hover:bg-green-50 rounded">
-                        <Download size={16} />
-                      </button>
+                      {(user?.role === 'admin') && (
+                        <>
+                          <button 
+                            onClick={() => handleToggleStatus(service.id)}
+                            className="text-orange-600 hover:text-orange-900 p-1 hover:bg-orange-50 rounded"
+                            title={service.status === 'active' ? "Desativar" : "Ativar"}
+                          >
+                            {service.status === 'active' ? <AlertCircle size={16} /> : <CheckCircle size={16} />}
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteService(service.id)}
+                            className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
+                            title="Eliminar"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -516,273 +424,216 @@ export const TaxManagement: React.FC = () => {
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
-  );
-
-  const renderReports = () => (
-    <div className="space-y-6">
-      {/* Tax Summary */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Resumo Fiscal</h3>
-        
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="bg-blue-50 rounded-lg p-6 text-center">
-            <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FileText className="text-white" size={24} />
-            </div>
-            <h4 className="font-semibold text-blue-900 mb-2">IVA a Pagar</h4>
-            <div className="text-2xl font-bold text-blue-900">
-              {taxCalculations.filter(tc => tc.taxType.includes('IVA')).reduce((sum, tc) => sum + tc.taxAmount, 0).toLocaleString()} MT
-            </div>
-            <p className="text-sm text-blue-700 mt-1">Este mês</p>
-          </div>
-
-          <div className="bg-green-50 rounded-lg p-6 text-center">
-            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <BarChart3 className="text-white" size={24} />
-            </div>
-            <h4 className="font-semibold text-green-900 mb-2">Total de Impostos</h4>
-            <div className="text-2xl font-bold text-green-900">
-              {taxCalculations.reduce((sum, tc) => sum + tc.taxAmount, 0).toLocaleString()} MT
-            </div>
-            <p className="text-sm text-green-700 mt-1">Este mês</p>
-          </div>
-
-          <div className="bg-purple-50 rounded-lg p-6 text-center">
-            <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <DollarSign className="text-white" size={24} />
-            </div>
-            <h4 className="font-semibold text-purple-900 mb-2">Média de IVA</h4>
-            <div className="text-2xl font-bold text-purple-900">
-              {(taxCalculations.reduce((sum, tc) => sum + tc.taxRate, 0) / taxCalculations.length).toFixed(1)}%
-            </div>
-            <p className="text-sm text-purple-700 mt-1">Taxa média aplicada</p>
-          </div>
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filteredServices.length}
+          itemsPerPage={itemsPerPage}
+        />
       </div>
 
-      {/* Export Options */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h4 className="text-lg font-semibold text-gray-900 mb-4">Exportar Relatórios Fiscais</h4>
-        
-        <div className="grid md:grid-cols-3 gap-4">
-          <button
-            onClick={() => alert('Relatório de IVA exportado em PDF!')}
-            className="flex items-center justify-center gap-3 p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
-          >
-            <FileText className="text-blue-600" size={24} />
-            <div className="text-left">
-              <p className="font-medium text-blue-900">Relatório de IVA</p>
-              <p className="text-sm text-blue-700">Declaração mensal em PDF</p>
-            </div>
-          </button>
-          
-          <button
-            onClick={() => alert('Relatório de IRPS exportado em Excel!')}
-            className="flex items-center justify-center gap-3 p-4 border-2 border-green-200 rounded-lg hover:bg-green-50 transition-colors"
-          >
-            <BarChart3 className="text-green-600" size={24} />
-            <div className="text-left">
-              <p className="font-medium text-green-900">Relatório de IRPS</p>
-              <p className="text-sm text-green-700">Retenções em Excel</p>
-            </div>
-          </button>
-          
-          <button
-            onClick={() => alert('Resumo fiscal exportado em CSV!')}
-            className="flex items-center justify-center gap-3 p-4 border-2 border-purple-200 rounded-lg hover:bg-purple-50 transition-colors"
-          >
-            <Download className="text-purple-600" size={24} />
-            <div className="text-left">
-              <p className="font-medium text-purple-900">Resumo Fiscal</p>
-              <p className="text-sm text-purple-700">Dados completos em CSV</p>
-            </div>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  const tabs = [
-    { id: 'rates', label: 'Taxas de Imposto', icon: Settings },
-    { id: 'calculations', label: 'Cálculos', icon: Calculator },
-    { id: 'reports', label: 'Relatórios', icon: BarChart3 }
-  ];
-
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Gestão de Impostos</h2>
-        
-        {/* Navigation Tabs */}
-        <div className="border-b border-gray-200">
-          <nav className="flex space-x-8">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 ${
-                    activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <Icon size={16} />
-                  {tab.label}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-      </div>
-
-      {/* Content */}
-      {activeTab === 'rates' && renderTaxRates()}
-      {activeTab === 'calculations' && renderCalculations()}
-      {activeTab === 'reports' && renderReports()}
-
-      {/* Add/Edit Tax Rate Modal */}
-      {showAddRateModal && (
+      {/* Add/Edit Service Modal */}
+      {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              {editingRate ? 'Editar Taxa de Imposto' : 'Nova Taxa de Imposto'}
+          <div className="bg-white rounded-xl p-8 max-w-4xl w-full mx-4 max-h-[95vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">
+              {editingService ? 'Editar Serviço' : 'Novo Serviço'}
             </h3>
             
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
-              const serviceIds = Array.from(formData.getAll('applicableServices')) as string[];
               
-              const rateData = {
+              const serviceData = {
                 name: formData.get('name') as string,
-                rate: Number(formData.get('rate')),
-                type: formData.get('type') as 'iva' | 'irps' | 'irpc' | 'sisa' | 'custom',
                 description: formData.get('description') as string,
-                validFrom: formData.get('validFrom') as string,
-                validTo: formData.get('validTo') as string || undefined,
-                applicableServices: serviceIds,
-                isActive: formData.get('isActive') === 'on'
+                price: Number(formData.get('price')),
+                ivaType: formData.get('ivaType') as 'additional' | 'included',
+                validity: Number(formData.get('validity')),
+                autoRenew: formData.get('autoRenew') === 'on'
               };
-              handleSaveTaxRate(rateData);
-            }} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Nome da Taxa</label>
-                  <input
-                    type="text"
-                    name="name"
-                    defaultValue={editingRate?.name || ''}
-                    placeholder="Ex: IVA Padrão"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Taxa (%)</label>
-                  <input
-                    type="number"
-                    name="rate"
-                    defaultValue={editingRate?.rate || ''}
-                    placeholder="Ex: 17"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Imposto</label>
-                  <select
-                    name="type"
-                    defaultValue={editingRate?.type || 'iva'}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  >
-                    <option value="iva">IVA</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Válido Desde</label>
-                  <input
-                    type="date"
-                    name="validFrom"
-                    defaultValue={editingRate?.validFrom || new Date().toISOString().split('T')[0]}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
-                  <textarea
-                    name="description"
-                    defaultValue={editingRate?.description || ''}
-                    placeholder="Descrição da taxa de imposto..."
-                    rows={3}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Applicable Services */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Serviços Aplicáveis</label>
-                <div className="border border-gray-300 rounded-lg p-4 max-h-40 overflow-y-auto">
-                  <div className="space-y-2">
-                    {mockServices.map((service) => (
-                      <label key={service.id} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="applicableServices"
-                          value={service.id}
-                          defaultChecked={editingRate?.applicableServices.includes(service.id)}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">{service.name}</span>
-                      </label>
-                    ))}
+              handleSaveService(serviceData);
+            }} className="space-y-6">
+              
+              {/* Informações Básicas */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <FileText size={18} className="text-blue-600" />
+                  Informações do Serviço
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Nome do Serviço *
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      defaultValue={editingService?.name || ''}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Ex: Contabilidade Mensal"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Validade (meses) *
+                    </label>
+                    <select
+                      name="validity"
+                      defaultValue={editingService?.validity || 1}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    >
+                      <option value={1}>1 mês (Mensal)</option>
+                      <option value={3}>3 meses (Trimestral)</option>
+                      <option value={6}>6 meses (Semestral)</option>
+                      <option value={12}>12 meses (Anual)</option>
+                    </select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Descrição *
+                    </label>
+                    <textarea
+                      name="description"
+                      defaultValue={editingService?.description || ''}
+                      rows={3}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Descrição detalhada do serviço..."
+                      required
+                    />
                   </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Se nenhum serviço for selecionado, a taxa aplicará a todos os serviços
-                </p>
               </div>
 
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="isActive"
-                  id="isActive"
-                  defaultChecked={editingRate?.isActive !== false}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="isActive" className="ml-2 text-sm text-gray-700">
-                  Taxa ativa (será aplicada automaticamente)
-                </label>
+              {/* Preços e IVA */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <DollarSign size={18} className="text-green-600" />
+                  Preços e IVA
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Preço (MT) *
+                    </label>
+                    <input
+                      type="number"
+                      name="price"
+                      value={servicePrice || ''}
+                      onChange={(e) => setServicePrice(Number(e.target.value) || 0)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Ex: 5000"
+                      min="0"
+                      step="0.01"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tipo de IVA *
+                    </label>
+                    <select
+                      name="ivaType"
+                      value={ivaType}
+                      onChange={(e) => setIvaType(e.target.value as 'additional' | 'included')}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    >
+                      <option value="additional">IVA Adicional (16%)</option>
+                      <option value="included">IVA Incluído (16%)</option>
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {ivaType === 'additional' 
+                        ? 'O preço informado + 16% de IVA' 
+                        : 'O preço informado já inclui 16% de IVA'
+                      }
+                    </p>
+                  </div>
+                </div>
+
+                {/* Cálculos Automáticos */}
+                {servicePrice > 0 && (
+                  <div className="mt-6 bg-white rounded-lg border border-gray-200 p-6">
+                    <h5 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <Percent size={16} className="text-blue-600" />
+                      Cálculos Automáticos de IVA
+                    </h5>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="text-center p-4 bg-blue-50 rounded-lg">
+                        <div className="text-sm text-blue-600 mb-1">
+                          {ivaType === 'additional' ? 'Preço Base' : 'Preço Base (sem IVA)'}
+                        </div>
+                        <div className="text-xl font-bold text-blue-900">
+                          {ivaType === 'additional' ? servicePrice.toLocaleString() : basePrice.toLocaleString()} MT
+                        </div>
+                      </div>
+                      <div className="text-center p-4 bg-orange-50 rounded-lg">
+                        <div className="text-sm text-orange-600 mb-1">IVA (16%)</div>
+                        <div className="text-xl font-bold text-orange-900">{ivaAmount.toLocaleString()} MT</div>
+                      </div>
+                      <div className="text-center p-4 bg-green-50 rounded-lg border-2 border-green-300">
+                        <div className="text-sm text-green-600 mb-1">Total com IVA</div>
+                        <div className="text-2xl font-bold text-green-900">{totalPrice.toLocaleString()} MT</div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-700 text-center">
+                        <strong>Explicação:</strong> {
+                          ivaType === 'additional' 
+                            ? `${servicePrice.toLocaleString()} MT + ${ivaAmount.toLocaleString()} MT (IVA) = ${totalPrice.toLocaleString()} MT`
+                            : `${totalPrice.toLocaleString()} MT ÷ 1.16 = ${basePrice.toLocaleString()} MT (base) + ${ivaAmount.toLocaleString()} MT (IVA)`
+                        }
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Configurações */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Calendar size={18} className="text-purple-600" />
+                  Configurações de Renovação
+                </h4>
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    name="autoRenew"
+                    id="autoRenew"
+                    defaultChecked={editingService?.autoRenew || false}
+                    className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-0.5"
+                  />
+                  <div>
+                    <label htmlFor="autoRenew" className="block text-sm font-medium text-gray-900">
+                      Renovação Automática
+                    </label>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Quando ativado, as subscrições deste serviço serão renovadas automaticamente
+                    </p>
+                  </div>
+                </div>
               </div>
               
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-4 pt-6 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => {
-                    setShowAddRateModal(false);
-                    setEditingRate(null);
+                    setShowAddModal(false);
+                    setEditingService(null);
                   }}
-                  className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 border border-gray-300 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
-                  {editingRate ? 'Atualizar' : 'Adicionar'}
+                  {editingService ? 'Atualizar' : 'Criar Serviço'}
                 </button>
               </div>
             </form>
@@ -791,8 +642,4 @@ export const TaxManagement: React.FC = () => {
       )}
     </div>
   );
-};
-
-export const ServicesTable: React.FC = () => {
-  return <div></div>;
 };
