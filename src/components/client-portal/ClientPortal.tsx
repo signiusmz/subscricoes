@@ -218,7 +218,9 @@ export const ClientPortal: React.FC = () => {
   });
 
     email: 'maria.silva@signius.com',
-    phone: '+258 84 123 4567'
+    phone: '+258 84 123 4567',
+    nuit: '400123456',
+    address: 'Av. Julius Nyerere, 123, Maputo'
   };
 
   const formatDate = (dateString: string) => {
