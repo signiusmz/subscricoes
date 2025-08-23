@@ -44,7 +44,7 @@ interface Template {
   id: string;
   name: string;
   description: string;
-  type: 'email' | 'whatsapp' | 'sms';
+  type: 'email' | 'whatsapp';
   category: 'welcome' | 'renewal' | 'retention' | 'payment' | 'anniversary' | 'satisfaction';
   subject?: string;
   content: string;
@@ -243,7 +243,7 @@ export const TemplateEditor: React.FC = () => {
   const [templateSubject, setTemplateSubject] = useState('');
   const [previewMode, setPreviewMode] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedType, setSelectedType] = useState<'all' | 'email' | 'whatsapp' | 'sms'>('all');
+  const [selectedType, setSelectedType] = useState<'all' | 'email' | 'whatsapp'>('all');
   const [newTemplateType, setNewTemplateType] = useState<'email' | 'whatsapp'>('email');
 
   const filteredTemplates = mockTemplates.filter(template => {
@@ -258,8 +258,6 @@ export const TemplateEditor: React.FC = () => {
         return <Mail className="text-blue-600" size={16} />;
       case 'whatsapp':
         return <MessageSquare className="text-green-600" size={16} />;
-      case 'sms':
-        return <Phone className="text-purple-600" size={16} />;
       default:
         return <FileText className="text-gray-600" size={16} />;
     }
@@ -540,8 +538,7 @@ export const TemplateEditor: React.FC = () => {
               {[
                 { type: 'all', label: 'Todos', icon: FileText },
                 { type: 'email', label: 'Email', icon: Mail },
-                { type: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
-                { type: 'sms', label: 'SMS', icon: Phone }
+                { type: 'whatsapp', label: 'WhatsApp', icon: MessageSquare }
               ].map((option) => {
                 const Icon = option.icon;
                 return (
