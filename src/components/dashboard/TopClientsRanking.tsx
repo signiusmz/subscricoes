@@ -471,7 +471,14 @@ export const TopClientsRanking: React.FC = () => {
 
       {/* Action Button */}
       <div className="mt-6 pt-4 border-t border-gray-200">
-        <button className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2 group">
+        <button 
+          onClick={() => {
+            // Trigger navigation to client analytics
+            const event = new CustomEvent('openClientAnalytics');
+            window.dispatchEvent(event);
+          }}
+          className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2 group"
+        >
           <Eye size={14} className="group-hover:translate-x-1 transition-transform" />
           Ver análise completa de clientes →
         </button>

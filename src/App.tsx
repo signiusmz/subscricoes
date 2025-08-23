@@ -13,6 +13,7 @@ import { RecentActivity } from './components/dashboard/RecentActivity';
 import { GrowthChart } from './components/dashboard/GrowthChart';
 import { TopClientsRanking } from './components/dashboard/TopClientsRanking';
 import { ClientsTable } from './components/clients/ClientsTable';
+import { ClientAnalytics } from './components/clients/ClientAnalytics';
 import { UsersTable } from './components/users/UsersTable';
 import { ServicesTable } from './components/services/ServicesTable';
 import { SubscriptionsTable } from './components/subscriptions/SubscriptionsTable';
@@ -35,6 +36,7 @@ const mockMetrics: DashboardMetrics = {
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [showClientAnalytics, setShowClientAnalytics] = useState(false);
   const [showClientPortal, setShowClientPortal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { company, user, updateUser } = useAuth();
@@ -42,6 +44,20 @@ const Dashboard = () => {
   // Demo: Toggle to client portal
   if (showClientPortal) {
     return <ClientPortal />;
+  }
+  
+  // Show client analytics if requested
+  if (showClientAnalytics) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <div className="ml-64">
+          <div className="p-8">
+            <ClientAnalytics onBack={() => setShowClientAnalytics(false)} />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const handleUpgradeSuccess = (planId: string, transactionId: string) => {
@@ -71,11 +87,17 @@ const Dashboard = () => {
     const handleOpenUpgradeModal = () => {
       setShowUpgradeModal(true);
     };
+    
+    const handleOpenClientAnalytics = () => {
+      setShowClientAnalytics(true);
+    };
 
     window.addEventListener('openUpgradeModal', handleOpenUpgradeModal);
+    window.addEventListener('openClientAnalytics', handleOpenClientAnalytics);
     
     return () => {
       window.removeEventListener('openUpgradeModal', handleOpenUpgradeModal);
+      window.removeEventListener('openClientAnalytics', handleOpenClientAnalytics);
     };
   }, []);
 
