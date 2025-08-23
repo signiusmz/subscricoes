@@ -575,6 +575,7 @@ export const SettingsPanel: React.FC = () => {
     { id: 'profile', label: 'Perfil', icon: User },
     { id: 'notifications', label: 'Notificações', icon: Bell },
     { id: 'whatsapp', label: 'WhatsApp Business', icon: MessageSquare },
+    { id: 'whatsapp', label: 'WhatsApp Business', icon: MessageSquare },
     { id: 'security', label: 'Segurança', icon: Shield },
     { id: 'appearance', label: 'Aparência', icon: Palette },
     { id: 'integrations', label: 'Integrações', icon: Globe }
