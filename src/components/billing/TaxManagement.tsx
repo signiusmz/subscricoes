@@ -568,12 +568,12 @@ export const TaxManagement: React.FC = () => {
         
         <div className="grid md:grid-cols-3 gap-4">
           <button
-            onClick={() => alert('Declaração de IVA exportada em PDF!')}
+            onClick={() => alert('Relatório de IVA exportado em PDF!')}
             className="flex items-center justify-center gap-3 p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
           >
             <FileText className="text-blue-600" size={24} />
             <div className="text-left">
-              <p className="font-medium text-blue-900">Declaração de IVA</p>
+              <p className="font-medium text-blue-900">Relatório de IVA</p>
               <p className="text-sm text-blue-700">Declaração mensal em PDF</p>
             </div>
           </button>
