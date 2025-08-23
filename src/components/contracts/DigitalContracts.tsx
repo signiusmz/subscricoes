@@ -3,6 +3,7 @@ import { FileText, Download, Edit, Send, Eye, CheckCircle, Clock, AlertCircle, S
 import { PDFGenerator } from '../../utils/pdfGenerator';
 import { HTMLEditor } from '../common/HTMLEditor';
 import { Pagination } from '../common/Pagination';
+import { formatAmountInWords } from '../../utils/numberToWords';
 
 interface Contract {
   id: string;
@@ -314,7 +315,7 @@ export const DigitalContracts: React.FC = () => {
         
         <h3 style="color: #1e40af;">CLÁUSULA SEGUNDA - DO VALOR E FORMA DE PAGAMENTO</h3>
         <div style="background: #ecfdf5; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
-          <p>O valor total dos serviços contratados é de <strong style="color: #059669;">${totalValue.toLocaleString()} MT</strong> (${this.numberToWords(totalValue)}).</p>
+          <p>O valor total dos serviços contratados é de <strong style="color: #059669;">${totalValue.toLocaleString()} MT</strong> (${formatAmountInWords(totalValue)}).</p>
           <p>O pagamento será efetuado conforme os ciclos de cada serviço, nas datas estabelecidas nas respetivas subscrições.</p>
         </div>
         
@@ -477,13 +478,6 @@ export const DigitalContracts: React.FC = () => {
     
     const contract = contracts.find(c => c.id === contractId);
     alert(`✅ Contrato assinado digitalmente!\n\n📄 Contrato: ${contract?.number}\n👤 Cliente: ${contract?.clientName}\n🔐 Hash: ${signatureHash}\n📅 Assinado em: ${new Date().toLocaleString('pt-PT')}\n✅ Assinatura válida e registrada`);
-  };
-
-  const numberToWords = (num: number): string => {
-    // Simplified number to words for demo
-    if (num < 1000) return `${num} meticais`;
-    if (num < 1000000) return `${Math.floor(num/1000)} mil e ${num%1000} meticais`;
-    return `${Math.floor(num/1000000)} milhão e ${Math.floor((num%1000000)/1000)} mil meticais`;
   };
 
   return (
