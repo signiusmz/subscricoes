@@ -14,7 +14,7 @@ import {
   Camera,
   Upload,
   Send,
-  Clock
+  Clock,
   Calculator,
   PenTool
 } from 'lucide-react';
