@@ -167,7 +167,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
                     className="flex-1 border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-semibold hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
                   >
                     <ArrowLeft size={20} />
-                    Voltar à Página Inicial
+                    Voltar ao Login
                   </button>
                   <button
                     type="submit"
