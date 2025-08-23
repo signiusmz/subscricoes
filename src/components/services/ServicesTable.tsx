@@ -748,23 +748,6 @@ export const TaxManagement: React.FC = () => {
                       </label>
                     ))}
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tipo de IVA *
-                    </label>
-                    <select
-                      name="ivaType"
-                      defaultValue={editingService?.ivaType || 'additional'}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    >
-                      <option value="additional">IVA Adicional (16%)</option>
-                      <option value="included">IVA Incluído (16%)</option>
-                    </select>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Adicional: Preço + IVA | Incluído: Preço já com IVA
-                    </p>
-                  </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
                   Se nenhum serviço for selecionado, a taxa aplicará a todos os serviços
