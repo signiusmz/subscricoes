@@ -116,14 +116,34 @@ export class PDFGenerator {
     
     // Footer line
     doc.setDrawColor(200, 200, 200);
-    doc.line(20, pageHeight - 30, 190, pageHeight - 30);
+    doc.line(20, pageHeight - 40, 190, pageHeight - 40);
     
-    // Footer text
+    // Main footer text - centered
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(100, 100, 100);
-    doc.text('Obrigado pela sua preferência!', 20, pageHeight - 20);
-    doc.text(`Documento gerado em ${new Date().toLocaleDateString('pt-PT')}`, 20, pageHeight - 15);
+    
+    // Center the main footer text
+    const mainFooterText = 'Documento Processado pelo Computador | Signius - Sistema de Gestão Comercial (www.signius.co.mz)';
+    const textWidth = doc.getTextWidth(mainFooterText);
+    const pageWidth = doc.internal.pageSize.width;
+    const centerX = (pageWidth - textWidth) / 2;
+    
+    doc.text(mainFooterText, centerX, pageHeight - 30);
+    
+    // Company licensing info - centered
+    const companyText = `Sistema Licenciado para: ${this.companyInfo.name}`;
+    const companyTextWidth = doc.getTextWidth(companyText);
+    const companyCenterX = (pageWidth - companyTextWidth) / 2;
+    
+    doc.text(companyText, companyCenterX, pageHeight - 25);
+    
+    // Generation date - centered
+    const dateText = `Documento gerado em ${new Date().toLocaleDateString('pt-PT')}`;
+    const dateTextWidth = doc.getTextWidth(dateText);
+    const dateCenterX = (pageWidth - dateTextWidth) / 2;
+    
+    doc.text(dateText, dateCenterX, pageHeight - 20);
     
     // Page number
     const pageCount = doc.getNumberOfPages();
