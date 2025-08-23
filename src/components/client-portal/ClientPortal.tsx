@@ -384,6 +384,13 @@ export const ClientPortal: React.FC = () => {
                 <p className="text-xs text-gray-500">{clientInfo.email}</p>
               </div>
               <button 
+                onClick={() => setShowNPSModal(true)}
+                className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2 text-sm font-medium"
+              >
+                <Star size={16} />
+                Avaliar Serviço
+              </button>
+              <button 
                 onClick={logout}
                 className="text-gray-600 hover:text-red-600 p-2 hover:bg-red-50 rounded-lg transition-colors"
                 title="Sair do Portal"
