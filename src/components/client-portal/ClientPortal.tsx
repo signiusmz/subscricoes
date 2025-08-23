@@ -257,6 +257,15 @@ export const ClientPortal: React.FC = () => {
     PDFGenerator.generateClientStatement(clientInfoForPDF, mockInvoices);
   };
 
+  const handleViewContract = (contract: Contract) => {
+    setShowContractModal(true);
+  };
+
+  const handleDownloadContract = (contract: Contract) => {
+    // Generate contract PDF
+    alert('Download do contrato iniciado!');
+  };
+
   const renderDashboard = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -437,7 +446,14 @@ export const ClientPortal: React.FC = () => {
               </div>
             </div>
             
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-4 border-t border-gray-200">
+              <button 
+                onClick={() => handleViewContract(contract)}
+                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <Eye size={16} />
+                Visualizar
+              </button>
               <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
                 <RefreshCw size={16} />
                 Renovar Agora
@@ -480,8 +496,8 @@ export const ClientPortal: React.FC = () => {
             </div>
             <div className="flex gap-2">
               <button
-                onClick={() => setShowContractModal(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                onClick={() => handleDownloadContract(mockContract)}
+                className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
               >
                 <Eye size={16} />
                 Ver Contrato
@@ -1377,101 +1393,6 @@ export const ClientPortal: React.FC = () => {
               >
                 <Download size={16} />
                 Download PDF
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {/* View Contract Modal */}
-      {showContractModal && viewingContract && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Contrato: {viewingContract.number}</h3>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => handleDownloadContract(viewingContract)}
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-                >
-                  <Download size={16} />
-                  Download PDF
-                </button>
-                {viewingContract.status === 'sent' && viewingContract.canSign && (
-                  <button
-                    onClick={() => {
-                      setShowContractModal(false);
-                      handleSignContract(viewingContract.id);
-                    }}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
-                  >
-                    <PenTool size={16} />
-                    Assinar
-                  </button>
-                )}
-                <button
-                  onClick={() => setShowContractModal(false)}
-                  className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Fechar
-                </button>
-              </div>
-            </div>
-            
-            <div className="border border-gray-300 rounded-lg p-6 bg-white max-h-96 overflow-y-auto">
-              <div dangerouslySetInnerHTML={{ __html: viewingContract.content }} />
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {/* Sign Contract Modal */}
-      {showSignModal && signingContract && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <PenTool className="text-purple-600" size={20} />
-              Assinatura Digital
-            </h3>
-            
-            <div className="mb-6">
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <h4 className="font-semibold text-purple-900 mb-2">Contrato a Assinar:</h4>
-                <p className="text-sm text-purple-800">{signingContract.title}</p>
-                <p className="text-sm text-purple-800">Número: {signingContract.number}</p>
-                <p className="text-sm text-purple-800">Valor: {signingContract.value.toLocaleString()} MT</p>
-              </div>
-            </div>
-            
-            <div className="mb-6">
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <AlertCircle className="text-yellow-600" size={16} />
-                  <span className="font-semibold text-yellow-900">Importante</span>
-                </div>
-                <p className="text-sm text-yellow-800">
-                  Ao assinar digitalmente, você concorda com todos os termos e condições do contrato. 
-                  Esta assinatura tem validade legal.
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowSignModal(false);
-                  setSigningContract(null);
-                }}
-                className="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={confirmSignContract}
-                className="flex-1 bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
-              >
-                <PenTool size={16} />
-                Confirmar Assinatura
               </button>
             </div>
           </div>
