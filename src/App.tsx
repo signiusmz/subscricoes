@@ -7,6 +7,7 @@ import { Sidebar } from './components/layout/Sidebar';
 import { TrialBanner } from './components/layout/TrialBanner';
 import { UpgradeModal } from './components/layout/UpgradeModal';
 import { SuperAdminDashboard } from './components/super-admin/SuperAdminDashboard';
+import { DashboardHeader } from './components/dashboard/DashboardHeader';
 import { MetricsCards } from './components/dashboard/MetricsCards';
 import { RecentActivity } from './components/dashboard/RecentActivity';
 import { ClientsTable } from './components/clients/ClientsTable';
@@ -81,10 +82,7 @@ const Dashboard = () => {
       case 'dashboard':
         return (
           <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-              <p className="text-gray-600">Visão geral do seu negócio</p>
-            </div>
+            <DashboardHeader />
             <MetricsCards metrics={mockMetrics} />
             <div className="grid lg:grid-cols-2 gap-6">
               <RecentActivity />
