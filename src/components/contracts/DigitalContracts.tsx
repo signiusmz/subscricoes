@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FileText, Download, Edit, Send, Eye, CheckCircle, Clock, AlertCircle, Search, Filter, Calendar, User, Building, DollarSign, FileSignature as Signature, Hash, Users, Plus, X, Save, RefreshCw, Star, Trash2 } from 'lucide-react';
 import { PDFGenerator } from '../../utils/pdfGenerator';
+import { formatAmountInWords } from '../../utils/numberToWords';
 import { HTMLEditor } from '../common/HTMLEditor';
 import { Pagination } from '../common/Pagination';
 import { formatAmountInWords } from '../../utils/numberToWords';
@@ -494,6 +495,10 @@ export const DigitalContracts: React.FC = () => {
   const [editingContract, setEditingContract] = useState<Contract | null>(null);
   const [editingTemplate, setEditingTemplate] = useState<ContractTemplate | null>(null);
   const [editContent, setEditContent] = useState('');
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<ContractTemplate | null>(null);
+  const [templateContent, setTemplateContent] = useState('');
+  const [templates, setTemplates] = useState<ContractTemplate[]>(mockTemplates);
   const [templateContent, setTemplateContent] = useState('');
   const [selectedClientId, setSelectedClientId] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -1344,6 +1349,7 @@ export const DigitalContracts: React.FC = () => {
 
   const tabs = [
     { id: 'contracts', label: 'Contratos', icon: FileText },
+    { id: 'templates', label: 'Templates', icon: PenTool }
     { id: 'templates', label: 'Templates', icon: Layout }
   ];
 
@@ -1379,6 +1385,7 @@ export const DigitalContracts: React.FC = () => {
 
       {/* Content */}
       {activeTab === 'contracts' && renderContracts()}
+      {activeTab === 'templates' && renderTemplates()}
       {activeTab === 'templates' && renderTemplates()}
 
       {/* Generate Contract Modal */}
