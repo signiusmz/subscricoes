@@ -124,7 +124,7 @@ export class PDFGenerator {
     doc.setTextColor(100, 100, 100);
     
     // Center the main footer text
-    const mainFooterText = 'Documento Processado pelo Computador | Signius - Sistema de Gestão Comercial (www.signius.co.mz)';
+    const mainFooterText = 'Signius - Sistema de Gestão Comercial (www.signius.co.mz)';
     const textWidth = doc.getTextWidth(mainFooterText);
     const pageWidth = doc.internal.pageSize.width;
     const centerX = (pageWidth - textWidth) / 2;
