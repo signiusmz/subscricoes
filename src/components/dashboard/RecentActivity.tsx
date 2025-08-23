@@ -59,7 +59,7 @@ const mockActivities: ActivityItem[] = [
     id: '7',
     type: 'service',
     message: 'Serviço expirado: Consultoria Fiscal',
-    time: '1 dia atrás'
+    time: '1 dia atrás',
     status: 'warning'
   },
   {
