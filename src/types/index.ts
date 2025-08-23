@@ -21,6 +21,21 @@ import {
   BarChart3
 } from 'lucide-react';
 
+export interface Service {
+  id: string;
+  companyId: string;
+  name: string;
+  description: string;
+  price: number;
+  ivaType: 'additional' | 'included';
+  ivaAmount: number;
+  totalPrice: number;
+  validity: number; // in months
+  status: 'active' | 'inactive';
+  autoRenew: boolean;
+  createdAt: string;
+}
+
 interface TaxRate {
   id: string;
   name: string;
@@ -568,9 +583,12 @@ export const TaxManagement: React.FC = () => {
         
         <div className="grid md:grid-cols-3 gap-4">
           <button
- type: 'iva';
-               type: formData.get('type') as 'iva',
-                   placeholder="Ex: 16"
+            onClick={() => alert('Relatório de IVA exportado em PDF!')}
+            className="flex items-center justify-center gap-3 p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+          >
+            <FileText className="text-blue-600" size={24} />
+            <div className="text-left">
+              <p className="font-medium text-blue-900">Relatório de IVA</p>
               <p className="text-sm text-blue-700">Declaração mensal em PDF</p>
             </div>
           </button>
@@ -579,14 +597,6 @@ export const TaxManagement: React.FC = () => {
             onClick={() => alert('Relatório de IRPS exportado em Excel!')}
             className="flex items-center justify-center gap-3 p-4 border-2 border-green-200 rounded-lg hover:bg-green-50 transition-colors"
           >
-  quantity?: number;
-  unitPrice?: number;
-  subtotal?: number;
-  ivaRate?: number;
-  ivaAmount?: number;
-  totalWithIva?: number;
-  paymentCycle?: 1 | 3 | 6 | 12;
-  customRenewalDate?: string;
             <BarChart3 className="text-green-600" size={24} />
             <div className="text-left">
               <p className="font-medium text-green-900">Relatório de IRPS</p>
