@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BarChart3, TrendingUp, Download, Calendar, DollarSign, Users, Activity, Star, Filter, FileText, Mail, MessageSquare, Eye, RefreshCw, Clock, Play, Pause, Trash2, PieChart, Target, Phone } from 'lucide-react';
+import { BarChart3, TrendingUp, Download, Calendar, DollarSign, Users, Activity, Star, Filter, FileText, Mail, MessageSquare, Eye, RefreshCw, Clock, Play, Pause, Trash2, PieChart, Target } from 'lucide-react';
 import { PDFGenerator, ReportData } from '../../utils/pdfGenerator';
 import { Pagination } from '../common/Pagination';
 
@@ -547,7 +547,7 @@ export const ReportsAnalytics: React.FC = () => {
       {/* Communication Analytics */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Analytics de Comunicação</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="text-center p-6 bg-blue-50 rounded-lg border border-blue-200">
             <Mail className="text-blue-600 mx-auto mb-3" size={32} />
             <p className="text-3xl font-bold text-blue-900 mb-2">2,847</p>
@@ -564,7 +564,7 @@ export const ReportsAnalytics: React.FC = () => {
           
           <div className="text-center p-6 bg-green-50 rounded-lg border border-green-200">
             <MessageSquare className="text-green-600 mx-auto mb-3" size={32} />
-            <p className="text-3xl font-bold text-green-900 mb-2">567</p>
+            <p className="text-3xl font-bold text-green-900 mb-2">1,234</p>
             <p className="text-sm text-green-700 font-medium mb-2">WhatsApp Enviados</p>
             <div className="space-y-1 text-xs text-green-600">
               <p>Taxa de entrega: 98%</p>
@@ -573,20 +573,6 @@ export const ReportsAnalytics: React.FC = () => {
             </div>
             <div className="mt-4 w-full bg-green-200 rounded-full h-2">
               <div className="bg-green-600 h-2 rounded-full" style={{ width: '89%' }}></div>
-            </div>
-          </div>
-          
-          <div className="text-center p-6 bg-purple-50 rounded-lg border border-purple-200">
-            <Phone className="text-purple-600 mx-auto mb-3" size={32} />
-            <p className="text-3xl font-bold text-purple-900 mb-2">234</p>
-            <p className="text-sm text-purple-700 font-medium mb-2">SMS Enviados</p>
-            <div className="space-y-1 text-xs text-purple-600">
-              <p>Taxa de entrega: 95%</p>
-              <p>Taxa de leitura: 78%</p>
-              <p>Respostas: 8%</p>
-            </div>
-            <div className="mt-4 w-full bg-purple-200 rounded-full h-2">
-              <div className="bg-purple-600 h-2 rounded-full" style={{ width: '78%' }}></div>
             </div>
           </div>
         </div>
@@ -646,8 +632,8 @@ export const ReportsAnalytics: React.FC = () => {
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">50+ anos</span>
                 <div className="flex items-center gap-2">
-                  <Phone size={12} className="text-purple-600" />
-                  <span className="text-sm font-medium text-gray-900">SMS (82%)</span>
+                  <Mail size={12} className="text-blue-600" />
+                  <span className="text-sm font-medium text-gray-900">Email (82%)</span>
                 </div>
               </div>
             </div>
