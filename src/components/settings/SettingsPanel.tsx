@@ -76,8 +76,7 @@ const plans = [
       'Suporte prioritário',
       'Relatórios detalhados',
       'Fluxos personalizados',
-      'Portal do cliente',
-      'API básica'
+      'Portal do cliente'
     ],
     icon: BarChart3,
     color: 'from-green-500 to-green-600',

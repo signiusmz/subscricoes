@@ -78,8 +78,7 @@ const plans: Plan[] = [
       'Notificações multi-canal',
       'Utilizadores ilimitados',
       'Suporte 24/7',
-      'Relatórios avançados',
-      'API personalizada',
+      'Portal do cliente'
       'Integração M-Pesa',
       'Gestor dedicado'
     ],
