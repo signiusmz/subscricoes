@@ -568,6 +568,7 @@ export const TaxManagement: React.FC = () => {
         
         <div className="grid md:grid-cols-3 gap-4">
           <button
+export const ServicesTable: React.FC = () => {
             onClick={() => alert('Relatório de IVA exportado em PDF!')}
             className="flex items-center justify-center gap-3 p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
           >
