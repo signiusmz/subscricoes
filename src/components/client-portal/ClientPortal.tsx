@@ -213,15 +213,6 @@ export const ClientPortal: React.FC = () => {
             <p className="font-medium text-gray-900">Pagamentos</p>
             <p className="text-sm text-gray-600">Efetuar pagamentos</p>
           </button>
-          
-          <button 
-            onClick={() => setShowNPSModal(true)}
-            className="p-4 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-colors text-left"
-          >
-            <Star className="text-orange-600 mb-2" size={24} />
-            <p className="font-medium text-gray-900">Avaliar Serviço</p>
-            <p className="text-sm text-gray-600">Dar feedback</p>
-          </button>
         </div>
       </div>
     </div>
