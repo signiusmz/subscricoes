@@ -24,6 +24,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { MPesaPayment } from '../billing/MPesaPayment';
+import { Pagination } from '../common/Pagination';
 
 interface Company {
   id: string;
@@ -158,11 +159,29 @@ export const SuperAdminDashboard: React.FC = () => {
     securityCredential: '',
     environment: 'sandbox'
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [transactionsCurrentPage, setTransactionsCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const filteredCompanies = companies.filter(company =>
     company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     company.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Pagination for companies
+  const companiesTotalPages = Math.ceil(filteredCompanies.length / itemsPerPage);
+  const companiesStartIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedCompanies = filteredCompanies.slice(companiesStartIndex, companiesStartIndex + itemsPerPage);
+
+  // Pagination for transactions
+  const transactionsTotalPages = Math.ceil(transactions.length / itemsPerPage);
+  const transactionsStartIndex = (transactionsCurrentPage - 1) * itemsPerPage;
+  const paginatedTransactions = transactions.slice(transactionsStartIndex, transactionsStartIndex + itemsPerPage);
+
+  // Reset to first page when search changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -396,7 +415,7 @@ export const SuperAdminDashboard: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredCompanies.map((company) => (
+              {paginatedCompanies.map((company) => (
                 <tr key={company.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div>
@@ -432,6 +451,13 @@ export const SuperAdminDashboard: React.FC = () => {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={companiesTotalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filteredCompanies.length}
+          itemsPerPage={itemsPerPage}
+        />
       </div>
     </div>
   );
@@ -560,7 +586,7 @@ export const SuperAdminDashboard: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {transactions.map((transaction) => (
+              {paginatedTransactions.map((transaction) => (
                 <tr key={transaction.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 text-sm font-medium text-gray-900">{transaction.companyName}</td>
                   <td className="px-4 py-3 text-sm text-gray-900">{transaction.amount.toLocaleString()} MT</td>
@@ -583,6 +609,13 @@ export const SuperAdminDashboard: React.FC = () => {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={transactionsCurrentPage}
+          totalPages={transactionsTotalPages}
+          onPageChange={setTransactionsCurrentPage}
+          totalItems={transactions.length}
+          itemsPerPage={itemsPerPage}
+        />
       </div>
 
       {/* Documentation */}

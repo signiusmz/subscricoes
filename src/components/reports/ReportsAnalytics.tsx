@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BarChart3, TrendingUp, Download, Calendar, DollarSign, Users, Activity, Star, Filter, FileText, Mail, MessageSquare, Eye, RefreshCw, Clock, Play, Pause, Trash2 } from 'lucide-react';
 import { PDFGenerator, ReportData } from '../../utils/pdfGenerator';
+import { Pagination } from '../common/Pagination';
 
 interface ReportData {
   period: string;
@@ -36,6 +37,9 @@ export const ReportsAnalytics: React.FC = () => {
   const [showExportModal, setShowExportModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [scheduledReports, setScheduledReports] = useState<ScheduledReport[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [scheduledCurrentPage, setScheduledCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   interface ScheduledReport {
     id: string;
@@ -47,6 +51,16 @@ export const ReportsAnalytics: React.FC = () => {
     isActive: boolean;
     createdAt: string;
   }
+
+  // Pagination for report data
+  const reportDataTotalPages = Math.ceil(mockReportData.length / itemsPerPage);
+  const reportDataStartIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedReportData = mockReportData.slice(reportDataStartIndex, reportDataStartIndex + itemsPerPage);
+
+  // Pagination for scheduled reports
+  const scheduledTotalPages = Math.ceil(scheduledReports.length / itemsPerPage);
+  const scheduledStartIndex = (scheduledCurrentPage - 1) * itemsPerPage;
+  const paginatedScheduledReports = scheduledReports.slice(scheduledStartIndex, scheduledStartIndex + itemsPerPage);
 
   const currentData = mockReportData[mockReportData.length - 1];
   const previousData = mockReportData[mockReportData.length - 2];
@@ -488,7 +502,7 @@ export const ReportsAnalytics: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {mockReportData.map((data, index) => {
+              {paginatedReportData.map((data, index) => {
                 const previousPeriod = index > 0 ? mockReportData[index - 1] : null;
                 const growth = previousPeriod ? calculateGrowth(data.revenue, previousPeriod.revenue) : '0';
                 const isPositive = parseFloat(growth) >= 0;
@@ -514,6 +528,13 @@ export const ReportsAnalytics: React.FC = () => {
             </tbody>
           </table>
         </div>
+       <Pagination
+         currentPage={currentPage}
+         totalPages={reportDataTotalPages}
+         onPageChange={setCurrentPage}
+         totalItems={mockReportData.length}
+         itemsPerPage={itemsPerPage}
+       />
       </div>
 
       {/* Export Modal */}
@@ -705,7 +726,7 @@ export const ReportsAnalytics: React.FC = () => {
           </h3>
           
           <div className="space-y-3">
-            {scheduledReports.map((schedule) => (
+            {paginatedScheduledReports.map((schedule) => (
               <div key={schedule.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                 <div>
                   <p className="font-medium text-gray-900">{schedule.name}</p>
@@ -756,6 +777,18 @@ export const ReportsAnalytics: React.FC = () => {
               </div>
             ))}
           </div>
+         
+         {scheduledReports.length > itemsPerPage && (
+           <div className="mt-4">
+             <Pagination
+               currentPage={scheduledCurrentPage}
+               totalPages={scheduledTotalPages}
+               onPageChange={setScheduledCurrentPage}
+               totalItems={scheduledReports.length}
+               itemsPerPage={itemsPerPage}
+             />
+           </div>
+         )}
         </div>
       )}
     </div>
