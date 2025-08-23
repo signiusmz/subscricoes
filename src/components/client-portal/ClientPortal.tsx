@@ -38,6 +38,7 @@ interface ClientPortalContract {
   createdAt: string;
   signedAt?: string;
   signatureHash?: string;
+  signerName?: string;
 }
 
 interface ClientPortalInvoice {
@@ -159,9 +160,16 @@ export const ClientPortal: React.FC = () => {
   };
 
   const handleSignContract = (contractId: string) => {
-    if (confirm('Tem certeza que deseja assinar este contrato digitalmente?')) {
+    const signerName = prompt('Para assinar digitalmente, digite seu nome completo:');
+    
+    if (!signerName || signerName.trim().length < 3) {
+      alert('❌ Nome inválido!\n\nPor favor, digite seu nome completo para prosseguir com a assinatura digital.');
+      return;
+    }
+    
+    if (confirm(`Confirma a assinatura digital do contrato?\n\n👤 Assinante: ${signerName.trim()}\n📄 Contrato: ${mockClientContracts.find(c => c.id === contractId)?.title}\n\n⚠️ Esta ação não pode ser desfeita.`)) {
       const signatureHash = `SIG_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-      alert(`✅ Contrato assinado digitalmente!\n\n🔐 Hash de Segurança: ${signatureHash}\n📅 Data: ${new Date().toLocaleString('pt-PT')}\n✅ Status: Assinado\n\n📧 Uma cópia foi enviada para o seu email.`);
+      alert(`✅ Contrato assinado digitalmente com sucesso!\n\n👤 Assinante: ${signerName.trim()}\n🔐 Hash de Segurança: ${signatureHash}\n📅 Data: ${new Date().toLocaleString('pt-PT')}\n✅ Status: Assinado\n\n📧 Uma cópia foi enviada para o seu email.`);
     }
   };
 
@@ -344,6 +352,11 @@ export const ClientPortal: React.FC = () => {
                 {contract.signedAt && (
                   <p className="text-sm text-gray-500 mt-2">
                     Assinado em {formatDate(contract.signedAt)}
+                    {contract.signerName && (
+                      <span className="block text-xs text-gray-400 mt-1">
+                        Por: {contract.signerName}
+                      </span>
+                    )}
                   </p>
                 )}
               </div>

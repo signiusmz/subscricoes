@@ -43,6 +43,7 @@ interface Contract {
   createdAt: string;
   signedAt?: string;
   signatureHash?: string;
+  signerName?: string;
   templateId?: string;
   salespersonId?: string;
   salespersonName?: string;
@@ -591,20 +592,28 @@ export const DigitalContracts: React.FC = () => {
   };
 
   const handleSignContract = (contractId: string) => {
-    const signatureHash = `SIG_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-    setContracts(contracts.map(c => 
-      c.id === contractId 
-        ? { 
-            ...c, 
-            status: 'signed',
-            signedAt: new Date().toISOString(),
-            signatureHash: signatureHash
-          }
-        : c
-    ));
-    alert(`✅ Contrato assinado digitalmente!\n\n🔐 Hash de Segurança: ${signatureHash}\n📅 Data: ${new Date().toLocaleString('pt-PT')}\n✅ Status: Assinado`);
-  };
-
+    const signerName = prompt('Para assinar digitalmente, digite seu nome completo:');
+    
+    if (!signerName || signerName.trim().length < 3) {
+      alert('❌ Nome inválido!\n\nPor favor, digite seu nome completo para prosseguir com a assinatura digital.');
+      return;
+    }
+    
+    if (confirm(`Confirma a assinatura digital do contrato?\n\n👤 Assinante: ${signerName.trim()}\n📄 Contrato: ${contracts.find(c => c.id === contractId)?.title}\n\n⚠️ Esta ação não pode ser desfeita.`)) {
+      const signatureHash = `SIG_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      setContracts(contracts.map(c => 
+        c.id === contractId 
+          ? { 
+              ...c, 
+              status: 'signed',
+              signedAt: new Date().toISOString(),
+              signatureHash: signatureHash,
+              signerName: signerName.trim()
+            }
+          : c
+      ));
+      alert(`✅ Contrato assinado digitalmente com sucesso!\n\n👤 Assinante: ${signerName.trim()}\n🔐 Hash de Segurança: ${signatureHash}\n📅 Data: ${new Date().toLocaleString('pt-PT')}\n✅ Status: Assinado\n\n📧 Uma cópia foi enviada para o seu email.`);
+    }
   const handleSaveContract = (contractData: any) => {
     if (editingContract) {
       setContracts(contracts.map(c => 
@@ -1291,6 +1300,11 @@ export const DigitalContracts: React.FC = () => {
                               <span className="text-xs text-gray-600 flex-1">{variable.description}</span>
                             </div>
                           ))}
+                          {contract.signerName && (
+                            <div className="text-xs text-gray-400 mt-1">
+                              Por: {contract.signerName}
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
