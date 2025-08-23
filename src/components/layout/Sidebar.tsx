@@ -24,15 +24,15 @@ interface SidebarProps {
   onTabChange: (tab: string) => void;
 }
 
-const menuItems = [
+const getMenuItems = (userRole: string) => [
   { id: 'dashboard', label: 'Dashboard', icon: Home },
   { id: 'clients', label: 'Clientes', icon: Users },
   { id: 'services', label: 'Serviços', icon: FileText },
   { id: 'subscriptions', label: 'Subscrições', icon: CreditCard },
   { id: 'billing', label: 'Facturação', icon: Receipt },
-  { id: 'sender', label: 'Envios', icon: Send },
+  ...(userRole !== 'manager' ? [{ id: 'sender', label: 'Envios', icon: Send }] : []),
   { id: 'reports', label: 'Relatórios', icon: BarChart3 },
-  { id: 'settings', label: 'Configurações', icon: Settings },
+  ...(userRole !== 'manager' ? [{ id: 'settings', label: 'Configurações', icon: Settings }] : []),
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
@@ -83,7 +83,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1">
-        {menuItems.map((item) => {
+        {getMenuItems(user?.role || '').map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
           

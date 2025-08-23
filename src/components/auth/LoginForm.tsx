@@ -39,15 +39,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
       color: 'bg-green-50 border-green-200 hover:bg-green-100',
       textColor: 'text-green-800',
       isSuperAdmin: false
-    },
-    {
-      title: 'Utilizador/Vendedor',
-      description: 'Acesso limitado - Gestão de clientes',
-      email: 'user@techsolutions.mz',
-      password: 'user123',
-      color: 'bg-orange-50 border-orange-200 hover:bg-orange-100',
-      textColor: 'text-orange-800',
-      isSuperAdmin: false
     }
   ];
 
