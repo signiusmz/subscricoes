@@ -19,7 +19,8 @@ import {
   FileText,
   Calendar,
   Star,
-  Award
+  Award,
+  Upload
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -115,6 +116,8 @@ const plans = [
 export const SettingsPanel: React.FC = () => {
   const { user, company, updateUser } = useAuth();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showCompanyEdit, setShowCompanyEdit] = useState(false);
+  const [companyLogo, setCompanyLogo] = useState<string | null>(null);
   
   const [companySettings, setCompanySettings] = useState<CompanySettings>({
     name: company?.name || '',
@@ -165,7 +168,29 @@ export const SettingsPanel: React.FC = () => {
     };
     
     setCompanySettings(updatedSettings);
+    setShowCompanyEdit(false);
     alert('Configurações da empresa atualizadas com sucesso!');
+  };
+
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        alert('A imagem deve ter no máximo 5MB');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setCompanyLogo(result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeLogo = () => {
+    setCompanyLogo(null);
   };
 
   const handleUpgradeSuccess = (planId: string, transactionId: string) => {
@@ -466,130 +491,262 @@ export const SettingsPanel: React.FC = () => {
 
       {/* Company Information */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-            <Building className="text-blue-600" size={24} />
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Building className="text-blue-600" size={24} />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Informações da Empresa</h3>
+              <p className="text-gray-600">Dados principais da sua organização</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">Informações da Empresa</h3>
-            <p className="text-gray-600">Dados principais da sua organização</p>
-          </div>
+          <button
+            onClick={() => setShowCompanyEdit(!showCompanyEdit)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+          >
+            <Settings size={16} />
+            {showCompanyEdit ? 'Cancelar' : 'Editar'}
+          </button>
         </div>
-        
-        <form onSubmit={handleSaveCompany} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                <Building size={16} className="text-gray-400" />
-                Nome da Empresa
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={companySettings.name}
-                onChange={(e) => setCompanySettings({...companySettings, name: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
+
+        {!showCompanyEdit ? (
+          /* Company Info Display */
+          <div className="space-y-6">
+            {/* Logo Section */}
+            <div className="flex items-center gap-6 p-6 bg-gray-50 rounded-lg">
+              <div className="w-24 h-24 bg-white rounded-lg border-2 border-gray-200 flex items-center justify-center overflow-hidden">
+                {companyLogo ? (
+                  <img 
+                    src={companyLogo} 
+                    alt="Logo da Empresa" 
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <Building className="text-gray-400" size={32} />
+                )}
+              </div>
+              <div>
+                <h4 className="text-xl font-bold text-gray-900">{companySettings.name}</h4>
+                <p className="text-gray-600">{companySettings.email}</p>
+                <p className="text-sm text-gray-500">NUIT: {companySettings.nuit}</p>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                <Mail size={16} className="text-gray-400" />
-                Email da Empresa
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={companySettings.email}
-                onChange={(e) => setCompanySettings({...companySettings, email: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
+
+            {/* Company Details Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                  <Phone className="text-gray-400" size={20} />
+                  <div>
+                    <p className="text-sm text-gray-600">Telefone</p>
+                    <p className="font-medium text-gray-900">{companySettings.phone}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                  <Globe className="text-gray-400" size={20} />
+                  <div>
+                    <p className="text-sm text-gray-600">Website</p>
+                    <p className="font-medium text-gray-900">{companySettings.website || 'Não definido'}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                  <MapPin className="text-gray-400" size={20} />
+                  <div>
+                    <p className="text-sm text-gray-600">Endereço</p>
+                    <p className="font-medium text-gray-900">{companySettings.address}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                  <Calendar className="text-gray-400" size={20} />
+                  <div>
+                    <p className="text-sm text-gray-600">Fuso Horário</p>
+                    <p className="font-medium text-gray-900">
+                      {companySettings.timezone === 'Africa/Maputo' ? 'África/Maputo (CAT)' : 
+                       companySettings.timezone === 'UTC' ? 'UTC' : 'Europa/Lisboa'}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                <Phone size={16} className="text-gray-400" />
-                Telefone
-              </label>
-              <input
-                type="text"
-                name="phone"
-                value={companySettings.phone}
-                onChange={(e) => setCompanySettings({...companySettings, phone: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
+          </div>
+        ) : (
+          /* Company Edit Form */
+          <form onSubmit={handleSaveCompany} className="space-y-6">
+            {/* Logo Upload Section */}
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Building size={18} className="text-blue-600" />
+                Logotipo da Empresa
+              </h4>
+              <div className="flex items-center gap-6">
+                <div className="w-32 h-32 bg-white rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
+                  {companyLogo ? (
+                    <img 
+                      src={companyLogo} 
+                      alt="Logo Preview" 
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <div className="text-center">
+                      <Building className="text-gray-400 mx-auto mb-2" size={32} />
+                      <p className="text-xs text-gray-500">Logo da Empresa</p>
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-3">
+                  <div className="flex gap-3">
+                    <label className="bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors flex items-center gap-2">
+                      <Upload size={16} />
+                      Carregar Logo
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        className="hidden"
+                      />
+                    </label>
+                    {companyLogo && (
+                      <button
+                        type="button"
+                        onClick={removeLogo}
+                        className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                      >
+                        Remover
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Formatos aceites: JPG, PNG, GIF (máx. 5MB)<br />
+                    Recomendado: 200x200px ou proporção quadrada
+                  </p>
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                <FileText size={16} className="text-gray-400" />
-                NUIT
-              </label>
-              <input
-                type="text"
-                name="nuit"
-                value={companySettings.nuit}
-                onChange={(e) => setCompanySettings({...companySettings, nuit: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <Building size={16} className="text-gray-400" />
+                  Nome da Empresa
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={companySettings.name}
+                  onChange={(e) => setCompanySettings({...companySettings, name: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <Mail size={16} className="text-gray-400" />
+                  Email da Empresa
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={companySettings.email}
+                  onChange={(e) => setCompanySettings({...companySettings, email: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <Phone size={16} className="text-gray-400" />
+                  Telefone
+                </label>
+                <input
+                  type="text"
+                  name="phone"
+                  value={companySettings.phone}
+                  onChange={(e) => setCompanySettings({...companySettings, phone: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <FileText size={16} className="text-gray-400" />
+                  NUIT
+                </label>
+                <input
+                  type="text"
+                  name="nuit"
+                  value={companySettings.nuit}
+                  onChange={(e) => setCompanySettings({...companySettings, nuit: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <MapPin size={16} className="text-gray-400" />
+                  Endereço
+                </label>
+                <input
+                  type="text"
+                  name="address"
+                  value={companySettings.address}
+                  onChange={(e) => setCompanySettings({...companySettings, address: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <Globe size={16} className="text-gray-400" />
+                  Website
+                </label>
+                <input
+                  type="url"
+                  name="website"
+                  value={companySettings.website}
+                  onChange={(e) => setCompanySettings({...companySettings, website: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="https://suaempresa.mz"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <Calendar size={16} className="text-gray-400" />
+                  Fuso Horário
+                </label>
+                <select
+                  name="timezone"
+                  value={companySettings.timezone}
+                  onChange={(e) => setCompanySettings({...companySettings, timezone: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="Africa/Maputo">África/Maputo (CAT)</option>
+                  <option value="UTC">UTC</option>
+                  <option value="Europe/Lisbon">Europa/Lisboa</option>
+                </select>
+              </div>
             </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                <MapPin size={16} className="text-gray-400" />
-                Endereço
-              </label>
-              <input
-                type="text"
-                name="address"
-                value={companySettings.address}
-                onChange={(e) => setCompanySettings({...companySettings, address: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                <Globe size={16} className="text-gray-400" />
-                Website
-              </label>
-              <input
-                type="url"
-                name="website"
-                value={companySettings.website}
-                onChange={(e) => setCompanySettings({...companySettings, website: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="https://suaempresa.mz"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                <Calendar size={16} className="text-gray-400" />
-                Fuso Horário
-              </label>
-              <select
-                name="timezone"
-                value={companySettings.timezone}
-                onChange={(e) => setCompanySettings({...companySettings, timezone: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => setShowCompanyEdit(false)}
+                className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium"
               >
-                <option value="Africa/Maputo">África/Maputo (CAT)</option>
-                <option value="UTC">UTC</option>
-                <option value="Europe/Lisbon">Europa/Lisboa</option>
-              </select>
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-semibold"
+              >
+                <Save size={16} />
+                Salvar Alterações
+              </button>
             </div>
-          </div>
-          
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-semibold"
-            >
-              <Save size={16} />
-              Salvar Alterações
-            </button>
-          </div>
-        </form>
+          </form>
+        )}
       </div>
 
       {/* Plan History */}
