@@ -16,7 +16,7 @@ export const TrialBanner: React.FC<TrialBannerProps> = ({ onUpgrade, onDismiss }
 
   const trialEndDate = new Date(company.trialEndDate);
   const now = new Date();
-  const daysLeft = Math.ceil((trialEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  const daysLeft = Math.max(0, Math.ceil((trialEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
   
   // Don't show if trial has expired
   if (daysLeft <= 0) {

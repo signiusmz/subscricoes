@@ -35,7 +35,7 @@ const Dashboard = () => {
   const [showClientPortal, setShowClientPortal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showTrialBanner, setShowTrialBanner] = useState(true);
-  const { company, updateUser } = useAuth();
+  const { company, user, updateUser } = useAuth();
 
   // Demo: Toggle to client portal
   if (showClientPortal) {
@@ -43,11 +43,26 @@ const Dashboard = () => {
   }
 
   const handleUpgradeSuccess = (planId: string, transactionId: string) => {
-    // Update company plan
-    console.log(`Upgraded to ${planId} with transaction ${transactionId}`);
-    alert(`Plano atualizado para ${planId} com sucesso! ID da transação: ${transactionId}`);
+    // Update company plan in context
+    if (company) {
+      const updatedCompany = {
+        ...company,
+        plan: planId as 'basic' | 'professional' | 'enterprise',
+        planPrice: planId === 'basic' ? 750 : planId === 'professional' ? 1500 : 3500,
+        isTrialActive: false,
+        trialEndDate: undefined
+      };
+      
+      // Update localStorage
+      localStorage.setItem('company', JSON.stringify(updatedCompany));
+      
+      // Force page reload to update context
+      window.location.reload();
+    }
+    
     setShowUpgradeModal(false);
     setShowTrialBanner(false);
+    alert(`Plano atualizado para ${planId} com sucesso! ID da transação: ${transactionId}`);
   };
 
   const renderContent = () => {

@@ -108,7 +108,6 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   const handlePaymentSuccess = (transactionId: string) => {
     if (selectedPlan) {
       onUpgradeSuccess(selectedPlan, transactionId);
-      onClose();
     }
   };
 

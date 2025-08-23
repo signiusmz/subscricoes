@@ -48,6 +48,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
+  const updateCompany = (companyData: Partial<Company>) => {
+    if (company) {
+      const updatedCompany = { ...company, ...companyData };
+      setCompany(updatedCompany);
+      localStorage.setItem('company', JSON.stringify(updatedCompany));
+    }
+  };
+
   const updateUser = (userData: Partial<User>) => {
     if (user) {
       const updatedUser = { ...user, ...userData };
@@ -81,7 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         planPrice: 1500,
         createdAt: new Date().toISOString(),
         isActive: true,
-        trialEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
+        trialEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
         isTrialActive: true
       };
 
@@ -174,6 +182,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       login,
       loginSuperAdmin,
       register,
+      updateCompany,
       updateUser,
       logout,
       isLoading,
