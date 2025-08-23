@@ -61,7 +61,11 @@ export interface Subscription {
   clientId: string;
   serviceId: string;
   status: 'active' | 'cancelled' | 'expired';
+  startDate?: string;
   nextBilling: string;
+  cycle?: number; // 1, 3, 6, 12 months
+  customPrice?: number; // Override service price if needed
+  autoRenew?: boolean;
   reminderSent: boolean;
   npsScore?: number;
   npsComment?: string;

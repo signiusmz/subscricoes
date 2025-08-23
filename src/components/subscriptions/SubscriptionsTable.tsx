@@ -273,7 +273,8 @@ export const SubscriptionsTable: React.FC = () => {
   const handleProcessRenewal = (months: number) => {
     if (!selectedSubscription) return;
     
-    const newBillingDate = new Date();
+    const currentEndDate = new Date(selectedSubscription.nextBilling);
+    const newBillingDate = new Date(currentEndDate);
     newBillingDate.setMonth(newBillingDate.getMonth() + months);
     
     setSubscriptions(subscriptions.map(s => 
@@ -282,7 +283,8 @@ export const SubscriptionsTable: React.FC = () => {
             ...s, 
             nextBilling: newBillingDate.toISOString().split('T')[0],
             status: 'active',
-            reminderSent: false
+            reminderSent: false,
+            cycle: months
           }
         : s
     ));
@@ -353,7 +355,7 @@ export const SubscriptionsTable: React.FC = () => {
         clientId: subscriptionData.clientId || '',
         serviceId: subscriptionData.serviceId || '',
         status: 'active',
-        nextBilling: subscriptionData.nextBilling || '',
+        nextBilling: subscriptionData.nextBilling || new Date().toISOString().split('T')[0],
         reminderSent: false
       };
       setSubscriptions([...subscriptions, newSubscription]);
@@ -597,6 +599,11 @@ export const SubscriptionsTable: React.FC = () => {
                     <div>
                       <div className="text-sm font-medium text-gray-900">{subscription.serviceName}</div>
                       <div className="text-sm text-gray-500">Validade: {subscription.serviceValidity} mês{subscription.serviceValidity > 1 ? 'es' : ''}</div>
+                    <div className="text-sm text-gray-500">
+                      Ciclo: {subscription.cycle || subscription.serviceValidity} mês{(subscription.cycle || subscription.serviceValidity) > 1 ? 'es' : ''}
+                      {subscription.autoRenew && (
+                        <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">Auto</span>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -607,7 +614,10 @@ export const SubscriptionsTable: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
-                      {subscription.servicePrice.toLocaleString()} MT
+                      {(subscription.customPrice || subscription.servicePrice).toLocaleString()} MT
+                      {subscription.customPrice && subscription.customPrice !== subscription.servicePrice && (
+                        <div className="text-xs text-orange-600">Valor personalizado</div>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -670,7 +680,7 @@ export const SubscriptionsTable: React.FC = () => {
       {/* Add/Edit Subscription Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4">
+          <div className="bg-white rounded-xl p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               {editingSubscription ? 'Editar Subscrição' : 'Nova Subscrição'}
             </h3>
@@ -678,81 +688,264 @@ export const SubscriptionsTable: React.FC = () => {
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
+              
+              // Calculate contract end date based on cycle
+              const startDate = new Date(formData.get('startDate') as string);
+              const cycle = parseInt(formData.get('cycle') as string);
+              const endDate = new Date(startDate);
+              endDate.setMonth(endDate.getMonth() + cycle);
+              
               const subscriptionData = {
                 clientId: formData.get('clientId') as string,
                 serviceId: formData.get('serviceId') as string,
-                nextBilling: formData.get('nextBilling') as string,
+                startDate: formData.get('startDate') as string,
+                nextBilling: endDate.toISOString().split('T')[0],
+                cycle: cycle,
+                customPrice: parseFloat(formData.get('customPrice') as string) || undefined,
+                autoRenew: formData.get('autoRenew') === 'on'
               };
               handleSaveSubscription(subscriptionData);
-            }} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Cliente
-                  </label>
-                  <select
-                    name="clientId"
-                    defaultValue={editingSubscription?.clientId || ''}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  >
-                    <option value="">Selecionar cliente</option>
-                    {mockClients.filter(c => c.isActive).map((client) => (
-                      <option key={client.id} value={client.id}>{client.companyName}</option>
-                    ))}
-                  </select>
+            }} className="space-y-6">
+              
+              {/* Client and Service Selection */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Users size={18} className="text-blue-600" />
+                  Cliente e Serviço
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Cliente *
+                    </label>
+                    <select
+                      name="clientId"
+                      defaultValue={editingSubscription?.clientId || ''}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    >
+                      <option value="">Selecionar cliente</option>
+                      {mockClients.filter(c => c.isActive).map((client) => (
+                        <option key={client.id} value={client.id}>{client.companyName}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Serviço *
+                    </label>
+                    <select
+                      name="serviceId"
+                      defaultValue={editingSubscription?.serviceId || ''}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                      onChange={(e) => {
+                        const selectedService = mockServices.find(s => s.id === e.target.value);
+                        const priceInput = document.querySelector('input[name="customPrice"]') as HTMLInputElement;
+                        if (selectedService && priceInput) {
+                          priceInput.value = selectedService.price.toString();
+                        }
+                      }}
+                    >
+                      <option value="">Selecionar serviço</option>
+                      {mockServices.filter(s => s.status === 'active').map((service) => (
+                        <option key={service.id} value={service.id}>
+                          {service.name} - {service.price.toLocaleString()} MT
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Serviço
-                  </label>
-                  <select
-                    name="serviceId"
-                    defaultValue={editingSubscription?.serviceId || ''}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  >
-                    <option value="">Selecionar serviço</option>
-                    {mockServices.filter(s => s.status === 'active').map((service) => (
-                      <option key={service.id} value={service.id}>
-                        {service.name} - {service.price.toLocaleString()} MT
-                      </option>
-                    ))}
-                  </select>
+              </div>
+
+              {/* Contract Details */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Calendar size={18} className="text-green-600" />
+                  Detalhes do Contrato
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Data de Início *
+                    </label>
+                    <input
+                      type="date"
+                      name="startDate"
+                      defaultValue={editingSubscription?.startDate || new Date().toISOString().split('T')[0]}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                      onChange={(e) => {
+                        const startDate = new Date(e.target.value);
+                        const cycleSelect = document.querySelector('select[name="cycle"]') as HTMLSelectElement;
+                        const endDateInput = document.querySelector('input[name="endDate"]') as HTMLInputElement;
+                        
+                        if (cycleSelect && endDateInput) {
+                          const cycle = parseInt(cycleSelect.value);
+                          const endDate = new Date(startDate);
+                          endDate.setMonth(endDate.getMonth() + cycle);
+                          endDateInput.value = endDate.toISOString().split('T')[0];
+                        }
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Ciclo de Cobrança *
+                    </label>
+                    <select
+                      name="cycle"
+                      defaultValue={editingSubscription?.cycle || 1}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                      onChange={(e) => {
+                        const startDateInput = document.querySelector('input[name="startDate"]') as HTMLInputElement;
+                        const endDateInput = document.querySelector('input[name="endDate"]') as HTMLInputElement;
+                        
+                        if (startDateInput && endDateInput && startDateInput.value) {
+                          const startDate = new Date(startDateInput.value);
+                          const cycle = parseInt(e.target.value);
+                          const endDate = new Date(startDate);
+                          endDate.setMonth(endDate.getMonth() + cycle);
+                          endDateInput.value = endDate.toISOString().split('T')[0];
+                        }
+                      }}
+                    >
+                      <option value={1}>1 mês (Mensal)</option>
+                      <option value={3}>3 meses (Trimestral)</option>
+                      <option value={6}>6 meses (Semestral)</option>
+                      <option value={12}>12 meses (Anual)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Validade do Contrato *
+                    </label>
+                    <input
+                      type="date"
+                      name="endDate"
+                      readOnly
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
+                      title="Calculado automaticamente baseado no ciclo"
+                    />
+                  </div>
                 </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Próxima Data de Cobrança
-                  </label>
-                  <input
-                    type="date"
-                    name="nextBilling"
-                    defaultValue={editingSubscription?.nextBilling || ''}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
+              </div>
+
+              {/* Pricing and Options */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <DollarSign size={18} className="text-purple-600" />
+                  Preço e Opções
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Valor do Serviço (MT) *
+                    </label>
+                    <input
+                      type="number"
+                      name="customPrice"
+                      step="0.01"
+                      min="0"
+                      placeholder="Valor será preenchido automaticamente"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Valor padrão do serviço. Pode ser editado para casos especiais.
+                    </p>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="flex items-center gap-3 p-4 border border-gray-300 rounded-lg w-full">
+                      <input
+                        type="checkbox"
+                        name="autoRenew"
+                        id="autoRenew"
+                        defaultChecked={editingSubscription?.autoRenew || false}
+                        className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <div>
+                        <label htmlFor="autoRenew" className="block text-sm font-medium text-gray-900">
+                          Renovação Automática
+                        </label>
+                        <p className="text-xs text-gray-600">
+                          Renovar automaticamente no final do ciclo
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Summary */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <h4 className="text-md font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                  <CheckCircle size={18} className="text-blue-600" />
+                  Resumo da Subscrição
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-blue-700"><strong>Cliente:</strong> <span id="summary-client">Selecione um cliente</span></p>
+                    <p className="text-blue-700"><strong>Serviço:</strong> <span id="summary-service">Selecione um serviço</span></p>
+                  </div>
+                <div>
+                    <p className="text-blue-700"><strong>Ciclo:</strong> <span id="summary-cycle">Selecione o ciclo</span></p>
+                    <p className="text-blue-700"><strong>Valor:</strong> <span id="summary-price">0 MT</span></p>
+                  </div>
                 </div>
               </div>
               
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-3 pt-6 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => {
                     setShowAddModal(false);
                     setEditingSubscription(null);
                   }}
-                  className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 border border-gray-300 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
                   {editingSubscription ? 'Atualizar' : 'Adicionar'}
                 </button>
               </div>
             </form>
+            
+            {/* JavaScript for dynamic updates */}
+            <script dangerouslySetInnerHTML={{
+              __html: `
+                // Update summary when form changes
+                document.addEventListener('change', function(e) {
+                  if (e.target.name === 'clientId') {
+                    const clientSelect = e.target;
+                    const clientName = clientSelect.options[clientSelect.selectedIndex].text;
+                    document.getElementById('summary-client').textContent = clientName !== 'Selecionar cliente' ? clientName : 'Selecione um cliente';
+                  }
+                  
+                  if (e.target.name === 'serviceId') {
+                    const serviceSelect = e.target;
+                    const serviceName = serviceSelect.options[serviceSelect.selectedIndex].text;
+                    document.getElementById('summary-service').textContent = serviceName !== 'Selecionar serviço' ? serviceName.split(' - ')[0] : 'Selecione um serviço';
+                  }
+                  
+                  if (e.target.name === 'cycle') {
+                    const cycleSelect = e.target;
+                    const cycleName = cycleSelect.options[cycleSelect.selectedIndex].text;
+                    document.getElementById('summary-cycle').textContent = cycleName;
+                  }
+                  
+                  if (e.target.name === 'customPrice') {
+                    const price = parseFloat(e.target.value) || 0;
+                    document.getElementById('summary-price').textContent = price.toLocaleString() + ' MT';
+                  }
+                });
+              `
+            }} />
           </div>
         </div>
       )}
