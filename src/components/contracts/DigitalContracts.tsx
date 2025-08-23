@@ -413,6 +413,10 @@ export const DigitalContracts: React.FC = () => {
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<ContractTemplate | null>(null);
   const [templateContent, setTemplateContent] = useState('');
+  const [showClientSelectionModal, setShowClientSelectionModal] = useState(false);
+  const [selectedClientForContract, setSelectedClientForContract] = useState<any>(null);
+  const [clientSubscriptions, setClientSubscriptions] = useState<any[]>([]);
+  const [selectedSubscriptions, setSelectedSubscriptions] = useState<string[]>([]);
 
   const filteredContracts = contracts.filter(contract => {
     const client = mockClients.find(c => c.id === contract.clientId);
@@ -449,6 +453,21 @@ export const DigitalContracts: React.FC = () => {
   React.useEffect(() => {
     setTemplatesCurrentPage(1);
   }, [searchTerm]);
+
+  // Mock clients data
+  const mockClients = [
+    { id: '1', companyName: 'Cliente Exemplo 1', representative: 'Representante 1', email: 'cliente1@email.com' },
+    { id: '2', companyName: 'Cliente Exemplo 2', representative: 'Representante 2', email: 'cliente2@email.com' },
+    { id: '3', companyName: 'Cliente Exemplo 3', representative: 'Representante 3', email: 'cliente3@email.com' }
+  ];
+
+  // Mock subscriptions data
+  const mockSubscriptions = [
+    { id: '1', clientId: '1', serviceName: 'Serviço Básico', price: 1000, validity: 1, status: 'active' },
+    { id: '2', clientId: '1', serviceName: 'Serviço Premium', price: 5000, validity: 12, status: 'active' },
+    { id: '3', clientId: '2', serviceName: 'Consultoria Fiscal', price: 8000, validity: 6, status: 'active' },
+    { id: '4', clientId: '3', serviceName: 'Declaração de IVA', price: 2000, validity: 1, status: 'active' }
+  ];
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-PT');
@@ -695,11 +714,11 @@ export const DigitalContracts: React.FC = () => {
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-gray-900">Gestão de Contratos</h3>
         <button 
-          onClick={handleAddContract}
+          onClick={() => setShowClientSelectionModal(true)}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
         >
           <Plus size={20} />
-          Novo Contrato
+          Gerar Novo Contrato
         </button>
       </div>
 
