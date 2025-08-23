@@ -60,7 +60,7 @@ const mockTaxRates: TaxRate[] = [
   {
     id: '1',
     name: 'IVA Padrão',
-    rate: 17,
+    rate: 16,
     type: 'iva',
     description: 'Imposto sobre Valor Acrescentado - Taxa padrão',
     isActive: true,
@@ -76,26 +76,6 @@ const mockTaxRates: TaxRate[] = [
     isActive: true,
     validFrom: '2024-01-01',
     applicableServices: ['4']
-  },
-  {
-    id: '3',
-    name: 'IRPS',
-    rate: 10,
-    type: 'irps',
-    description: 'Imposto sobre Rendimento de Pessoas Singulares',
-    isActive: true,
-    validFrom: '2024-01-01',
-    applicableServices: []
-  },
-  {
-    id: '4',
-    name: 'Taxa de Serviço',
-    rate: 5,
-    type: 'custom',
-    description: 'Taxa adicional para serviços especializados',
-    isActive: false,
-    validFrom: '2024-01-01',
-    applicableServices: ['2']
   }
 ];
 
@@ -107,9 +87,9 @@ const mockTaxCalculations: TaxCalculation[] = [
     serviceName: 'Contabilidade Mensal',
     baseAmount: 5000,
     taxType: 'IVA Padrão',
-    taxRate: 17,
-    taxAmount: 850,
-    totalAmount: 5850,
+    taxRate: 16,
+    taxAmount: 800,
+    totalAmount: 5800,
     date: '2024-03-01',
     status: 'paid'
   },
@@ -120,9 +100,9 @@ const mockTaxCalculations: TaxCalculation[] = [
     serviceName: 'Auditoria Anual',
     baseAmount: 15000,
     taxType: 'IVA Padrão',
-    taxRate: 17,
-    taxAmount: 2550,
-    totalAmount: 17550,
+    taxRate: 16,
+    taxAmount: 2400,
+    totalAmount: 17400,
     date: '2024-03-15',
     status: 'applied'
   },
@@ -179,13 +159,9 @@ export const TaxManagement: React.FC = () => {
 
   const getTaxTypeBadge = (type: string) => {
     const typeConfig = {
-      iva: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'IVA' },
-      irps: { bg: 'bg-green-100', text: 'text-green-800', label: 'IRPS' },
-      irpc: { bg: 'bg-purple-100', text: 'text-purple-800', label: 'IRPC' },
-      sisa: { bg: 'bg-orange-100', text: 'text-orange-800', label: 'SISA' },
-      custom: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Personalizado' }
+      iva: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'IVA' }
     };
-    const config = typeConfig[type as keyof typeof typeConfig] || typeConfig.custom;
+    const config = typeConfig[type as keyof typeof typeConfig] || typeConfig.iva;
     return (
       <span className={`px-2 py-1 text-xs font-semibold rounded-full ${config.bg} ${config.text}`}>
         {config.label}
@@ -564,24 +540,24 @@ export const TaxManagement: React.FC = () => {
 
           <div className="bg-green-50 rounded-lg p-6 text-center">
             <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <DollarSign className="text-white" size={24} />
+              <BarChart3 className="text-white" size={24} />
             </div>
-            <h4 className="font-semibold text-green-900 mb-2">IRPS Retido</h4>
+            <h4 className="font-semibold text-green-900 mb-2">Total de Impostos</h4>
             <div className="text-2xl font-bold text-green-900">
-              {taxCalculations.filter(tc => tc.taxType.includes('IRPS')).reduce((sum, tc) => sum + tc.taxAmount, 0).toLocaleString()} MT
+              {taxCalculations.reduce((sum, tc) => sum + tc.taxAmount, 0).toLocaleString()} MT
             </div>
             <p className="text-sm text-green-700 mt-1">Este mês</p>
           </div>
 
           <div className="bg-purple-50 rounded-lg p-6 text-center">
             <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <BarChart3 className="text-white" size={24} />
+              <DollarSign className="text-white" size={24} />
             </div>
-            <h4 className="font-semibold text-purple-900 mb-2">Total de Impostos</h4>
+            <h4 className="font-semibold text-purple-900 mb-2">Média de IVA</h4>
             <div className="text-2xl font-bold text-purple-900">
-              {taxCalculations.reduce((sum, tc) => sum + tc.taxAmount, 0).toLocaleString()} MT
+              {(taxCalculations.reduce((sum, tc) => sum + tc.taxRate, 0) / taxCalculations.length).toFixed(1)}%
             </div>
-            <p className="text-sm text-purple-700 mt-1">Este mês</p>
+            <p className="text-sm text-purple-700 mt-1">Taxa média aplicada</p>
           </div>
         </div>
       </div>
@@ -592,12 +568,10 @@ export const TaxManagement: React.FC = () => {
         
         <div className="grid md:grid-cols-3 gap-4">
           <button
-            onClick={() => alert('Relatório de IVA exportado em PDF!')}
-            className="flex items-center justify-center gap-3 p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
-          >
-            <FileText className="text-blue-600" size={24} />
-            <div className="text-left">
-              <p className="font-medium text-blue-900">Relatório de IVA</p>
+ type: 'iva';
+       type: rateData.type || 'iva',
+               type: formData.get('type') as 'iva',
+                   placeholder="Ex: 16"
               <p className="text-sm text-blue-700">Declaração mensal em PDF</p>
             </div>
           </button>
@@ -729,10 +703,6 @@ export const TaxManagement: React.FC = () => {
                     required
                   >
                     <option value="iva">IVA</option>
-                    <option value="irps">IRPS</option>
-                    <option value="irpc">IRPC</option>
-                    <option value="sisa">SISA</option>
-                    <option value="custom">Personalizado</option>
                   </select>
                 </div>
                 <div>
