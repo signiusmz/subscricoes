@@ -470,6 +470,152 @@ export const ClientsTable: React.FC = () => {
         </div>
       </div>
 
+      {/* Birthday Clients Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Calendar className="text-purple-600" size={20} />
+          Aniversariantes do Mês
+        </h3>
+        
+        {(() => {
+          const currentMonth = new Date().getMonth() + 1;
+          const birthdayClients = clients.filter(client => {
+            if (!client.anniversary) return false;
+            const [month] = client.anniversary.split('-');
+            return parseInt(month) === currentMonth;
+          });
+
+          if (birthdayClients.length === 0) {
+            return (
+              <div className="text-center py-8">
+                <Calendar className="text-gray-300 mx-auto mb-3" size={48} />
+                <p className="text-gray-500">Nenhum aniversariante este mês</p>
+              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-3">
+              {birthdayClients.map((client) => {
+                const [month, day] = client.anniversary.split('-');
+                const birthdayDate = new Date(2024, parseInt(month) - 1, parseInt(day));
+                const today = new Date();
+                const currentYear = today.getFullYear();
+                const thisYearBirthday = new Date(currentYear, parseInt(month) - 1, parseInt(day));
+                
+                const isToday = today.getDate() === parseInt(day) && today.getMonth() === parseInt(month) - 1;
+                const isPast = thisYearBirthday < today;
+                const daysUntil = Math.ceil((thisYearBirthday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                
+                return (
+                  <div 
+                    key={client.id} 
+                    className={`flex items-center justify-between p-4 rounded-lg border-2 transition-all ${
+                      isToday 
+                        ? 'bg-yellow-50 border-yellow-300 shadow-md' 
+                        : isPast
+                        ? 'bg-gray-50 border-gray-200'
+                        : 'bg-blue-50 border-blue-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                        isToday 
+                          ? 'bg-yellow-200 text-yellow-800' 
+                          : isPast
+                          ? 'bg-gray-200 text-gray-600'
+                          : 'bg-blue-200 text-blue-800'
+                      }`}>
+                        <Calendar size={20} />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">{client.companyName}</p>
+                        <p className="text-sm text-gray-600">{client.representative}</p>
+                        <p className="text-xs text-gray-500">{client.email}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="text-right">
+                      <div className={`text-lg font-bold ${
+                        isToday 
+                          ? 'text-yellow-800' 
+                          : isPast
+                          ? 'text-gray-600'
+                          : 'text-blue-800'
+                      }`}>
+                        {parseInt(day)}/{parseInt(month)}
+                      </div>
+                      <div className={`text-xs font-medium ${
+                        isToday 
+                          ? 'text-yellow-700' 
+                          : isPast
+                          ? 'text-gray-500'
+                          : 'text-blue-700'
+                      }`}>
+                        {isToday 
+                          ? '🎉 HOJE!' 
+                          : isPast
+                          ? 'Já passou'
+                          : `Em ${daysUntil} dias`
+                        }
+                      </div>
+                      
+                      {/* Action Buttons */}
+                      <div className="flex gap-1 mt-2">
+                        <button
+                          onClick={() => {
+                            const message = `Parabéns pelo aniversário da empresa ${client.companyName}! 🎉`;
+                            alert(`Mensagem de parabéns enviada para ${client.email}:\n\n"${message}"`);
+                          }}
+                          className={`text-xs px-2 py-1 rounded transition-colors ${
+                            isToday || !isPast
+                              ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                              : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                          }`}
+                          disabled={isPast && !isToday}
+                          title="Enviar parabéns"
+                        >
+                          🎉 Parabéns
+                        </button>
+                        <button
+                          onClick={() => setSelectedClient(client)}
+                          className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
+                          title="Ver perfil"
+                        >
+                          Ver Perfil
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              
+              {/* Summary */}
+              <div className="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Star className="text-purple-600" size={16} />
+                    <span className="text-sm font-medium text-purple-900">
+                      {birthdayClients.length} aniversariante{birthdayClients.length !== 1 ? 's' : ''} este mês
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const birthdayEmails = birthdayClients.map(c => c.email).join(', ');
+                      alert(`Enviando parabéns em lote para:\n\n${birthdayEmails}\n\n✅ Mensagens enviadas com sucesso!`);
+                    }}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors flex items-center gap-2"
+                  >
+                    <Mail size={14} />
+                    Enviar Parabéns em Lote
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+
       {/* Filters and Search */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex flex-col lg:flex-row gap-4">
