@@ -748,6 +748,102 @@ export class PDFGenerator {
     doc.save(`relatorio-${reportData.type}-${new Date().toISOString().split('T')[0]}.pdf`);
   }
 
+  static generateContract(contractData: {
+    number: string;
+    clientInfo: any;
+    title: string;
+    content: string;
+    value: number;
+    startDate: string;
+    endDate: string;
+    status: string;
+    signedAt?: string;
+    signatureHash?: string;
+  }): void {
+    const doc = new jsPDF();
+    
+    // Header
+    const startY = this.addHeader(doc, 'CONTRATO DIGITAL');
+    
+    // Contract details box
+    doc.setFillColor(59, 130, 246, 0.1);
+    doc.rect(20, startY, 170, 25, 'F');
+    doc.setDrawColor(59, 130, 246);
+    doc.rect(20, startY, 170, 25);
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(59, 130, 246);
+    doc.text('INFORMAÇÕES DO CONTRATO', 25, startY + 8);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Número: ${contractData.number}`, 25, startY + 15);
+    doc.text(`Data: ${new Date().toLocaleDateString('pt-PT')}`, 25, startY + 20);
+    doc.text(`Valor: ${contractData.value.toLocaleString()} MT`, 120, startY + 15);
+    doc.text(`Status: ${contractData.status.toUpperCase()}`, 120, startY + 20);
+    
+    // Client info
+    let currentY = startY + 35;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DADOS DO CLIENTE', 20, currentY);
+    
+    currentY += 10;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Empresa: ${contractData.clientInfo.companyName}`, 20, currentY);
+    doc.text(`Representante: ${contractData.clientInfo.representative}`, 20, currentY + 5);
+    doc.text(`Email: ${contractData.clientInfo.email}`, 20, currentY + 10);
+    doc.text(`NUIT: ${contractData.clientInfo.nuit}`, 120, currentY);
+    doc.text(`Telefone: ${contractData.clientInfo.phone}`, 120, currentY + 5);
+    
+    // Contract content (simplified for PDF)
+    currentY += 20;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CONTEÚDO DO CONTRATO', 20, currentY);
+    
+    currentY += 10;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    // Convert HTML to plain text for PDF (simplified)
+    const plainText = contractData.content
+      .replace(/<[^>]*>/g, '')
+      .replace(/&nbsp;/g, ' ')
+      .trim();
+    
+    const splitText = doc.splitTextToSize(plainText, 170);
+    doc.text(splitText, 20, currentY);
+    
+    // Signature section
+    if (contractData.status === 'signed' && contractData.signedAt && contractData.signatureHash) {
+      currentY += splitText.length * 5 + 20;
+      
+      doc.setFillColor(34, 197, 94, 0.1);
+      doc.rect(20, currentY, 170, 25, 'F');
+      doc.setDrawColor(34, 197, 94);
+      doc.rect(20, currentY, 170, 25);
+      
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(34, 197, 94);
+      doc.text('✓ CONTRATO ASSINADO DIGITALMENTE', 25, currentY + 8);
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Data de Assinatura: ${new Date(contractData.signedAt).toLocaleDateString('pt-PT')}`, 25, currentY + 15);
+      doc.text(`Hash de Segurança: ${contractData.signatureHash}`, 25, currentY + 20);
+    }
+    
+    // Footer
+    this.addFooter(doc);
+    
+    doc.save(`contrato-${contractData.number}.pdf`);
+  }
   // Generate PDF from HTML element
   static async fromElement(element: HTMLElement, options: PDFOptions): Promise<void> {
     const canvas = await html2canvas(element, {
