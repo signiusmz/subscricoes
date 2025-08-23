@@ -960,7 +960,6 @@ export const ClientPortal: React.FC = () => {
 
         {/* Content */}
         {activeTab === 'dashboard' && renderDashboard()}
-        {activeTab === 'contracts' && renderContracts()}
         {activeTab === 'documents' && renderDocuments()}
       </div>
 
