@@ -193,6 +193,19 @@ export const ClientPortal: React.FC = () => {
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
   const [supportTickets, setSupportTickets] = useState<SupportTicket[]>(mockSupportTickets);
+
+  // Initialize clientInfo at the top level
+  const clientInfo = {
+    companyName: 'Transportes Maputo Lda',
+    representative: 'João Macamo',
+    email: 'joao@transportesmaputo.mz',
+    phone: '+258 84 123 4567',
+    nuit: '400567890',
+    address: 'Av. Eduardo Mondlane, 567, Maputo',
+    clientSince: '2024-01-15',
+    plan: 'Profissional',
+    nextPayment: '2024-05-01'
+  };
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>(mockPaymentMethods);
   const [npsScore, setNpsScore] = useState(0);
   const [npsComment, setNpsComment] = useState('');
