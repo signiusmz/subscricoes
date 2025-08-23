@@ -35,7 +35,8 @@ import {
   DollarSign,
   FileText,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Filter
 } from 'lucide-react';
 import { HTMLEditor } from '../common/HTMLEditor';
 
