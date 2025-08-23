@@ -130,6 +130,22 @@ const mockContracts: DigitalContract[] = [
   }
 ];
 
+// Mock data for clients and services
+const mockClients = [
+  { id: '1', companyName: 'Transportes Maputo Lda', representative: 'João Macamo', email: 'joao@transportesmaputo.mz' },
+  { id: '2', companyName: 'Construções Beira SA', representative: 'Maria Santos', email: 'maria@construcoesbeira.mz' },
+  { id: '3', companyName: 'Hotel Polana', representative: 'Carlos Mendes', email: 'carlos@hotelpolana.mz' },
+  { id: '4', companyName: 'Farmácia Central', representative: 'António Silva', email: 'antonio@farmaciacentral.mz' }
+];
+
+const mockServices = [
+  { id: '1', name: 'Contabilidade Mensal', price: 5000 },
+  { id: '2', name: 'Auditoria Anual', price: 15000 },
+  { id: '3', name: 'Consultoria Fiscal', price: 8000 },
+  { id: '4', name: 'Declaração de IVA', price: 2000 },
+  { id: '5', name: 'Folha de Salários', price: 4000 }
+];
+
 const mockTemplates: ContractTemplate[] = [
   {
     id: '1',
@@ -559,6 +575,171 @@ export const DigitalContracts: React.FC = () => {
     </div>
   );
 
+  const renderSignatures = () => (
+    <div className="space-y-6">
+      {/* Digital Signature Analytics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Assinaturas Hoje</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {contracts.filter(c => c.signedAt && new Date(c.signedAt).toDateString() === new Date().toDateString()).length}
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-green-100 text-green-600">
+              <PenTool size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Taxa de Assinatura</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {contracts.length > 0 ? ((contracts.filter(c => c.status === 'signed').length / contracts.length) * 100).toFixed(1) : 0}%
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+              <CheckCircle size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Tempo Médio</p>
+              <p className="text-2xl font-bold text-gray-900">2.3 dias</p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-purple-100 text-purple-600">
+              <Clock size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Verificações</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {contracts.filter(c => c.status === 'signed').length * 3}
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-orange-100 text-orange-600">
+              <QrCode size={24} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Signatures */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Assinaturas Recentes</h3>
+        <div className="space-y-4">
+          {contracts.filter(c => c.status === 'signed').map((contract) => (
+            <div key={contract.id} className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                  <CheckCircle className="text-white" size={20} />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-green-900">{contract.title}</h4>
+                  <p className="text-sm text-green-700">Cliente: {contract.clientName}</p>
+                  <p className="text-xs text-green-600">
+                    Assinado por: {contract.signerName} em {contract.signedAt ? formatDate(contract.signedAt) : 'N/A'}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-lg font-bold text-green-900">{contract.amount.toLocaleString()} MT</div>
+                <div className="text-xs text-green-700">IP: {contract.signerIP}</div>
+                <div className="text-xs text-green-600 font-mono">
+                  {contract.signatureHash?.substring(0, 16)}...
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          {contracts.filter(c => c.status === 'signed').length === 0 && (
+            <div className="text-center py-8">
+              <PenTool className="text-gray-300 mx-auto mb-3" size={48} />
+              <p className="text-gray-500">Nenhuma assinatura registrada ainda</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Signature Verification */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Shield className="text-blue-600" size={20} />
+          Verificação de Assinaturas
+        </h3>
+        
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <h4 className="font-medium text-gray-900 mb-3">Verificar Documento</h4>
+            <div className="space-y-3">
+              <input
+                type="text"
+                placeholder="Número do contrato (ex: CONT-2024-001)"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <button
+                onClick={() => {
+                  const input = document.querySelector('input[placeholder*="Número do contrato"]') as HTMLInputElement;
+                  const contractNumber = input?.value;
+                  
+                  if (!contractNumber) {
+                    alert('Digite o número do contrato');
+                    return;
+                  }
+                  
+                  const contract = contracts.find(c => c.number === contractNumber);
+                  
+                  if (!contract) {
+                    alert(`❌ Contrato não encontrado!\n\nNúmero: ${contractNumber}\nStatus: Não existe no sistema`);
+                    return;
+                  }
+                  
+                  if (contract.status !== 'signed') {
+                    alert(`⚠️ Contrato encontrado mas não assinado!\n\nNúmero: ${contract.number}\nStatus: ${contract.status}\nCliente: ${contract.clientName}`);
+                    return;
+                  }
+                  
+                  alert(`✅ Contrato Verificado com Sucesso!\n\n📄 Número: ${contract.number}\n👤 Cliente: ${contract.clientName}\n✍️ Assinado por: ${contract.signerName}\n📅 Data: ${contract.signedAt ? new Date(contract.signedAt).toLocaleString('pt-PT') : 'N/A'}\n🌐 IP: ${contract.signerIP}\n🔒 Hash: ${contract.signatureHash}\n💰 Valor: ${contract.amount.toLocaleString()} MT\n\n🔐 Assinatura criptograficamente válida!`);
+                }}
+                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <Shield size={16} />
+                Verificar Autenticidade
+              </button>
+            </div>
+          </div>
+          
+          <div>
+            <h4 className="font-medium text-gray-900 mb-3">Estatísticas de Segurança</h4>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                <span className="text-sm text-green-800">Contratos Verificados</span>
+                <span className="font-bold text-green-900">{contracts.filter(c => c.status === 'signed').length}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                <span className="text-sm text-blue-800">Hash SHA-256</span>
+                <span className="font-bold text-blue-900">100%</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                <span className="text-sm text-purple-800">Timestamp Legal</span>
+                <span className="font-bold text-purple-900">Ativo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
   const renderTemplates = () => (
     <div className="space-y-6">
       {/* Header */}
@@ -672,7 +853,178 @@ export const DigitalContracts: React.FC = () => {
       {/* Content */}
       {activeTab === 'contracts' && renderContracts()}
       {activeTab === 'templates' && renderTemplates()}
+      {activeTab === 'signatures' && renderSignatures()}
 
+      {/* Create Contract Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Criar Novo Contrato</h3>
+            
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              
+              const contractData = {
+                title: formData.get('title') as string,
+                clientId: formData.get('clientId') as string,
+                serviceId: formData.get('serviceId') as string,
+                amount: Number(formData.get('amount')),
+                validity: Number(formData.get('validity')),
+                startDate: formData.get('startDate') as string,
+                templateId: formData.get('templateId') as string
+              };
+              
+              const client = mockClients.find(c => c.id === contractData.clientId);
+              const service = mockServices.find(s => s.id === contractData.serviceId);
+              const template = templates.find(t => t.id === contractData.templateId);
+              
+              if (!client || !service || !template) {
+                alert('Erro: Cliente, serviço ou template não encontrado');
+                return;
+              }
+              
+              const endDate = new Date(contractData.startDate);
+              endDate.setMonth(endDate.getMonth() + contractData.validity);
+              
+              const newContract: DigitalContract = {
+                id: Date.now().toString(),
+                number: `CONT-2024-${String(contracts.length + 1).padStart(3, '0')}`,
+                title: contractData.title,
+                clientId: contractData.clientId,
+                clientName: client.companyName,
+                clientEmail: client.email,
+                serviceId: contractData.serviceId,
+                serviceName: service.name,
+                amount: contractData.amount,
+                validity: contractData.validity,
+                startDate: contractData.startDate,
+                endDate: endDate.toISOString().split('T')[0],
+                status: 'draft',
+                createdAt: new Date().toISOString(),
+                templateId: contractData.templateId,
+                content: template.content
+              };
+              
+              setContracts([newContract, ...contracts]);
+              setShowCreateModal(false);
+              
+              alert(`✅ Contrato criado com sucesso!\n\n📄 Número: ${newContract.number}\n👤 Cliente: ${client.companyName}\n🛍️ Serviço: ${service.name}\n💰 Valor: ${contractData.amount.toLocaleString()} MT\n📅 Período: ${formatDate(contractData.startDate)} - ${formatDate(newContract.endDate)}\n🟡 Status: Rascunho\n\n📝 Pronto para envio ao cliente!`);
+            }} className="space-y-6">
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Título do Contrato</label>
+                  <input
+                    type="text"
+                    name="title"
+                    placeholder="Ex: Contrato de Contabilidade Mensal"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Template</label>
+                  <select
+                    name="templateId"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Selecionar template</option>
+                    {templates.filter(t => t.isActive).map((template) => (
+                      <option key={template.id} value={template.id}>
+                        {template.name} - {template.category}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Cliente</label>
+                  <select
+                    name="clientId"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Selecionar cliente</option>
+                    {mockClients.map((client) => (
+                      <option key={client.id} value={client.id}>
+                        {client.companyName} - {client.representative}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Serviço</label>
+                  <select
+                    name="serviceId"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Selecionar serviço</option>
+                    {mockServices.map((service) => (
+                      <option key={service.id} value={service.id}>
+                        {service.name} - {service.price.toLocaleString()} MT
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Valor do Contrato (MT)</label>
+                  <input
+                    type="number"
+                    name="amount"
+                    placeholder="Ex: 5000"
+                    min="0"
+                    step="0.01"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Validade (meses)</label>
+                  <select
+                    name="validity"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="1">1 mês</option>
+                    <option value="3">3 meses</option>
+                    <option value="6">6 meses</option>
+                    <option value="12">12 meses</option>
+                    <option value="24">24 meses</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Data de Início</label>
+                  <input
+                    type="date"
+                    name="startDate"
+                    defaultValue={new Date().toISOString().split('T')[0]}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Criar Contrato
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       {/* Digital Signature Security Info */}
       <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200 p-6">
         <div className="flex items-center gap-4 mb-4">
