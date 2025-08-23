@@ -132,6 +132,22 @@ const Dashboard = () => {
         <div className="p-8">
           {renderContent()}
         </div>
+        
+        {/* System Footer */}
+        <footer className="bg-gray-50 border-t border-gray-200 py-4 px-8">
+          <div className="text-center">
+            <p className="text-xs text-gray-500">
+              Sistema Processado pelo Computador | Signius - Sistema de Gestão Comercial (
+              <a href="https://www.signius.co.mz" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700">
+                www.signius.co.mz
+              </a>
+              )
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Sistema Licenciado para: {company?.name || 'TechSolutions Lda'}
+            </p>
+          </div>
+        </footer>
       </div>
       
       {/* Upgrade Modal */}
