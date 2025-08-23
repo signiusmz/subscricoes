@@ -19,7 +19,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { Client, Service, Subscription } from '../../types';
-import { PDFGenerator, ClientInfo } from '../../utils/pdfGenerator';
+import { PDFGenerator, ClientInfo, InvoiceData } from '../../utils/pdfGenerator';
 
 interface ClientProfileProps {
   client: Client;
@@ -629,8 +629,27 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({ client, onBack }) 
                         </button>
                         <button 
                           onClick={() => {
-                            // Here you would implement individual invoice download
-                            alert('Download individual da fatura em desenvolvimento');
+                            const invoiceData: InvoiceData = {
+                              number: invoice.number,
+                              date: invoice.date,
+                              dueDate: invoice.dueDate,
+                              clientInfo: {
+                                companyName: client.companyName,
+                                representative: client.representative,
+                                email: client.email,
+                                phone: `${client.phoneCountryCode} ${client.phone}`,
+                                nuit: client.nuit,
+                                address: client.address
+                              },
+                              serviceName: invoice.serviceName,
+                              serviceDescription: 'Descrição detalhada do serviço prestado',
+                              amount: invoice.amount,
+                              status: invoice.status,
+                              paymentMethod: payment?.method,
+                              paidDate: payment?.date,
+                              notes: 'Obrigado pela sua preferência!'
+                            };
+                            PDFGenerator.generateInvoice(invoiceData);
                           }}
                           className="text-green-600 hover:text-green-900 p-1 hover:bg-green-50 rounded"
                         >

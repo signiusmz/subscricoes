@@ -144,48 +144,54 @@ export const BillingModule: React.FC = () => {
     return <DollarSign size={12} />;
   };
   const handleDownloadInvoice = (invoice: Invoice) => {
+    // Get client info from mock data (in production, this would come from API)
+    const mockClientInfo = {
+      companyName: invoice.clientName,
+      representative: 'Representante Legal',
+      email: 'cliente@email.com',
+      phone: '+258 84 123 456',
+      nuit: '400123456',
+      address: 'Endereço do cliente'
+    };
+
     const invoiceData: InvoiceData = {
       number: invoice.number,
       date: invoice.issueDate,
       dueDate: invoice.dueDate,
-      clientInfo: {
-        companyName: invoice.clientName,
-        representative: 'Representante', // This should come from client data
-        email: 'cliente@email.com', // This should come from client data
-        phone: '+258 84 123 456', // This should come from client data
-        nuit: '400123456', // This should come from client data
-        address: 'Endereço do cliente' // This should come from client data
-      },
+      clientInfo: mockClientInfo,
       serviceName: invoice.serviceName,
-      serviceDescription: 'Descrição detalhada do serviço',
+      serviceDescription: 'Descrição detalhada do serviço prestado pela empresa',
       amount: invoice.amount,
       status: invoice.status,
       paymentMethod: invoice.paymentMethod,
       paidDate: invoice.paidDate,
-      notes: invoice.notes
+      notes: invoice.notes || 'Obrigado pela sua preferência!'
     };
     
     PDFGenerator.generateInvoice(invoiceData);
   };
 
   const handleDownloadReceipt = (receipt: Receipt) => {
+    // Get client info from mock data (in production, this would come from API)
+    const mockClientInfo = {
+      companyName: receipt.clientName,
+      representative: 'Representante Legal',
+      email: 'cliente@email.com',
+      phone: '+258 84 123 456',
+      nuit: '400123456',
+      address: 'Endereço do cliente'
+    };
+
     const receiptData: ReceiptData = {
       number: receipt.number,
       date: receipt.paymentDate,
-      clientInfo: {
-        companyName: receipt.clientName,
-        representative: 'Representante', // This should come from client data
-        email: 'cliente@email.com', // This should come from client data
-        phone: '+258 84 123 456', // This should come from client data
-        nuit: '400123456', // This should come from client data
-        address: 'Endereço do cliente' // This should come from client data
-      },
+      clientInfo: mockClientInfo,
       invoiceNumber: `INV-${receipt.invoiceId}`,
       serviceName: receipt.serviceName,
       amount: receipt.amount,
       paymentMethod: receipt.paymentMethod,
       reference: receipt.reference,
-      notes: receipt.notes
+      notes: receipt.notes || 'Pagamento processado com sucesso!'
     };
     
     PDFGenerator.generateReceipt(receiptData);
