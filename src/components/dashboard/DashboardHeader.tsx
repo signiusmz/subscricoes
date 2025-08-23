@@ -259,6 +259,63 @@ export const DashboardHeader: React.FC = () => {
               <p className="text-blue-200 text-sm">Satisfação Média</p>
             </div>
           </div>
+          
+          {/* Quick Access to Advanced Features */}
+          <div className="mt-6 pt-6 border-t border-white border-opacity-20">
+            <h4 className="text-lg font-semibold text-white mb-4">🚀 Funcionalidades Avançadas</h4>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <button
+                onClick={() => {
+                  const event = new CustomEvent('openAdvancedAnalytics');
+                  window.dispatchEvent(event);
+                }}
+                className="bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg p-3 text-center transition-all"
+              >
+                <div className="text-2xl mb-1">📊</div>
+                <div className="text-xs text-blue-100">Analytics IA</div>
+              </button>
+              <button
+                onClick={() => {
+                  const event = new CustomEvent('openChurnAnalysis');
+                  window.dispatchEvent(event);
+                }}
+                className="bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg p-3 text-center transition-all"
+              >
+                <div className="text-2xl mb-1">🤖</div>
+                <div className="text-xs text-blue-100">Churn IA</div>
+              </button>
+              <button
+                onClick={() => {
+                  const event = new CustomEvent('openClientSegmentation');
+                  window.dispatchEvent(event);
+                }}
+                className="bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg p-3 text-center transition-all"
+              >
+                <div className="text-2xl mb-1">🎯</div>
+                <div className="text-xs text-blue-100">Segmentação</div>
+              </button>
+              <button
+                onClick={() => {
+                  const event = new CustomEvent('openFlowBuilder');
+                  window.dispatchEvent(event);
+                }}
+                className="bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg p-3 text-center transition-all"
+              >
+                <div className="text-2xl mb-1">⚡</div>
+                <div className="text-xs text-blue-100">Fluxos</div>
+              </button>
+              <button
+                onClick={() => {
+                  const event = new CustomEvent('openTemplateEditor');
+                  window.dispatchEvent(event);
+                }}
+                className="bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg p-3 text-center transition-all"
+              >
+                <div className="text-2xl mb-1">📝</div>
+                <div className="text-xs text-blue-100">Templates</div>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

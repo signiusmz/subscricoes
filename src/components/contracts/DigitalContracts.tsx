@@ -1,0 +1,854 @@
+import React, { useState } from 'react';
+import { 
+  FileText, 
+  PenTool, 
+  CheckCircle, 
+  Clock, 
+  Send, 
+  Download, 
+  Eye,
+  Plus,
+  Edit,
+  Trash2,
+  Search,
+  Filter,
+  Calendar,
+  User,
+  Building,
+  Mail,
+  Phone,
+  MapPin,
+  DollarSign,
+  AlertCircle,
+  Shield,
+  Zap,
+  Copy,
+  Share,
+  QrCode,
+  Smartphone,
+  Globe
+} from 'lucide-react';
+import { HTMLEditor } from '../common/HTMLEditor';
+
+interface DigitalContract {
+  id: string;
+  number: string;
+  title: string;
+  clientId: string;
+  clientName: string;
+  clientEmail: string;
+  serviceId: string;
+  serviceName: string;
+  amount: number;
+  validity: number;
+  startDate: string;
+  endDate: string;
+  status: 'draft' | 'sent' | 'signed' | 'expired' | 'cancelled';
+  createdAt: string;
+  sentAt?: string;
+  signedAt?: string;
+  signerName?: string;
+  signerIP?: string;
+  templateId: string;
+  content: string;
+  signatureHash?: string;
+  qrCode?: string;
+}
+
+interface ContractTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: 'service' | 'maintenance' | 'consulting' | 'subscription';
+  content: string;
+  variables: string[];
+  isActive: boolean;
+  lastUsed?: string;
+}
+
+const mockContracts: DigitalContract[] = [
+  {
+    id: '1',
+    number: 'CONT-2024-001',
+    title: 'Contrato de Contabilidade Mensal',
+    clientId: '1',
+    clientName: 'Transportes Maputo Lda',
+    clientEmail: 'joao@transportesmaputo.mz',
+    serviceId: '1',
+    serviceName: 'Contabilidade Mensal',
+    amount: 5000,
+    validity: 12,
+    startDate: '2024-01-01',
+    endDate: '2024-12-31',
+    status: 'signed',
+    createdAt: '2024-01-01',
+    sentAt: '2024-01-01',
+    signedAt: '2024-01-02',
+    signerName: 'João Macamo',
+    signerIP: '197.218.1.100',
+    templateId: '1',
+    content: 'Contrato de prestação de serviços de contabilidade...',
+    signatureHash: 'SHA256:a1b2c3d4e5f6...',
+    qrCode: 'https://contracts.signius.co.mz/verify/CONT-2024-001'
+  },
+  {
+    id: '2',
+    number: 'CONT-2024-002',
+    title: 'Contrato de Auditoria Anual',
+    clientId: '2',
+    clientName: 'Construções Beira SA',
+    clientEmail: 'maria@construcoesbeira.mz',
+    serviceId: '2',
+    serviceName: 'Auditoria Anual',
+    amount: 15000,
+    validity: 12,
+    startDate: '2024-02-01',
+    endDate: '2025-01-31',
+    status: 'sent',
+    createdAt: '2024-02-01',
+    sentAt: '2024-02-01',
+    templateId: '2',
+    content: 'Contrato de prestação de serviços de auditoria...'
+  },
+  {
+    id: '3',
+    number: 'CONT-2024-003',
+    title: 'Contrato de Consultoria Fiscal',
+    clientId: '3',
+    clientName: 'Hotel Polana',
+    clientEmail: 'carlos@hotelpolana.mz',
+    serviceId: '3',
+    serviceName: 'Consultoria Fiscal',
+    amount: 8000,
+    validity: 6,
+    startDate: '2024-03-01',
+    endDate: '2024-08-31',
+    status: 'draft',
+    createdAt: '2024-03-01',
+    templateId: '1',
+    content: 'Contrato de prestação de serviços de consultoria fiscal...'
+  }
+];
+
+const mockTemplates: ContractTemplate[] = [
+  {
+    id: '1',
+    name: 'Contrato de Serviços Contábeis',
+    description: 'Template padrão para serviços de contabilidade',
+    category: 'service',
+    content: `
+      <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px;">
+        <div style="text-align: center; margin-bottom: 40px;">
+          <h1 style="color: #1f2937; margin-bottom: 10px;">CONTRATO DE PRESTAÇÃO DE SERVIÇOS</h1>
+          <p style="color: #6b7280;">Número: {contrato_numero}</p>
+        </div>
+        
+        <div style="margin-bottom: 30px;">
+          <h2 style="color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">PARTES CONTRATANTES</h2>
+          
+          <div style="margin: 20px 0;">
+            <h3 style="color: #4b5563;">CONTRATANTE:</h3>
+            <p><strong>Empresa:</strong> {cliente_nome}</p>
+            <p><strong>Representante:</strong> {cliente_representante}</p>
+            <p><strong>NUIT:</strong> {cliente_nuit}</p>
+            <p><strong>Endereço:</strong> {cliente_endereco}</p>
+            <p><strong>Email:</strong> {cliente_email}</p>
+            <p><strong>Telefone:</strong> {cliente_telefone}</p>
+          </div>
+          
+          <div style="margin: 20px 0;">
+            <h3 style="color: #4b5563;">CONTRATADO:</h3>
+            <p><strong>Empresa:</strong> {empresa_nome}</p>
+            <p><strong>NUIT:</strong> {empresa_nuit}</p>
+            <p><strong>Endereço:</strong> {empresa_endereco}</p>
+            <p><strong>Email:</strong> {empresa_email}</p>
+            <p><strong>Telefone:</strong> {empresa_telefone}</p>
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 30px;">
+          <h2 style="color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">OBJETO DO CONTRATO</h2>
+          <p style="text-align: justify; line-height: 1.6;">
+            O presente contrato tem por objeto a prestação de serviços de <strong>{servico_nome}</strong>, 
+            conforme especificações técnicas e condições estabelecidas neste documento.
+          </p>
+          
+          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #374151; margin-top: 0;">DETALHES DO SERVIÇO:</h3>
+            <p><strong>Serviço:</strong> {servico_nome}</p>
+            <p><strong>Descrição:</strong> {servico_descricao}</p>
+            <p><strong>Valor:</strong> {servico_preco} MT</p>
+            <p><strong>Período:</strong> {servico_validade} meses</p>
+            <p><strong>Data de Início:</strong> {data_inicio}</p>
+            <p><strong>Data de Término:</strong> {data_fim}</p>
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 30px;">
+          <h2 style="color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">CONDIÇÕES GERAIS</h2>
+          <ol style="line-height: 1.8;">
+            <li>O serviço será prestado conforme cronograma acordado entre as partes.</li>
+            <li>O pagamento será efetuado mensalmente até o dia 30 de cada mês.</li>
+            <li>O contrato terá validade de {servico_validade} meses, renovável automaticamente.</li>
+            <li>Qualquer alteração deverá ser acordada por escrito entre as partes.</li>
+            <li>O presente contrato é regido pela legislação moçambicana.</li>
+          </ol>
+        </div>
+        
+        <div style="margin-top: 60px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+            <div style="text-align: center;">
+              <div style="border-top: 1px solid #000; padding-top: 10px; margin-top: 40px;">
+                <p><strong>{empresa_nome}</strong></p>
+                <p>CONTRATADO</p>
+              </div>
+            </div>
+            <div style="text-align: center;">
+              <div style="border-top: 1px solid #000; padding-top: 10px; margin-top: 40px;">
+                <p><strong>{cliente_nome}</strong></p>
+                <p>CONTRATANTE</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div style="margin-top: 40px; text-align: center; color: #6b7280; font-size: 12px;">
+          <p>Contrato gerado digitalmente em {data_geracao}</p>
+          <p>Documento verificável em: {url_verificacao}</p>
+        </div>
+      </div>
+    `,
+    variables: ['{contrato_numero}', '{cliente_nome}', '{servico_nome}', '{servico_preco}', '{data_inicio}'],
+    isActive: true,
+    lastUsed: '2024-03-30'
+  },
+  {
+    id: '2',
+    name: 'Contrato de Auditoria',
+    description: 'Template específico para serviços de auditoria',
+    category: 'consulting',
+    content: 'Template de contrato de auditoria...',
+    variables: ['{cliente_nome}', '{servico_nome}', '{valor_auditoria}'],
+    isActive: true,
+    lastUsed: '2024-03-25'
+  }
+];
+
+export const DigitalContracts: React.FC = () => {
+  const [activeTab, setActiveTab] = useState('contracts');
+  const [contracts, setContracts] = useState<DigitalContract[]>(mockContracts);
+  const [templates, setTemplates] = useState<ContractTemplate[]>(mockTemplates);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'sent' | 'signed' | 'expired'>('all');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [selectedContract, setSelectedContract] = useState<DigitalContract | null>(null);
+  const [editingTemplate, setEditingTemplate] = useState<ContractTemplate | null>(null);
+  const [templateContent, setTemplateContent] = useState('');
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-PT');
+  };
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      draft: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Rascunho', icon: Edit },
+      sent: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Enviado', icon: Send },
+      signed: { bg: 'bg-green-100', text: 'text-green-800', label: 'Assinado', icon: CheckCircle },
+      expired: { bg: 'bg-red-100', text: 'text-red-800', label: 'Expirado', icon: AlertCircle },
+      cancelled: { bg: 'bg-red-100', text: 'text-red-800', label: 'Cancelado', icon: AlertCircle }
+    };
+    
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.draft;
+    const Icon = config.icon;
+    
+    return (
+      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${config.bg} ${config.text} flex items-center gap-1`}>
+        <Icon size={12} />
+        {config.label}
+      </span>
+    );
+  };
+
+  const getCategoryBadge = (category: string) => {
+    const categoryConfig = {
+      service: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Serviço' },
+      maintenance: { bg: 'bg-green-100', text: 'text-green-800', label: 'Manutenção' },
+      consulting: { bg: 'bg-purple-100', text: 'text-purple-800', label: 'Consultoria' },
+      subscription: { bg: 'bg-orange-100', text: 'text-orange-800', label: 'Subscrição' }
+    };
+    
+    const config = categoryConfig[category as keyof typeof categoryConfig] || categoryConfig.service;
+    
+    return (
+      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${config.bg} ${config.text}`}>
+        {config.label}
+      </span>
+    );
+  };
+
+  const filteredContracts = contracts.filter(contract => {
+    const matchesSearch = contract.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         contract.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         contract.number.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || contract.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  const handleCreateContract = () => {
+    setShowCreateModal(true);
+  };
+
+  const handleSendContract = (contractId: string) => {
+    setContracts(contracts.map(c => 
+      c.id === contractId 
+        ? { 
+            ...c, 
+            status: 'sent' as const,
+            sentAt: new Date().toISOString()
+          }
+        : c
+    ));
+    
+    const contract = contracts.find(c => c.id === contractId);
+    alert(`📧 Contrato enviado com sucesso!\n\n📄 Contrato: ${contract?.number}\n👤 Cliente: ${contract?.clientName}\n📧 Email: ${contract?.clientEmail}\n🔗 Link de assinatura enviado\n📱 Notificação via WhatsApp enviada\n\n✅ O cliente receberá instruções para assinatura digital!`);
+  };
+
+  const handleSignContract = (contractId: string) => {
+    // Simulate digital signature
+    const signerName = prompt('Nome do signatário:');
+    if (!signerName) return;
+    
+    setContracts(contracts.map(c => 
+      c.id === contractId 
+        ? { 
+            ...c, 
+            status: 'signed' as const,
+            signedAt: new Date().toISOString(),
+            signerName,
+            signerIP: '197.218.1.100',
+            signatureHash: `SHA256: ${Math.random().toString(36).substring(7)}`
+          }
+        : c
+    ));
+    
+    const contract = contracts.find(c => c.id === contractId);
+    alert(`✅ Contrato assinado digitalmente!\n\n📄 Contrato: ${contract?.number}\n✍️ Assinado por: ${signerName}\n📅 Data: ${new Date().toLocaleString('pt-PT')}\n🔒 Hash: SHA256:${Math.random().toString(36).substring(7)}\n🌐 IP: 197.218.1.100\n\n🔐 Assinatura criptograficamente segura!`);
+  };
+
+  const handleDownloadContract = (contract: DigitalContract) => {
+    alert(`📥 Baixando contrato ${contract.number}...\n\n📄 Formato: PDF\n🔒 Assinatura digital incluída\n📊 QR Code para verificação\n🌐 Link de verificação: ${contract.qrCode || 'N/A'}\n\n✅ Download iniciado!`);
+  };
+
+  const handleCreateTemplate = () => {
+    setEditingTemplate(null);
+    setTemplateContent('');
+    setShowTemplateModal(true);
+  };
+
+  const handleEditTemplate = (template: ContractTemplate) => {
+    setEditingTemplate(template);
+    setTemplateContent(template.content);
+    setShowTemplateModal(true);
+  };
+
+  const handleSaveTemplate = (templateData: Partial<ContractTemplate>) => {
+    if (editingTemplate) {
+      setTemplates(templates.map(t => 
+        t.id === editingTemplate.id 
+          ? { ...t, ...templateData, content: templateContent }
+          : t
+      ));
+      alert('Template atualizado com sucesso!');
+    } else {
+      const newTemplate: ContractTemplate = {
+        id: Date.now().toString(),
+        name: templateData.name || '',
+        description: templateData.description || '',
+        category: templateData.category || 'service',
+        content: templateContent,
+        variables: templateContent.match(/\{[^}]+\}/g) || [],
+        isActive: true
+      };
+      setTemplates([...templates, newTemplate]);
+      alert('Template criado com sucesso!');
+    }
+    setShowTemplateModal(false);
+    setEditingTemplate(null);
+  };
+
+  const renderContracts = () => (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold text-gray-900">Contratos Digitais</h3>
+        <button
+          onClick={handleCreateContract}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+        >
+          <Plus size={16} />
+          Novo Contrato
+        </button>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Contratos</p>
+              <p className="text-2xl font-bold text-gray-900">{contracts.length}</p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+              <FileText size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Assinados</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {contracts.filter(c => c.status === 'signed').length}
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-green-100 text-green-600">
+              <CheckCircle size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Pendentes</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {contracts.filter(c => c.status === 'sent').length}
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-orange-100 text-orange-600">
+              <Clock size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Valor Total</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {contracts.filter(c => c.status === 'signed').reduce((sum, c) => sum + c.amount, 0).toLocaleString()} MT
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-emerald-100 text-emerald-600">
+              <DollarSign size={24} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          <input
+            type="text"
+            placeholder="Pesquisar contratos..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as any)}
+          className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+          <option value="all">Todos os Status</option>
+          <option value="draft">Rascunhos</option>
+          <option value="sent">Enviados</option>
+          <option value="signed">Assinados</option>
+          <option value="expired">Expirados</option>
+        </select>
+      </div>
+
+      {/* Contracts Table */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contrato</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Serviço</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Período</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredContracts.map((contract) => (
+                <tr key={contract.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{contract.number}</div>
+                      <div className="text-sm text-gray-500">{contract.title}</div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div>
+                      <div className="text-sm text-gray-900">{contract.clientName}</div>
+                      <div className="text-sm text-gray-500">{contract.clientEmail}</div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{contract.serviceName}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{contract.amount.toLocaleString()} MT</td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900">
+                      {formatDate(contract.startDate)} - {formatDate(contract.endDate)}
+                    </div>
+                    <div className="text-xs text-gray-500">{contract.validity} meses</div>
+                  </td>
+                  <td className="px-6 py-4">{getStatusBadge(contract.status)}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setSelectedContract(contract)}
+                        className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
+                        title="Ver contrato"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDownloadContract(contract)}
+                        className="text-green-600 hover:text-green-900 p-1 hover:bg-green-50 rounded"
+                        title="Download PDF"
+                      >
+                        <Download size={16} />
+                      </button>
+                      {contract.status === 'draft' && (
+                        <button
+                          onClick={() => handleSendContract(contract.id)}
+                          className="text-purple-600 hover:text-purple-900 p-1 hover:bg-purple-50 rounded"
+                          title="Enviar para assinatura"
+                        >
+                          <Send size={16} />
+                        </button>
+                      )}
+                      {contract.status === 'sent' && (
+                        <button
+                          onClick={() => handleSignContract(contract.id)}
+                          className="text-orange-600 hover:text-orange-900 p-1 hover:bg-orange-50 rounded"
+                          title="Simular assinatura"
+                        >
+                          <PenTool size={16} />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderTemplates = () => (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold text-gray-900">Templates de Contratos</h3>
+        <button
+          onClick={handleCreateTemplate}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+        >
+          <Plus size={16} />
+          Novo Template
+        </button>
+      </div>
+
+      {/* Templates Grid */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {templates.map((template) => (
+          <div key={template.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">{template.name}</h4>
+                <p className="text-sm text-gray-600 mb-2">{template.description}</p>
+                {getCategoryBadge(template.category)}
+              </div>
+              <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                template.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}>
+                {template.isActive ? 'Ativo' : 'Inativo'}
+              </span>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-xs font-medium text-gray-700 mb-2">
+                Variáveis ({template.variables.length}):
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {template.variables.slice(0, 3).map((variable, idx) => (
+                  <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded font-mono">
+                    {variable}
+                  </span>
+                ))}
+                {template.variables.length > 3 && (
+                  <span className="text-xs text-gray-500">+{template.variables.length - 3}</span>
+                )}
+              </div>
+            </div>
+
+            {template.lastUsed && (
+              <div className="text-xs text-gray-500 mb-4">
+                Último uso: {formatDate(template.lastUsed)}
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleEditTemplate(template)}
+                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <Edit size={16} />
+                Editar
+              </button>
+              <button className="border border-gray-300 text-gray-700 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <Copy size={16} />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const tabs = [
+    { id: 'contracts', label: 'Contratos', icon: FileText },
+    { id: 'templates', label: 'Templates', icon: Copy },
+    { id: 'signatures', label: 'Assinaturas', icon: PenTool }
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <PenTool className="text-blue-600" size={28} />
+          Contratos Digitais
+        </h2>
+        
+        {/* Navigation Tabs */}
+        <div className="border-b border-gray-200">
+          <nav className="flex space-x-8">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 ${
+                    activeTab === tab.id
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <Icon size={16} />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+      </div>
+
+      {/* Content */}
+      {activeTab === 'contracts' && renderContracts()}
+      {activeTab === 'templates' && renderTemplates()}
+
+      {/* Digital Signature Security Info */}
+      <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200 p-6">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+            <Shield className="text-white" size={24} />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-green-900">Segurança das Assinaturas Digitais</h3>
+            <p className="text-green-700">Tecnologia blockchain para máxima segurança jurídica</p>
+          </div>
+        </div>
+        
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="bg-white rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="text-green-600" size={16} />
+              <span className="font-medium text-green-900">Criptografia SHA-256</span>
+            </div>
+            <p className="text-sm text-green-800">Hash único para cada assinatura</p>
+          </div>
+          <div className="bg-white rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Globe className="text-blue-600" size={16} />
+              <span className="font-medium text-blue-900">Verificação Online</span>
+            </div>
+            <p className="text-sm text-blue-800">QR Code para validação pública</p>
+          </div>
+          <div className="bg-white rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Clock className="text-purple-600" size={16} />
+              <span className="font-medium text-purple-900">Timestamp Legal</span>
+            </div>
+            <p className="text-sm text-purple-800">Data e hora certificadas</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Contract View Modal */}
+      {selectedContract && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">{selectedContract.title}</h3>
+                  <p className="text-gray-600">{selectedContract.number}</p>
+                </div>
+                <div className="flex gap-3">
+                  {getStatusBadge(selectedContract.status)}
+                  <button
+                    onClick={() => setSelectedContract(null)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              <div dangerouslySetInnerHTML={{ __html: selectedContract.content }} />
+              
+              {selectedContract.status === 'signed' && (
+                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle className="text-green-600" size={16} />
+                    <span className="font-semibold text-green-900">Contrato Assinado Digitalmente</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-sm text-green-800">
+                    <div>
+                      <p><strong>Assinado por:</strong> {selectedContract.signerName}</p>
+                      <p><strong>Data:</strong> {selectedContract.signedAt ? formatDate(selectedContract.signedAt) : 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p><strong>IP:</strong> {selectedContract.signerIP}</p>
+                      <p><strong>Hash:</strong> {selectedContract.signatureHash?.substring(0, 20)}...</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Template Editor Modal */}
+      {showTemplateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {editingTemplate ? 'Editar Template' : 'Novo Template'}
+              </h3>
+            </div>
+            
+            <div className="p-6">
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const templateData = {
+                  name: formData.get('name') as string,
+                  description: formData.get('description') as string,
+                  category: formData.get('category') as 'service' | 'maintenance' | 'consulting' | 'subscription'
+                };
+                handleSaveTemplate(templateData);
+              }} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Nome do Template</label>
+                    <input
+                      type="text"
+                      name="name"
+                      defaultValue={editingTemplate?.name || ''}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
+                    <select
+                      name="category"
+                      defaultValue={editingTemplate?.category || 'service'}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    >
+                      <option value="service">Serviço</option>
+                      <option value="maintenance">Manutenção</option>
+                      <option value="consulting">Consultoria</option>
+                      <option value="subscription">Subscrição</option>
+                    </select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
+                    <input
+                      type="text"
+                      name="description"
+                      defaultValue={editingTemplate?.description || ''}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Conteúdo do Contrato</label>
+                  <HTMLEditor
+                    value={templateContent}
+                    onChange={setTemplateContent}
+                    placeholder="Digite o conteúdo do contrato aqui..."
+                    height="400px"
+                  />
+                </div>
+                
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowTemplateModal(false);
+                      setEditingTemplate(null);
+                    }}
+                    className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    {editingTemplate ? 'Atualizar' : 'Criar'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

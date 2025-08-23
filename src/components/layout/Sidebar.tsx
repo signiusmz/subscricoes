@@ -15,6 +15,8 @@ import {
   Upload,
   Send,
   Clock
+  Calculator,
+  PenTool
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useState } from 'react';
@@ -34,6 +36,8 @@ const getMenuItems = (userRole: string) => [
   { id: 'services', label: 'Serviços', icon: FileText },
   { id: 'subscriptions', label: 'Subscrições', icon: CreditCard },
   { id: 'billing', label: 'Facturação', icon: Receipt },
+  { id: 'tax', label: 'Impostos', icon: Calculator },
+  { id: 'contracts', label: 'Contratos', icon: PenTool },
   { id: 'reports', label: 'Relatórios', icon: BarChart3 },
   ...(userRole === 'admin' ? [
     { id: 'sender', label: 'Envios', icon: Send },

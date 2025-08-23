@@ -23,6 +23,13 @@ import { ReportsAnalytics } from './components/reports/ReportsAnalytics';
 import { SettingsPanel } from './components/settings/SettingsPanel';
 import { ClientPortal } from './components/client-portal/ClientPortal';
 import { SenderModule } from './components/sender/SenderModule';
+import { AdvancedDashboard } from './components/analytics/AdvancedDashboard';
+import { ChurnAnalysis } from './components/analytics/ChurnAnalysis';
+import { ClientSegmentation } from './components/analytics/ClientSegmentation';
+import { FlowBuilder } from './components/automation/FlowBuilder';
+import { TemplateEditor } from './components/automation/TemplateEditor';
+import { TaxManagement } from './components/billing/TaxManagement';
+import { DigitalContracts } from './components/contracts/DigitalContracts';
 import { TawkToChat } from './components/common/TawkToChat';
 import { DashboardMetrics } from './types';
 
@@ -43,6 +50,11 @@ const Dashboard = () => {
   const [showClientPortal, setShowClientPortal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [navigationFilters, setNavigationFilters] = useState<any>({});
+  const [showAdvancedAnalytics, setShowAdvancedAnalytics] = useState(false);
+  const [showChurnAnalysis, setShowChurnAnalysis] = useState(false);
+  const [showClientSegmentation, setShowClientSegmentation] = useState(false);
+  const [showFlowBuilder, setShowFlowBuilder] = useState(false);
+  const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const { company, user, updateUser } = useAuth();
 
   // Listen for upgrade modal trigger from sidebar - MOVED TO TOP
@@ -58,15 +70,45 @@ const Dashboard = () => {
     const handleOpenActivityHistory = () => {
       setShowActivityHistory(true);
     };
+    
+    const handleOpenAdvancedAnalytics = () => {
+      setShowAdvancedAnalytics(true);
+    };
+    
+    const handleOpenChurnAnalysis = () => {
+      setShowChurnAnalysis(true);
+    };
+    
+    const handleOpenClientSegmentation = () => {
+      setShowClientSegmentation(true);
+    };
+    
+    const handleOpenFlowBuilder = () => {
+      setShowFlowBuilder(true);
+    };
+    
+    const handleOpenTemplateEditor = () => {
+      setShowTemplateEditor(true);
+    };
 
     window.addEventListener('openUpgradeModal', handleOpenUpgradeModal);
     window.addEventListener('openClientAnalytics', handleOpenClientAnalytics);
     window.addEventListener('openActivityHistory', handleOpenActivityHistory);
+    window.addEventListener('openAdvancedAnalytics', handleOpenAdvancedAnalytics);
+    window.addEventListener('openChurnAnalysis', handleOpenChurnAnalysis);
+    window.addEventListener('openClientSegmentation', handleOpenClientSegmentation);
+    window.addEventListener('openFlowBuilder', handleOpenFlowBuilder);
+    window.addEventListener('openTemplateEditor', handleOpenTemplateEditor);
     
     return () => {
       window.removeEventListener('openUpgradeModal', handleOpenUpgradeModal);
       window.removeEventListener('openClientAnalytics', handleOpenClientAnalytics);
       window.removeEventListener('openActivityHistory', handleOpenActivityHistory);
+      window.removeEventListener('openAdvancedAnalytics', handleOpenAdvancedAnalytics);
+      window.removeEventListener('openChurnAnalysis', handleOpenChurnAnalysis);
+      window.removeEventListener('openClientSegmentation', handleOpenClientSegmentation);
+      window.removeEventListener('openFlowBuilder', handleOpenFlowBuilder);
+      window.removeEventListener('openTemplateEditor', handleOpenTemplateEditor);
     };
   }, []);
 
@@ -114,6 +156,74 @@ const Dashboard = () => {
       </div>
     );
   }
+  
+  // Show advanced analytics if requested
+  if (showAdvancedAnalytics) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <div className="ml-64">
+          <div className="p-8">
+            <AdvancedDashboard />
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Show churn analysis if requested
+  if (showChurnAnalysis) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <div className="ml-64">
+          <div className="p-8">
+            <ChurnAnalysis />
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Show client segmentation if requested
+  if (showClientSegmentation) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <div className="ml-64">
+          <div className="p-8">
+            <ClientSegmentation />
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Show flow builder if requested
+  if (showFlowBuilder) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <div className="ml-64">
+          <FlowBuilder />
+        </div>
+      </div>
+    );
+  }
+  
+  // Show template editor if requested
+  if (showTemplateEditor) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <div className="ml-64">
+          <div className="p-8">
+            <TemplateEditor />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleUpgradeSuccess = (planId: string, transactionId: string) => {
     // Update company plan in context
@@ -153,12 +263,18 @@ const Dashboard = () => {
         );
       case 'clients':
         return <ClientsTable initialFilters={navigationFilters} />;
+      case 'users':
+        return <UsersTable />;
       case 'services':
         return <ServicesTable />;
       case 'subscriptions':
         return <SubscriptionsTable initialFilters={navigationFilters} />;
       case 'billing':
         return <BillingModule initialFilters={navigationFilters} />;
+      case 'tax':
+        return <TaxManagement />;
+      case 'contracts':
+        return <DigitalContracts />;
       case 'sender':
         return <SenderModule />;
       case 'reports':
