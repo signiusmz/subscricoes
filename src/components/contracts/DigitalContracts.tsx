@@ -5,6 +5,290 @@ import { HTMLEditor } from '../common/HTMLEditor';
 import { Pagination } from '../common/Pagination';
 import { formatAmountInWords } from '../../utils/numberToWords';
 
+interface ContractTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: 'service' | 'maintenance' | 'consulting' | 'general';
+  content: string;
+  variables: string[];
+  isActive: boolean;
+  createdAt: string;
+  lastUsed?: string;
+}
+
+const mockContractTemplates: ContractTemplate[] = [
+  {
+    id: '1',
+    name: 'Contrato de Prestação de Serviços Contábeis',
+    description: 'Template padrão para serviços de contabilidade',
+    category: 'service',
+    content: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid #2563eb; padding-bottom: 20px;">
+          <h1 style="color: #2563eb; margin: 0; font-size: 24px; font-weight: bold;">CONTRATO DE PRESTAÇÃO DE SERVIÇOS</h1>
+          <p style="margin: 10px 0 0 0; color: #64748b; font-size: 14px;">Número: {contrato_numero}</p>
+        </div>
+        
+        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #2563eb;">
+          <h2 style="color: #1e40af; margin-top: 0; font-size: 18px;">IDENTIFICAÇÃO DAS PARTES</h2>
+          
+          <div style="margin-bottom: 20px;">
+            <h3 style="color: #374151; font-size: 16px; margin-bottom: 10px;">CONTRATANTE:</h3>
+            <p style="margin: 5px 0;"><strong>Empresa:</strong> {cliente_nome}</p>
+            <p style="margin: 5px 0;"><strong>Representante Legal:</strong> {cliente_representante}</p>
+            <p style="margin: 5px 0;"><strong>NUIT:</strong> {cliente_nuit}</p>
+            <p style="margin: 5px 0;"><strong>Endereço:</strong> {cliente_endereco}</p>
+            <p style="margin: 5px 0;"><strong>Email:</strong> {cliente_email}</p>
+            <p style="margin: 5px 0;"><strong>Telefone:</strong> {cliente_telefone}</p>
+          </div>
+          
+          <div>
+            <h3 style="color: #374151; font-size: 16px; margin-bottom: 10px;">CONTRATADA:</h3>
+            <p style="margin: 5px 0;"><strong>Empresa:</strong> {empresa_nome}</p>
+            <p style="margin: 5px 0;"><strong>NUIT:</strong> {empresa_nuit}</p>
+            <p style="margin: 5px 0;"><strong>Endereço:</strong> {empresa_endereco}</p>
+            <p style="margin: 5px 0;"><strong>Email:</strong> {empresa_email}</p>
+            <p style="margin: 5px 0;"><strong>Telefone:</strong> {empresa_telefone}</p>
+          </div>
+        </div>
+        
+        <h2 style="color: #1e40af; font-size: 18px; margin-top: 30px;">CLÁUSULA PRIMEIRA - DO OBJETO</h2>
+        <p style="text-align: justify;">
+          O presente contrato tem por objeto a prestação dos seguintes serviços pela CONTRATADA à CONTRATANTE:
+        </p>
+        <div style="background: #f1f5f9; padding: 15px; border-radius: 8px; margin: 15px 0;">
+          <ul style="margin: 0; padding-left: 20px;">
+            {servicos_lista}
+          </ul>
+        </div>
+        
+        <h2 style="color: #1e40af; font-size: 18px; margin-top: 30px;">CLÁUSULA SEGUNDA - DO VALOR E FORMA DE PAGAMENTO</h2>
+        <div style="background: #ecfdf5; padding: 20px; border-radius: 8px; border-left: 4px solid #10b981; margin: 15px 0;">
+          <p style="margin: 0 0 10px 0;">
+            O valor total dos serviços contratados é de <strong style="color: #059669; font-size: 18px;">{contrato_valor_total} MT</strong> 
+            ({contrato_valor_extenso}).
+          </p>
+          <p style="margin: 0;">
+            O pagamento será efetuado conforme os ciclos estabelecidos para cada serviço, nas datas de vencimento das respetivas faturas.
+          </p>
+        </div>
+        
+        <h2 style="color: #1e40af; font-size: 18px; margin-top: 30px;">CLÁUSULA TERCEIRA - DO PRAZO DE VIGÊNCIA</h2>
+        <p style="text-align: justify;">
+          O presente contrato terá vigência de <strong>{contrato_data_inicio}</strong> até <strong>{contrato_data_fim}</strong>, 
+          podendo ser renovado mediante acordo entre as partes.
+        </p>
+        
+        <h2 style="color: #1e40af; font-size: 18px; margin-top: 30px;">CLÁUSULA QUARTA - DAS OBRIGAÇÕES DA CONTRATADA</h2>
+        <ul style="text-align: justify; padding-left: 20px;">
+          <li>Prestar os serviços com qualidade, pontualidade e profissionalismo;</li>
+          <li>Manter absoluto sigilo sobre todas as informações do CONTRATANTE;</li>
+          <li>Cumprir rigorosamente os prazos estabelecidos para cada serviço;</li>
+          <li>Fornecer relatórios periódicos quando solicitado pelo CONTRATANTE;</li>
+          <li>Manter-se atualizada com a legislação vigente aplicável aos serviços;</li>
+          <li>Disponibilizar suporte técnico durante o horário comercial.</li>
+        </ul>
+        
+        <h2 style="color: #1e40af; font-size: 18px; margin-top: 30px;">CLÁUSULA QUINTA - DAS OBRIGAÇÕES DO CONTRATANTE</h2>
+        <ul style="text-align: justify; padding-left: 20px;">
+          <li>Efetuar os pagamentos nas datas acordadas e pelos valores estabelecidos;</li>
+          <li>Fornecer toda a documentação necessária para a prestação dos serviços;</li>
+          <li>Comunicar alterações relevantes em tempo hábil;</li>
+          <li>Manter os dados de contacto sempre atualizados;</li>
+          <li>Colaborar com a CONTRATADA fornecendo informações precisas;</li>
+          <li>Respeitar os prazos estabelecidos para entrega de documentos.</li>
+        </ul>
+        
+        <h2 style="color: #1e40af; font-size: 18px; margin-top: 30px;">CLÁUSULA SEXTA - DA CONFIDENCIALIDADE</h2>
+        <p style="text-align: justify;">
+          A CONTRATADA compromete-se a manter absoluto sigilo sobre todas as informações, dados, 
+          documentos e conhecimentos obtidos em razão da prestação dos serviços, não podendo 
+          divulgá-los a terceiros sem autorização expressa do CONTRATANTE.
+        </p>
+        
+        <h2 style="color: #1e40af; font-size: 18px; margin-top: 30px;">CLÁUSULA SÉTIMA - DA RESCISÃO</h2>
+        <p style="text-align: justify;">
+          O presente contrato poderá ser rescindido por qualquer das partes, mediante aviso prévio 
+          de 30 (trinta) dias, sem prejuízo do cumprimento das obrigações já assumidas.
+        </p>
+        
+        <h2 style="color: #1e40af; font-size: 18px; margin-top: 30px;">CLÁUSULA OITAVA - DO FORO</h2>
+        <p style="text-align: justify;">
+          As partes elegem o foro da Comarca de Maputo para dirimir quaisquer questões 
+          oriundas do presente contrato.
+        </p>
+        
+        <div style="margin-top: 50px; text-align: center;">
+          <p style="margin-bottom: 30px;">
+            Maputo, {contrato_data_assinatura}
+          </p>
+          
+          <div style="display: flex; justify-content: space-between; margin-top: 60px;">
+            <div style="text-align: center; width: 45%;">
+              <div style="border-top: 1px solid #000; padding-top: 10px;">
+                <strong>{cliente_representante}</strong><br>
+                <span style="font-size: 14px;">CONTRATANTE</span><br>
+                <span style="font-size: 12px;">{cliente_nome}</span>
+              </div>
+            </div>
+            
+            <div style="text-align: center; width: 45%;">
+              <div style="border-top: 1px solid #000; padding-top: 10px;">
+                <strong>{empresa_representante}</strong><br>
+                <span style="font-size: 14px;">CONTRATADA</span><br>
+                <span style="font-size: 12px;">{empresa_nome}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin-top: 40px; text-align: center; border: 1px solid #f59e0b;">
+          <p style="margin: 0; font-weight: bold; color: #92400e; font-size: 12px;">
+            Contrato gerado automaticamente pelo Sistema Signius
+          </p>
+          <p style="margin: 5px 0 0 0; font-size: 10px; color: #a16207;">
+            Data de geração: {data_geracao} | Versão: 1.0
+          </p>
+        </div>
+      </div>
+    `,
+    variables: [
+      '{contrato_numero}', '{cliente_nome}', '{cliente_representante}', '{cliente_nuit}',
+      '{cliente_endereco}', '{cliente_email}', '{cliente_telefone}', '{empresa_nome}',
+      '{empresa_nuit}', '{empresa_endereco}', '{empresa_email}', '{empresa_telefone}',
+      '{servicos_lista}', '{contrato_valor_total}', '{contrato_valor_extenso}',
+      '{contrato_data_inicio}', '{contrato_data_fim}', '{contrato_data_assinatura}',
+      '{empresa_representante}', '{data_geracao}'
+    ],
+    isActive: true,
+    createdAt: '2024-01-01',
+    lastUsed: '2024-03-30'
+  },
+  {
+    id: '2',
+    name: 'Contrato de Manutenção Predial',
+    description: 'Template para contratos de manutenção de edifícios',
+    category: 'maintenance',
+    content: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid #059669; padding-bottom: 20px;">
+          <h1 style="color: #059669; margin: 0; font-size: 24px; font-weight: bold;">CONTRATO DE MANUTENÇÃO PREDIAL</h1>
+          <p style="margin: 10px 0 0 0; color: #64748b; font-size: 14px;">Número: {contrato_numero}</p>
+        </div>
+        
+        <h2 style="color: #047857; font-size: 18px;">OBJETO DO CONTRATO</h2>
+        <p style="text-align: justify;">
+          A CONTRATADA prestará serviços de manutenção preventiva e corretiva nas instalações 
+          da CONTRATANTE, incluindo {servicos_manutencao}.
+        </p>
+        
+        <h2 style="color: #047857; font-size: 18px; margin-top: 30px;">VALOR E PERIODICIDADE</h2>
+        <div style="background: #ecfdf5; padding: 20px; border-radius: 8px; border-left: 4px solid #10b981;">
+          <p><strong>Valor Mensal:</strong> {contrato_valor_total} MT ({contrato_valor_extenso})</p>
+          <p><strong>Periodicidade:</strong> {periodicidade_manutencao}</p>
+          <p><strong>Vigência:</strong> {contrato_data_inicio} a {contrato_data_fim}</p>
+        </div>
+        
+        <h2 style="color: #047857; font-size: 18px; margin-top: 30px;">RESPONSABILIDADES</h2>
+        <p style="text-align: justify;">
+          A CONTRATADA será responsável por toda a manutenção preventiva e corretiva, 
+          fornecimento de materiais e mão-de-obra especializada.
+        </p>
+      </div>
+    `,
+    variables: [
+      '{contrato_numero}', '{servicos_manutencao}', '{contrato_valor_total}',
+      '{contrato_valor_extenso}', '{periodicidade_manutencao}', '{contrato_data_inicio}',
+      '{contrato_data_fim}'
+    ],
+    isActive: true,
+    createdAt: '2024-01-15',
+    lastUsed: '2024-03-25'
+  },
+  {
+    id: '3',
+    name: 'Contrato de Consultoria Empresarial',
+    description: 'Template para serviços de consultoria e assessoria',
+    category: 'consulting',
+    content: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid #7c3aed; padding-bottom: 20px;">
+          <h1 style="color: #7c3aed; margin: 0; font-size: 24px; font-weight: bold;">CONTRATO DE CONSULTORIA EMPRESARIAL</h1>
+          <p style="margin: 10px 0 0 0; color: #64748b; font-size: 14px;">Número: {contrato_numero}</p>
+        </div>
+        
+        <h2 style="color: #6d28d9; font-size: 18px;">ESCOPO DOS SERVIÇOS</h2>
+        <p style="text-align: justify;">
+          A CONTRATADA prestará serviços de consultoria empresarial especializada, incluindo 
+          {servicos_consultoria}, visando o desenvolvimento e otimização dos processos da CONTRATANTE.
+        </p>
+        
+        <h2 style="color: #6d28d9; font-size: 18px; margin-top: 30px;">METODOLOGIA</h2>
+        <p style="text-align: justify;">
+          Os serviços serão prestados através de {metodologia_trabalho}, com relatórios 
+          periódicos e acompanhamento contínuo dos resultados.
+        </p>
+        
+        <div style="background: #faf5ff; padding: 20px; border-radius: 8px; border-left: 4px solid #7c3aed; margin: 20px 0;">
+          <h3 style="color: #6d28d9; margin-top: 0;">INVESTIMENTO</h3>
+          <p><strong>Valor Total:</strong> {contrato_valor_total} MT ({contrato_valor_extenso})</p>
+          <p><strong>Forma de Pagamento:</strong> {forma_pagamento}</p>
+        </div>
+      </div>
+    `,
+    variables: [
+      '{contrato_numero}', '{servicos_consultoria}', '{metodologia_trabalho}',
+      '{contrato_valor_total}', '{contrato_valor_extenso}', '{forma_pagamento}'
+    ],
+    isActive: true,
+    createdAt: '2024-02-01'
+  }
+];
+
+const templateCategories = [
+  { id: 'service', label: 'Prestação de Serviços', color: 'bg-blue-100 text-blue-800' },
+  { id: 'maintenance', label: 'Manutenção', color: 'bg-green-100 text-green-800' },
+  { id: 'consulting', label: 'Consultoria', color: 'bg-purple-100 text-purple-800' },
+  { id: 'general', label: 'Geral', color: 'bg-gray-100 text-gray-800' }
+];
+
+const availableVariables = [
+  { category: 'Contrato', variables: [
+    { key: '{contrato_numero}', description: 'Número do contrato' },
+    { key: '{contrato_valor_total}', description: 'Valor total do contrato' },
+    { key: '{contrato_valor_extenso}', description: 'Valor por extenso' },
+    { key: '{contrato_data_inicio}', description: 'Data de início' },
+    { key: '{contrato_data_fim}', description: 'Data de fim' },
+    { key: '{contrato_data_assinatura}', description: 'Data de assinatura' },
+    { key: '{data_geracao}', description: 'Data de geração do contrato' }
+  ]},
+  { category: 'Cliente', variables: [
+    { key: '{cliente_nome}', description: 'Nome da empresa cliente' },
+    { key: '{cliente_representante}', description: 'Representante legal' },
+    { key: '{cliente_nuit}', description: 'NUIT do cliente' },
+    { key: '{cliente_endereco}', description: 'Endereço do cliente' },
+    { key: '{cliente_email}', description: 'Email do cliente' },
+    { key: '{cliente_telefone}', description: 'Telefone do cliente' }
+  ]},
+  { category: 'Empresa', variables: [
+    { key: '{empresa_nome}', description: 'Nome da sua empresa' },
+    { key: '{empresa_nuit}', description: 'NUIT da sua empresa' },
+    { key: '{empresa_endereco}', description: 'Endereço da sua empresa' },
+    { key: '{empresa_email}', description: 'Email da sua empresa' },
+    { key: '{empresa_telefone}', description: 'Telefone da sua empresa' },
+    { key: '{empresa_representante}', description: 'Representante da empresa' }
+  ]},
+  { category: 'Serviços', variables: [
+    { key: '{servicos_lista}', description: 'Lista de serviços contratados' },
+    { key: '{servicos_manutencao}', description: 'Serviços de manutenção específicos' },
+    { key: '{servicos_consultoria}', description: 'Serviços de consultoria específicos' },
+    { key: '{periodicidade_manutencao}', description: 'Periodicidade da manutenção' },
+    { key: '{metodologia_trabalho}', description: 'Metodologia de trabalho' },
+    { key: '{forma_pagamento}', description: 'Forma de pagamento acordada' }
+  ]}
+];
+
 interface Contract {
   id: string;
   number: string;
@@ -199,13 +483,20 @@ const mockContracts: Contract[] = [
 
 export const DigitalContracts: React.FC = () => {
   const [contracts, setContracts] = useState<Contract[]>(mockContracts);
+  const [contractTemplates, setContractTemplates] = useState<ContractTemplate[]>(mockContractTemplates);
+  const [activeTab, setActiveTab] = useState('contracts');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'sent' | 'signed' | 'expired'>('all');
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [editingContract, setEditingContract] = useState<Contract | null>(null);
+  const [editingTemplate, setEditingTemplate] = useState<ContractTemplate | null>(null);
   const [editContent, setEditContent] = useState('');
+  const [templateContent, setTemplateContent] = useState('');
   const [selectedClientId, setSelectedClientId] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
