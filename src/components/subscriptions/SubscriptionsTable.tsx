@@ -273,9 +273,32 @@ export const SubscriptionsTable: React.FC = () => {
   const handleProcessRenewal = (months: number) => {
     if (!selectedSubscription) return;
     
+    // Get subscription details for invoice generation
+    const extendedSub = getExtendedSubscriptions().find(s => s.id === selectedSubscription.id);
+    if (!extendedSub) return;
+    
     const currentEndDate = new Date(selectedSubscription.nextBilling);
     const newBillingDate = new Date(currentEndDate);
     newBillingDate.setMonth(newBillingDate.getMonth() + months);
+    
+    // Generate new invoice for the renewal
+    const newInvoiceNumber = `FAC-${new Date().getFullYear()}-${String(Date.now()).slice(-3)}`;
+    const newInvoice = {
+      id: Date.now().toString(),
+      number: newInvoiceNumber,
+      subscriptionId: selectedSubscription.id,
+      clientId: selectedSubscription.clientId,
+      clientName: extendedSub.clientName,
+      serviceName: extendedSub.serviceName,
+      amount: selectedSubscription.customPrice || extendedSub.servicePrice,
+      issueDate: new Date().toISOString().split('T')[0],
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+      status: 'pending' as const,
+      notes: `Renovação automática por ${months} mês${months > 1 ? 'es' : ''}`
+    };
+    
+    // Add invoice to billing system (in a real app, this would be an API call)
+    // For demo purposes, we'll show a success message with invoice details
     
     setSubscriptions(subscriptions.map(s => 
       s.id === selectedSubscription.id 
@@ -291,7 +314,9 @@ export const SubscriptionsTable: React.FC = () => {
     
     setShowRenewalModal(false);
     setSelectedSubscription(null);
-    alert(`Subscrição renovada por ${months} mês${months > 1 ? 'es' : ''}!`);
+    
+    // Show success message with invoice details
+    alert(`✅ Subscrição renovada com sucesso!\n\n📄 Fatura gerada: ${newInvoiceNumber}\n💰 Valor: ${(selectedSubscription.customPrice || extendedSub.servicePrice).toLocaleString()} MT\n📅 Vencimento: ${formatDate(newInvoice.dueDate)}\n⏱️ Período: ${months} mês${months > 1 ? 'es' : ''}`);
   };
 
   const handleSendReminder = (subscriptionId: string) => {
@@ -309,6 +334,28 @@ export const SubscriptionsTable: React.FC = () => {
       return;
     }
     
+    // Generate renewal invoices for selected subscriptions
+    const renewalInvoices = selectedSubscriptions.map(subId => {
+      const subscription = subscriptions.find(s => s.id === subId);
+      const extendedSub = getExtendedSubscriptions().find(s => s.id === subId);
+      
+      if (!subscription || !extendedSub) return null;
+      
+      return {
+        id: `${Date.now()}-${subId}`,
+        number: `FAC-${new Date().getFullYear()}-${String(Date.now() + parseInt(subId)).slice(-3)}`,
+        subscriptionId: subId,
+        clientId: subscription.clientId,
+        clientName: extendedSub.clientName,
+        serviceName: extendedSub.serviceName,
+        amount: subscription.customPrice || extendedSub.servicePrice,
+        issueDate: new Date().toISOString().split('T')[0],
+        dueDate: subscription.nextBilling,
+        status: 'pending' as const,
+        notes: 'Fatura de renovação automática'
+      };
+    }).filter(Boolean);
+    
     setSubscriptions(subscriptions.map(s => 
       selectedSubscriptions.includes(s.id) 
         ? { ...s, reminderSent: true }
@@ -316,7 +363,7 @@ export const SubscriptionsTable: React.FC = () => {
     ));
     
     setSelectedSubscriptions([]);
-    alert(`Lembretes enviados para ${selectedSubscriptions.length} subscrição(ões)!`);
+    alert(`✅ Lembretes enviados para ${selectedSubscriptions.length} subscrição(ões)!\n\n📄 ${renewalInvoices.length} fatura(s) de renovação gerada(s) automaticamente`);
   };
 
   const handleRequestNPS = (subscription: Subscription) => {
@@ -341,6 +388,10 @@ export const SubscriptionsTable: React.FC = () => {
   };
 
   const handleSaveSubscription = (subscriptionData: Partial<Subscription>) => {
+    // Get client and service details for invoice generation
+    const client = mockClients.find(c => c.id === subscriptionData.clientId);
+    const service = mockServices.find(s => s.id === subscriptionData.serviceId);
+    
     if (editingSubscription) {
       setSubscriptions(subscriptions.map(s => 
         s.id === editingSubscription.id 
@@ -349,6 +400,9 @@ export const SubscriptionsTable: React.FC = () => {
       ));
       alert('Subscrição atualizada com sucesso!');
     } else {
+      // Generate invoice number
+      const invoiceNumber = `FAC-${new Date().getFullYear()}-${String(Date.now()).slice(-3)}`;
+      
       const newSubscription: Subscription = {
         id: Date.now().toString(),
         companyId: '1',
@@ -356,10 +410,31 @@ export const SubscriptionsTable: React.FC = () => {
         serviceId: subscriptionData.serviceId || '',
         status: 'active',
         nextBilling: subscriptionData.nextBilling || new Date().toISOString().split('T')[0],
+        cycle: subscriptionData.cycle,
+        customPrice: subscriptionData.customPrice,
+        autoRenew: subscriptionData.autoRenew,
         reminderSent: false
       };
+      
+      // Generate initial invoice for new subscription
+      const initialInvoice = {
+        id: Date.now().toString(),
+        number: invoiceNumber,
+        subscriptionId: newSubscription.id,
+        clientId: newSubscription.clientId,
+        clientName: client?.companyName || 'Cliente',
+        serviceName: service?.name || 'Serviço',
+        amount: subscriptionData.customPrice || service?.price || 0,
+        issueDate: subscriptionData.startDate || new Date().toISOString().split('T')[0],
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        status: 'pending' as const,
+        notes: `Fatura inicial da subscrição - Ciclo: ${subscriptionData.cycle} mês${(subscriptionData.cycle || 1) > 1 ? 'es' : ''}`
+      };
+      
       setSubscriptions([...subscriptions, newSubscription]);
-      alert('Subscrição adicionada com sucesso!');
+      
+      // Show success message with invoice details
+      alert(`✅ Subscrição criada com sucesso!\n\n📄 Fatura inicial gerada: ${invoiceNumber}\n👤 Cliente: ${client?.companyName}\n🔧 Serviço: ${service?.name}\n💰 Valor: ${(subscriptionData.customPrice || service?.price || 0).toLocaleString()} MT\n📅 Vencimento: ${formatDate(initialInvoice.dueDate)}`);
     }
     setShowAddModal(false);
     setEditingSubscription(null);
