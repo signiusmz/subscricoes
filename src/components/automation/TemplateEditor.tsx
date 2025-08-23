@@ -302,7 +302,8 @@ export const TemplateEditor: React.FC = () => {
     const templateName = prompt('Nome do template:');
     if (!templateName) return;
 
-    alert(`✅ Template "${templateName}" salvo com sucesso!\n\n📧 Tipo: ${selectedTemplate?.type || 'Email'}\n📝 Conteúdo: ${templateContent.length} caracteres\n🔤 Variáveis: ${templateContent.match(/\{[^}]+\}/g)?.length || 0}\n📅 Salvo em: ${new Date().toLocaleString('pt-PT')}\n🟢 Status: Ativo`);
+    const templateType = selectedTemplate?.type || newTemplateType;
+    alert(`✅ Template "${templateName}" salvo com sucesso!\n\n📧 Tipo: ${templateType === 'email' ? 'Email' : 'WhatsApp'}\n📝 Conteúdo: ${templateContent.length} caracteres\n🔤 Variáveis: ${templateContent.match(/\{[^}]+\}/g)?.length || 0}\n📅 Salvo em: ${new Date().toLocaleString('pt-PT')}\n🟢 Status: Ativo`);
     
     setIsEditing(false);
     setSelectedTemplate(null);
