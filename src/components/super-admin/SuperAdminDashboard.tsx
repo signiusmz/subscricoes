@@ -21,10 +21,13 @@ import {
   Key,
   Globe,
   Shield,
-  ExternalLink
+  ExternalLink,
+  LogOut,
+  User
 } from 'lucide-react';
 import { MPesaPayment } from '../billing/MPesaPayment';
 import { Pagination } from '../common/Pagination';
+import { useAuth } from '../../context/AuthContext';
 
 interface Company {
   id: string;
@@ -142,6 +145,7 @@ const plans = [
 ];
 
 export const SuperAdminDashboard: React.FC = () => {
+  const { superAdmin, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [companies, setCompanies] = useState<Company[]>(mockCompanies);
   const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
@@ -656,9 +660,31 @@ export const SuperAdminDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Painel Super Admin</h1>
-        <p className="text-gray-600">Gestão completa da plataforma Signius</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Painel Super Admin</h1>
+          <p className="text-gray-600">Gestão completa da plataforma Signius</p>
+        </div>
+        
+        {/* Super Admin Profile and Logout */}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm border border-gray-200">
+            <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
+              <User className="text-white" size={20} />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-900">{superAdmin?.name}</p>
+              <p className="text-xs text-gray-500">{superAdmin?.email}</p>
+            </div>
+          </div>
+          <button
+            onClick={logout}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+          >
+            <LogOut size={16} />
+            Sair
+          </button>
+        </div>
       </div>
 
       {/* Navigation */}
