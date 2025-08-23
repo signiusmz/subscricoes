@@ -43,6 +43,31 @@ const Dashboard = () => {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { company, user, updateUser } = useAuth();
 
+  // Listen for upgrade modal trigger from sidebar - MOVED TO TOP
+  React.useEffect(() => {
+    const handleOpenUpgradeModal = () => {
+      setShowUpgradeModal(true);
+    };
+    
+    const handleOpenClientAnalytics = () => {
+      setShowClientAnalytics(true);
+    };
+    
+    const handleOpenActivityHistory = () => {
+      setShowActivityHistory(true);
+    };
+
+    window.addEventListener('openUpgradeModal', handleOpenUpgradeModal);
+    window.addEventListener('openClientAnalytics', handleOpenClientAnalytics);
+    window.addEventListener('openActivityHistory', handleOpenActivityHistory);
+    
+    return () => {
+      window.removeEventListener('openUpgradeModal', handleOpenUpgradeModal);
+      window.removeEventListener('openClientAnalytics', handleOpenClientAnalytics);
+      window.removeEventListener('openActivityHistory', handleOpenActivityHistory);
+    };
+  }, []);
+
   // Demo: Toggle to client portal
   if (showClientPortal) {
     return <ClientPortal />;
@@ -97,31 +122,6 @@ const Dashboard = () => {
     setShowUpgradeModal(false);
     alert(`Plano atualizado para ${planId} com sucesso! ID da transação: ${transactionId}`);
   };
-
-  // Listen for upgrade modal trigger from sidebar
-  React.useEffect(() => {
-    const handleOpenUpgradeModal = () => {
-      setShowUpgradeModal(true);
-    };
-    
-    const handleOpenClientAnalytics = () => {
-      setShowClientAnalytics(true);
-    };
-    
-    const handleOpenActivityHistory = () => {
-      setShowActivityHistory(true);
-    };
-
-    window.addEventListener('openUpgradeModal', handleOpenUpgradeModal);
-    window.addEventListener('openClientAnalytics', handleOpenClientAnalytics);
-    window.addEventListener('openActivityHistory', handleOpenActivityHistory);
-    
-    return () => {
-      window.removeEventListener('openUpgradeModal', handleOpenUpgradeModal);
-      window.removeEventListener('openClientAnalytics', handleOpenClientAnalytics);
-      window.removeEventListener('openActivityHistory', handleOpenActivityHistory);
-    };
-  }, []);
 
   const renderContent = () => {
     switch (activeTab) {
