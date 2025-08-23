@@ -464,7 +464,6 @@ export const ClientPortal: React.FC = () => {
                 <LogOut size={20} />
               </button>
             </div>
-          </div>
         </div>
       </div>
 
