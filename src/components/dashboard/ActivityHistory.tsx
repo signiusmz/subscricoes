@@ -183,8 +183,8 @@ const mockActivities: ActivityItem[] = [
     id: '15',
     type: 'notification',
     category: 'success',
-    title: 'WhatsApp Enviado',
-    description: 'Lembrete via WhatsApp enviado para 5 clientes',
+    title: 'Mensagens Enviadas',
+    description: 'Lembretes via Email e WhatsApp enviados para 5 clientes',
     time: '2024-03-31T10:30:00Z',
     user: 'Sistema'
   }
