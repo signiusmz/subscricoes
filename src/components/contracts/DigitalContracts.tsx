@@ -28,7 +28,6 @@ import { PDFGenerator } from '../../utils/pdfGenerator';
 import { useAuth } from '../../context/AuthContext';
 import { HTMLEditor } from '../common/HTMLEditor';
 import { Pagination } from '../common/Pagination';
-
 interface Contract {
   id: string;
   number: string;
