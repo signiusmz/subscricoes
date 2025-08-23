@@ -644,6 +644,7 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({ client, onBack }) 
                               serviceName: invoice.serviceName,
                               serviceDescription: 'Descrição detalhada do serviço prestado',
                               amount: invoice.amount,
+                              paidAmount: payment?.amount,
                               status: invoice.status,
                               paymentMethod: payment?.method,
                               paidDate: payment?.date,

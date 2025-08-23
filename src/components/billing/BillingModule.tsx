@@ -230,6 +230,7 @@ export const BillingModule: React.FC = () => {
       serviceName: invoice.serviceName,
       serviceDescription: 'Descrição detalhada do serviço prestado pela empresa',
       amount: invoice.amount,
+      paidAmount: invoice.paidAmount,
       status: invoice.status,
       paymentMethod: invoice.paymentMethod,
       paidDate: invoice.paidDate,

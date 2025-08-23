@@ -34,6 +34,7 @@ export interface InvoiceData {
   serviceName: string;
   serviceDescription: string;
   amount: number;
+  paidAmount?: number;
   status: string;
   paymentMethod?: string;
   paidDate?: string;
@@ -202,13 +203,64 @@ export class PDFGenerator {
     
     // Total
     currentY += 20;
+    
+    // Payment summary table
     doc.setFillColor(59, 130, 246);
-    doc.rect(120, currentY, 70, 10, 'F');
+    doc.rect(120, currentY, 70, 8, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text('TOTAL:', 125, currentY + 7);
-    doc.text(`${invoiceData.amount.toLocaleString()} MT`, 160, currentY + 7);
+    doc.text('RESUMO DE PAGAMENTO', 125, currentY + 5);
+    
+    currentY += 8;
+    
+    // Valor da Fatura
+    doc.setFillColor(245, 245, 245);
+    doc.rect(120, currentY, 70, 6, 'F');
+    doc.setDrawColor(200, 200, 200);
+    doc.rect(120, currentY, 70, 6);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Valor da Fatura:', 125, currentY + 4);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${invoiceData.amount.toLocaleString()} MT`, 160, currentY + 4);
+    
+    currentY += 6;
+    
+    // Valor Recebido
+    const paidAmount = invoiceData.paidAmount || 0;
+    doc.setFillColor(240, 253, 244);
+    doc.rect(120, currentY, 70, 6, 'F');
+    doc.setDrawColor(34, 197, 94);
+    doc.rect(120, currentY, 70, 6);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Valor Recebido:', 125, currentY + 4);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(34, 197, 94);
+    doc.text(`${paidAmount.toLocaleString()} MT`, 160, currentY + 4);
+    
+    currentY += 6;
+    
+    // Saldo a Pagar
+    const remainingAmount = invoiceData.amount - paidAmount;
+    const isFullyPaid = remainingAmount <= 0;
+    
+    doc.setFillColor(isFullyPaid ? 240, 253, 244 : 254, 242, 242);
+    doc.rect(120, currentY, 70, 8, 'F');
+    doc.setDrawColor(isFullyPaid ? 34, 197, 94 : 239, 68, 68);
+    doc.rect(120, currentY, 70, 8);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SALDO A PAGAR:', 125, currentY + 5);
+    doc.setTextColor(isFullyPaid ? 34, 197, 94 : 239, 68, 68);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${Math.max(0, remainingAmount).toLocaleString()} MT`, 160, currentY + 5);
+    
+    currentY += 8;
     
     // Payment info (if paid)
     if (invoiceData.status === 'paid' && invoiceData.paymentMethod && invoiceData.paidDate) {
