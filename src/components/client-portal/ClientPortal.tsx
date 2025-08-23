@@ -526,8 +526,124 @@ export const ClientPortal: React.FC = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
-                      // Generate invoice PDF
-                      alert(`Visualizando fatura ${invoice.number}`);
+                      // Generate and view invoice PDF
+                      const clientInfoForPDF: ClientInfo = {
+                        companyName: clientData.companyName,
+                        representative: clientData.representative,
+                        email: clientData.email,
+                        phone: `${clientData.phoneCountryCode} ${clientData.phone}`,
+                        nuit: clientData.nuit,
+                        address: clientData.address
+                      };
+                      
+                      const invoiceData = {
+                        number: invoice.number,
+                        date: invoice.date,
+                        dueDate: invoice.dueDate,
+                        clientInfo: clientInfoForPDF,
+                        serviceName: invoice.serviceName,
+                        serviceDescription: 'Descrição detalhada do serviço prestado',
+                        amount: invoice.amount,
+                        paidAmount: invoice.status === 'paid' ? invoice.amount : undefined,
+                        status: invoice.status,
+                        paymentMethod: invoice.status === 'paid' ? 'transfer' : undefined,
+                        paidDate: invoice.status === 'paid' ? invoice.date : undefined,
+                        notes: 'Obrigado pela sua preferência!'
+                      };
+                      
+                      // Create a temporary window to show PDF
+                      const pdfWindow = window.open('', '_blank');
+                      if (pdfWindow) {
+                        pdfWindow.document.write(`
+                          <html>
+                            <head>
+                              <title>Fatura ${invoice.number}</title>
+                              <style>
+                                body { font-family: Arial, sans-serif; margin: 20px; }
+                                .header { border-bottom: 2px solid #3b82f6; padding-bottom: 20px; margin-bottom: 20px; }
+                                .company-info { display: flex; justify-content: space-between; margin-bottom: 20px; }
+                                .invoice-details { background: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+                                .client-info { margin-bottom: 20px; }
+                                .service-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                                .service-table th, .service-table td { border: 1px solid #d1d5db; padding: 10px; text-align: left; }
+                                .service-table th { background: #3b82f6; color: white; }
+                                .total-section { text-align: right; margin-top: 20px; }
+                                .status-paid { color: #059669; font-weight: bold; }
+                                .status-pending { color: #d97706; font-weight: bold; }
+                                @media print { body { margin: 0; } }
+                              </style>
+                            </head>
+                            <body>
+                              <div class="header">
+                                <div class="company-info">
+                                  <div>
+                                    <h1>TechSolutions Lda</h1>
+                                    <p>Av. Julius Nyerere, 123, Maputo</p>
+                                    <p>Tel: +258 21 123 456 | Email: info@techsolutions.mz</p>
+                                    <p>NUIT: 400123456</p>
+                                  </div>
+                                  <div>
+                                    <h2 style="color: #3b82f6;">FATURA</h2>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div class="invoice-details">
+                                <h3>Detalhes da Fatura</h3>
+                                <p><strong>Número:</strong> ${invoice.number}</p>
+                                <p><strong>Data de Emissão:</strong> ${new Date(invoice.date).toLocaleDateString('pt-PT')}</p>
+                                <p><strong>Data de Vencimento:</strong> ${new Date(invoice.dueDate).toLocaleDateString('pt-PT')}</p>
+                                <p><strong>Status:</strong> <span class="status-${invoice.status}">${invoice.status === 'paid' ? 'PAGA' : 'PENDENTE'}</span></p>
+                              </div>
+                              
+                              <div class="client-info">
+                                <h3>Dados do Cliente</h3>
+                                <p><strong>Empresa:</strong> ${clientData.companyName}</p>
+                                <p><strong>Representante:</strong> ${clientData.representative}</p>
+                                <p><strong>Email:</strong> ${clientData.email}</p>
+                                <p><strong>Telefone:</strong> ${clientData.phoneCountryCode} ${clientData.phone}</p>
+                                <p><strong>NUIT:</strong> ${clientData.nuit}</p>
+                                <p><strong>Endereço:</strong> ${clientData.address}</p>
+                              </div>
+                              
+                              <table class="service-table">
+                                <thead>
+                                  <tr>
+                                    <th>Descrição do Serviço</th>
+                                    <th>Valor</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td>
+                                      <strong>${invoice.serviceName}</strong><br>
+                                      Descrição detalhada do serviço prestado
+                                    </td>
+                                    <td><strong>${invoice.amount.toLocaleString()} MT</strong></td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                              
+                              <div class="total-section">
+                                <p><strong>TOTAL: ${invoice.amount.toLocaleString()} MT</strong></p>
+                                ${invoice.status === 'paid' ? `<p class="status-paid">✓ FATURA QUITADA</p>` : `<p class="status-pending">⚠ PAGAMENTO PENDENTE</p>`}
+                              </div>
+                              
+                              <div style="margin-top: 30px; text-align: center; color: #6b7280;">
+                                <p>Obrigado pela sua preferência!</p>
+                                <p>Documento gerado em ${new Date().toLocaleDateString('pt-PT')}</p>
+                              </div>
+                              
+                              <script>
+                                window.onload = function() {
+                                  window.print();
+                                }
+                              </script>
+                            </body>
+                          </html>
+                        `);
+                        pdfWindow.document.close();
+                      }
                     }}
                     className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
                     title="Visualizar"
@@ -537,7 +653,31 @@ export const ClientPortal: React.FC = () => {
                   <button
                     onClick={() => {
                       // Download invoice PDF
-                      alert(`Download da fatura ${invoice.number} iniciado!`);
+                      const clientInfoForPDF: ClientInfo = {
+                        companyName: clientData.companyName,
+                        representative: clientData.representative,
+                        email: clientData.email,
+                        phone: `${clientData.phoneCountryCode} ${clientData.phone}`,
+                        nuit: clientData.nuit,
+                        address: clientData.address
+                      };
+                      
+                      const invoiceData = {
+                        number: invoice.number,
+                        date: invoice.date,
+                        dueDate: invoice.dueDate,
+                        clientInfo: clientInfoForPDF,
+                        serviceName: invoice.serviceName,
+                        serviceDescription: 'Descrição detalhada do serviço prestado',
+                        amount: invoice.amount,
+                        paidAmount: invoice.status === 'paid' ? invoice.amount : undefined,
+                        status: invoice.status,
+                        paymentMethod: invoice.status === 'paid' ? 'transfer' : undefined,
+                        paidDate: invoice.status === 'paid' ? invoice.date : undefined,
+                        notes: 'Obrigado pela sua preferência!'
+                      };
+                      
+                      PDFGenerator.generateInvoice(invoiceData);
                     }}
                     className="text-green-600 hover:text-green-900 p-1 hover:bg-green-50 rounded"
                     title="Download"
@@ -578,8 +718,91 @@ export const ClientPortal: React.FC = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
-                      // View receipt
-                      alert(`Visualizando recibo ${receipt.number}`);
+                      // View receipt in new window
+                      const receiptWindow = window.open('', '_blank');
+                      if (receiptWindow) {
+                        receiptWindow.document.write(`
+                          <html>
+                            <head>
+                              <title>Recibo ${receipt.number}</title>
+                              <style>
+                                body { font-family: Arial, sans-serif; margin: 20px; }
+                                .header { border-bottom: 2px solid #059669; padding-bottom: 20px; margin-bottom: 20px; }
+                                .company-info { display: flex; justify-content: space-between; margin-bottom: 20px; }
+                                .receipt-details { background: #f0fdf4; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #059669; }
+                                .client-info { margin-bottom: 20px; }
+                                .payment-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                                .payment-table th, .payment-table td { border: 1px solid #d1d5db; padding: 10px; text-align: left; }
+                                .payment-table th { background: #059669; color: white; }
+                                .confirmation { background: #f0fdf4; border: 2px solid #059669; padding: 20px; text-align: center; border-radius: 8px; margin-top: 20px; }
+                                @media print { body { margin: 0; } }
+                              </style>
+                            </head>
+                            <body>
+                              <div class="header">
+                                <div class="company-info">
+                                  <div>
+                                    <h1>TechSolutions Lda</h1>
+                                    <p>Av. Julius Nyerere, 123, Maputo</p>
+                                    <p>Tel: +258 21 123 456 | Email: info@techsolutions.mz</p>
+                                    <p>NUIT: 400123456</p>
+                                  </div>
+                                  <div>
+                                    <h2 style="color: #059669;">RECIBO</h2>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div class="receipt-details">
+                                <h3>Detalhes do Recibo</h3>
+                                <p><strong>Número:</strong> ${receipt.number}</p>
+                                <p><strong>Data de Pagamento:</strong> ${new Date(receipt.date).toLocaleDateString('pt-PT')}</p>
+                                <p><strong>Método de Pagamento:</strong> ${receipt.paymentMethod === 'transfer' ? 'Transferência' : 'M-Pesa'}</p>
+                              </div>
+                              
+                              <div class="client-info">
+                                <h3>Dados do Cliente</h3>
+                                <p><strong>Empresa:</strong> ${clientData.companyName}</p>
+                                <p><strong>Representante:</strong> ${clientData.representative}</p>
+                                <p><strong>Email:</strong> ${clientData.email}</p>
+                                <p><strong>NUIT:</strong> ${clientData.nuit}</p>
+                              </div>
+                              
+                              <table class="payment-table">
+                                <thead>
+                                  <tr>
+                                    <th>Serviço</th>
+                                    <th>Valor Pago</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td><strong>${receipt.serviceName}</strong></td>
+                                    <td><strong>${receipt.amount.toLocaleString()} MT</strong></td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                              
+                              <div class="confirmation">
+                                <h3 style="color: #059669; margin: 0;">✓ PAGAMENTO CONFIRMADO</h3>
+                                <p style="margin: 10px 0 0 0;">Valor de ${receipt.amount.toLocaleString()} MT recebido com sucesso</p>
+                              </div>
+                              
+                              <div style="margin-top: 30px; text-align: center; color: #6b7280;">
+                                <p>Obrigado pela sua preferência!</p>
+                                <p>Documento gerado em ${new Date().toLocaleDateString('pt-PT')}</p>
+                              </div>
+                              
+                              <script>
+                                window.onload = function() {
+                                  window.print();
+                                }
+                              </script>
+                            </body>
+                          </html>
+                        `);
+                        receiptWindow.document.close();
+                      }
                     }}
                     className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
                     title="Visualizar"
@@ -589,7 +812,28 @@ export const ClientPortal: React.FC = () => {
                   <button
                     onClick={() => {
                       // Download receipt PDF
-                      alert(`Download do recibo ${receipt.number} iniciado!`);
+                      const clientInfoForPDF: ClientInfo = {
+                        companyName: clientData.companyName,
+                        representative: clientData.representative,
+                        email: clientData.email,
+                        phone: `${clientData.phoneCountryCode} ${clientData.phone}`,
+                        nuit: clientData.nuit,
+                        address: clientData.address
+                      };
+                      
+                      const receiptData = {
+                        number: receipt.number,
+                        date: receipt.date,
+                        clientInfo: clientInfoForPDF,
+                        invoiceNumber: `INV-${receipt.id}`,
+                        serviceName: receipt.serviceName,
+                        amount: receipt.amount,
+                        paymentMethod: receipt.paymentMethod === 'transfer' ? 'Transferência' : 'M-Pesa',
+                        reference: `REF-${receipt.number}`,
+                        notes: 'Pagamento processado com sucesso!'
+                      };
+                      
+                      PDFGenerator.generateReceipt(receiptData);
                     }}
                     className="text-green-600 hover:text-green-900 p-1 hover:bg-green-50 rounded"
                     title="Download"
@@ -607,7 +851,6 @@ export const ClientPortal: React.FC = () => {
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: FileText },
-    { id: 'invoices', label: 'Faturas', icon: CreditCard },
     { id: 'contracts', label: 'Contratos', icon: FileText },
     { id: 'documents', label: 'Documentos', icon: FileCheck }
   ];
@@ -718,7 +961,6 @@ export const ClientPortal: React.FC = () => {
 
         {/* Content */}
         {activeTab === 'dashboard' && renderDashboard()}
-        {activeTab === 'invoices' && renderInvoices()}
         {activeTab === 'contracts' && renderContracts()}
         {activeTab === 'documents' && renderDocuments()}
       </div>
@@ -1050,7 +1292,72 @@ export const ClientPortal: React.FC = () => {
               <button
                 onClick={() => {
                   // Download contract PDF
-                  alert(`Download do contrato ${mockContract.number} iniciado!`);
+                  const contractWindow = window.open('', '_blank');
+                  if (contractWindow) {
+                    contractWindow.document.write(`
+                      <html>
+                        <head>
+                          <title>Contrato ${mockContract.number}</title>
+                          <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+                            .header { border-bottom: 2px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px; text-align: center; }
+                            .contract-info { background: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+                            .contract-content { margin-bottom: 30px; }
+                            .contract-content h3 { color: #1f2937; margin-top: 25px; margin-bottom: 10px; }
+                            .contract-content h4 { color: #374151; margin-top: 20px; margin-bottom: 8px; }
+                            .contract-content ul { margin-left: 20px; }
+                            .contract-content li { margin-bottom: 5px; }
+                            .signatures { display: flex; justify-content: space-between; margin-top: 50px; padding-top: 30px; border-top: 1px solid #d1d5db; }
+                            .signature-box { text-align: center; width: 200px; }
+                            .signature-line { border-top: 1px solid #000; margin-top: 50px; padding-top: 5px; }
+                            @media print { body { margin: 0; } }
+                          </style>
+                        </head>
+                        <body>
+                          <div class="header">
+                            <h1>TechSolutions Lda</h1>
+                            <p>Av. Julius Nyerere, 123, Maputo | Tel: +258 21 123 456</p>
+                            <h2 style="color: #3b82f6; margin-top: 20px;">CONTRATO DE PRESTAÇÃO DE SERVIÇOS</h2>
+                          </div>
+                          
+                          <div class="contract-info">
+                            <p><strong>Número do Contrato:</strong> ${mockContract.number}</p>
+                            <p><strong>Serviço:</strong> ${mockContract.serviceName}</p>
+                            <p><strong>Vigência:</strong> ${new Date(mockContract.startDate).toLocaleDateString('pt-PT')} - ${new Date(mockContract.endDate).toLocaleDateString('pt-PT')}</p>
+                            <p><strong>Valor Mensal:</strong> ${mockContract.price.toLocaleString()} MT</p>
+                          </div>
+                          
+                          <div class="contract-content">
+                            ${mockContract.terms}
+                          </div>
+                          
+                          <div class="signatures">
+                            <div class="signature-box">
+                              <div class="signature-line">
+                                <strong>CONTRATANTE</strong><br>
+                                ${clientData.companyName}<br>
+                                ${clientData.representative}
+                              </div>
+                            </div>
+                            <div class="signature-box">
+                              <div class="signature-line">
+                                <strong>CONTRATADA</strong><br>
+                                TechSolutions Lda<br>
+                                Diretor Geral
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <script>
+                            window.onload = function() {
+                              window.print();
+                            }
+                          </script>
+                        </body>
+                      </html>
+                    `);
+                    contractWindow.document.close();
+                  }
                 }}
                 className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
               >
