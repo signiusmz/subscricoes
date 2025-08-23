@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Plus, Edit, Trash2, Calendar, Clock, DollarSign, Users, CheckCircle, AlertCircle, XCircle, RefreshCw, Star, Eye, Send, Filter, Download } from 'lucide-react';
 import { Subscription, Service, Client } from '../../types';
+import { useAuth } from '../../context/AuthContext';
 import { addInvoiceToGlobal } from '../billing/BillingModule';
 import { Pagination } from '../common/Pagination';
 
@@ -167,6 +168,7 @@ interface SubscriptionsTableProps {
 }
 
 export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({ initialFilters }) => {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'cancelled' | 'expired'>(initialFilters?.statusFilter || 'all');
   const [reminderFilter, setReminderFilter] = useState<'all' | 'sent' | 'pending'>(initialFilters?.reminderFilter || 'all');
