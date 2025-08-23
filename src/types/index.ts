@@ -21,6 +21,8 @@ export interface Company {
   planPrice: 750 | 1500 | 3500;
   createdAt: string;
   isActive: boolean;
+  trialEndDate?: string;
+  isTrialActive?: boolean;
 }
 
 export interface Client {

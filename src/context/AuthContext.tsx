@@ -80,7 +80,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         plan: 'professional',
         planPrice: 1500,
         createdAt: new Date().toISOString(),
-        isActive: true
+        isActive: true,
+        trialEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
+        isTrialActive: true
       };
 
       setUser(mockUser);

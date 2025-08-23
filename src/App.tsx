@@ -4,6 +4,8 @@ import { LoginForm } from './components/auth/LoginForm';
 import { RegisterForm } from './components/auth/RegisterForm';
 import LandingPage from './components/landing/LandingPage';
 import { Sidebar } from './components/layout/Sidebar';
+import { TrialBanner } from './components/layout/TrialBanner';
+import { UpgradeModal } from './components/layout/UpgradeModal';
 import { SuperAdminDashboard } from './components/super-admin/SuperAdminDashboard';
 import { MetricsCards } from './components/dashboard/MetricsCards';
 import { RecentActivity } from './components/dashboard/RecentActivity';
@@ -31,11 +33,22 @@ const mockMetrics: DashboardMetrics = {
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showClientPortal, setShowClientPortal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showTrialBanner, setShowTrialBanner] = useState(true);
+  const { company, updateUser } = useAuth();
 
   // Demo: Toggle to client portal
   if (showClientPortal) {
     return <ClientPortal />;
   }
+
+  const handleUpgradeSuccess = (planId: string, transactionId: string) => {
+    // Update company plan
+    console.log(`Upgraded to ${planId} with transaction ${transactionId}`);
+    alert(`Plano atualizado para ${planId} com sucesso! ID da transação: ${transactionId}`);
+    setShowUpgradeModal(false);
+    setShowTrialBanner(false);
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -79,8 +92,16 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Trial Banner */}
+      {showTrialBanner && company?.isTrialActive && (
+        <TrialBanner 
+          onUpgrade={() => setShowUpgradeModal(true)}
+          onDismiss={() => setShowTrialBanner(false)}
+        />
+      )}
+      
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-      <div className="ml-64">
+      <div className={`ml-64 ${showTrialBanner && company?.isTrialActive ? 'pt-16' : ''}`}>
         {/* Demo Portal Toggle */}
         <div className="bg-blue-600 text-white p-2 text-center">
           <button 
@@ -94,6 +115,14 @@ const Dashboard = () => {
           {renderContent()}
         </div>
       </div>
+      
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        currentPlan={company?.plan}
+        onUpgradeSuccess={handleUpgradeSuccess}
+      />
     </div>
   );
 };
