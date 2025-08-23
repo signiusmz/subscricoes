@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useState } from 'react';
+import { useTawkTo } from '../common/TawkToChat';
 
 interface SidebarProps {
   activeTab: string;
@@ -39,12 +40,20 @@ const getMenuItems = (userRole: string) => [
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
   const { user, company, logout, updateUser } = useAuth();
+  const { sendEvent } = useTawkTo();
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(user?.profilePhoto || null);
 
   const handleUpdateProfile = (profileData: any) => {
     updateUser({ ...profileData, profilePhoto });
     setShowProfileModal(false);
+    
+    // Send event to Tawk.to
+    sendEvent('profile_updated', {
+      action: 'profile_update',
+      changes: Object.keys(profileData)
+    });
+    
     alert('Perfil atualizado com sucesso!');
   };
 

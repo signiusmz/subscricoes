@@ -30,6 +30,7 @@ import {
   TrendingUp,
   MessageSquare
 } from 'lucide-react';
+import { TawkToChat } from '../common/TawkToChat';
 
 interface LandingPageProps {
   onLogin: () => void;
@@ -973,6 +974,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
           </div>
         </div>
       </footer>
+      
+      {/* Tawk.to Chat Widget for Landing Page */}
+      <TawkToChat showOnLanding={true} />
     </div>
   );
 };

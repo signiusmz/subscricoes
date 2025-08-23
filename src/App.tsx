@@ -23,6 +23,7 @@ import { ReportsAnalytics } from './components/reports/ReportsAnalytics';
 import { SettingsPanel } from './components/settings/SettingsPanel';
 import { ClientPortal } from './components/client-portal/ClientPortal';
 import { SenderModule } from './components/sender/SenderModule';
+import { TawkToChat } from './components/common/TawkToChat';
 import { DashboardMetrics } from './types';
 
 const mockMetrics: DashboardMetrics = {
@@ -211,6 +212,9 @@ const Dashboard = () => {
         onUpgradeSuccess={handleUpgradeSuccess}
       />
     </div>
+    
+    {/* Tawk.to Chat Widget */}
+    <TawkToChat />
   );
 };
 
