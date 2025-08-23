@@ -13,7 +13,8 @@ import {
   Edit,
   Camera,
   Upload,
-  Send
+  Send,
+  Clock
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useState } from 'react';
@@ -105,6 +106,32 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
 
       {/* User Profile */}
       <div className="p-4 border-t border-gray-200">
+        {/* Trial Banner */}
+        {company?.isTrialActive && (
+          <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <Clock className="text-yellow-600" size={16} />
+              <span className="text-sm font-semibold text-yellow-800">Período de Teste</span>
+            </div>
+            <p className="text-xs text-yellow-700 mb-2">
+              {company.trialEndDate ? 
+                Math.max(0, Math.ceil((new Date(company.trialEndDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))) 
+                : 0
+              } dias restantes
+            </p>
+            <button
+              onClick={() => {
+                // Trigger upgrade modal - we'll need to pass this up
+                const event = new CustomEvent('openUpgradeModal');
+                window.dispatchEvent(event);
+              }}
+              className="w-full bg-yellow-600 text-white py-1.5 px-3 rounded text-xs font-medium hover:bg-yellow-700 transition-colors"
+            >
+              Fazer Upgrade
+            </button>
+          </div>
+        )}
+        
         <button
           onClick={() => setShowProfileModal(true)}
           className="w-full flex items-center gap-3 p-3 rounded-lg bg-gray-50 mb-3 hover:bg-gray-100 transition-colors"

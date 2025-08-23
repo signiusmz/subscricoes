@@ -34,7 +34,6 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showClientPortal, setShowClientPortal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [showTrialBanner, setShowTrialBanner] = useState(true);
   const { company, user, updateUser } = useAuth();
 
   // Demo: Toggle to client portal
@@ -61,9 +60,21 @@ const Dashboard = () => {
     }
     
     setShowUpgradeModal(false);
-    setShowTrialBanner(false);
     alert(`Plano atualizado para ${planId} com sucesso! ID da transação: ${transactionId}`);
   };
+
+  // Listen for upgrade modal trigger from sidebar
+  React.useEffect(() => {
+    const handleOpenUpgradeModal = () => {
+      setShowUpgradeModal(true);
+    };
+
+    window.addEventListener('openUpgradeModal', handleOpenUpgradeModal);
+    
+    return () => {
+      window.removeEventListener('openUpgradeModal', handleOpenUpgradeModal);
+    };
+  }, []);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -107,16 +118,8 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Trial Banner */}
-      {showTrialBanner && company?.isTrialActive && (
-        <TrialBanner 
-          onUpgrade={() => setShowUpgradeModal(true)}
-          onDismiss={() => setShowTrialBanner(false)}
-        />
-      )}
-      
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-      <div className={`ml-64 ${showTrialBanner && company?.isTrialActive ? 'pt-16' : ''}`}>
+      <div className="ml-64">
         {/* Demo Portal Toggle */}
         <div className="bg-blue-600 text-white p-2 text-center">
           <button 
