@@ -304,20 +304,24 @@ export const UsersTable: React.FC = () => {
                       >
                         <Edit size={16} />
                       </button>
-                      <button 
-                        onClick={() => handleToggleStatus(user.id)}
-                        className="text-orange-600 hover:text-orange-900 p-1 hover:bg-orange-50 rounded"
-                        title={user.isActive ? "Desativar" : "Ativar"}
-                      >
-                        <Shield size={16} />
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteUser(user.id)}
-                        className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
-                        title="Eliminar"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      {currentUser?.role === 'admin' && (
+                        <>
+                          <button 
+                            onClick={() => handleToggleStatus(user.id)}
+                            className="text-orange-600 hover:text-orange-900 p-1 hover:bg-orange-50 rounded"
+                            title={user.isActive ? "Desativar" : "Ativar"}
+                          >
+                            <Shield size={16} />
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteUser(user.id)}
+                            className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
+                            title="Eliminar"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>

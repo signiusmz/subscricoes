@@ -127,6 +127,7 @@ interface ClientsTableProps {
 }
 
 export const ClientsTable: React.FC<ClientsTableProps> = ({ initialFilters }) => {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>(initialFilters?.statusFilter || 'all');
   const [salespersonFilter, setSalespersonFilter] = useState(initialFilters?.salespersonFilter || 'all');
@@ -696,6 +697,7 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({ initialFilters }) =>
         </div>
         
         {selectedClients.length > 0 && (
+          (user?.role === 'admin') && (
           <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-center justify-between">
               <span className="text-sm text-blue-800">
@@ -709,6 +711,7 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({ initialFilters }) =>
               </button>
             </div>
           </div>
+          )
         )}
       </div>
 
@@ -812,13 +815,15 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({ initialFilters }) =>
                       >
                         <Edit size={16} />
                       </button>
-                      <button 
-                        onClick={() => handleDeleteClient(client.id)}
-                        className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
-                        title="Eliminar"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      {(user?.role === 'admin') && (
+                        <button 
+                          onClick={() => handleDeleteClient(client.id)}
+                          className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
+                          title="Eliminar"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

@@ -48,6 +48,7 @@ const mockServices: Service[] = [
 ];
 
 export const ServicesTable: React.FC = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('services');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'expiring' | 'expired'>('all');

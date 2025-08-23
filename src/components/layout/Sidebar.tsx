@@ -30,9 +30,11 @@ const getMenuItems = (userRole: string) => [
   { id: 'services', label: 'Serviços', icon: FileText },
   { id: 'subscriptions', label: 'Subscrições', icon: CreditCard },
   { id: 'billing', label: 'Facturação', icon: Receipt },
-  ...(userRole !== 'manager' ? [{ id: 'sender', label: 'Envios', icon: Send }] : []),
   { id: 'reports', label: 'Relatórios', icon: BarChart3 },
-  ...(userRole !== 'manager' ? [{ id: 'settings', label: 'Configurações', icon: Settings }] : []),
+  ...(userRole === 'admin' ? [
+    { id: 'sender', label: 'Envios', icon: Send },
+    { id: 'settings', label: 'Configurações', icon: Settings }
+  ] : []),
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
