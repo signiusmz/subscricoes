@@ -143,6 +143,11 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({ initialFilters }) =>
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, salespersonFilter]);
+
   // Listen for dashboard navigation filters
   React.useEffect(() => {
     const handleApplyFilters = (event: CustomEvent) => {
@@ -217,11 +222,6 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({ initialFilters }) =>
   const totalPages = Math.ceil(filteredClients.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedClients = filteredClients.slice(startIndex, startIndex + itemsPerPage);
-
-  // Reset to first page when filters change
-  React.useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, statusFilter, salespersonFilter]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-PT');
