@@ -76,7 +76,7 @@ export const MetricsCards: React.FC<MetricsCardsProps> = ({ metrics, onNavigate 
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
       {cards.map((card, index) => {
         const Icon = card.icon;
         const isPositiveTrend = card.trend?.includes('+');
@@ -84,13 +84,13 @@ export const MetricsCards: React.FC<MetricsCardsProps> = ({ metrics, onNavigate 
         return (
           <div 
             key={index} 
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer group"
+            className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer group"
             onClick={card.onClick}
           >
             <div className="flex items-center justify-between mb-3">
               <div>
                 <p className="text-sm font-medium text-gray-600 mb-1 group-hover:text-gray-800 transition-colors">{card.title}</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-xl lg:text-2xl font-bold text-gray-900">
                   {typeof card.value === 'number' ? card.value.toLocaleString() : card.value}{card.suffix}
                 </p>
                 {card.trend && (
@@ -102,15 +102,15 @@ export const MetricsCards: React.FC<MetricsCardsProps> = ({ metrics, onNavigate 
                   </p>
                 )}
               </div>
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${getColorClasses(card.color)} group-hover:scale-110 transition-transform`}>
-                <Icon size={24} />
+              <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center ${getColorClasses(card.color)} group-hover:scale-110 transition-transform`}>
+                <Icon size={20} className="lg:w-6 lg:h-6" />
               </div>
             </div>
             
             {/* Progress bar for visual appeal */}
-            <div className="w-full bg-gray-200 rounded-full h-1.5">
+            <div className="w-full bg-gray-200 rounded-full h-1 lg:h-1.5">
               <div 
-                className={`h-1.5 rounded-full transition-all duration-1000 group-hover:shadow-sm ${
+                className={`h-1 lg:h-1.5 rounded-full transition-all duration-1000 group-hover:shadow-sm ${
                   card.color === 'blue' ? 'bg-blue-500' :
                   card.color === 'green' ? 'bg-green-500' :
                   card.color === 'orange' ? 'bg-orange-500' :
@@ -123,7 +123,7 @@ export const MetricsCards: React.FC<MetricsCardsProps> = ({ metrics, onNavigate 
             </div>
             
             {/* Click indicator */}
-            <div className="mt-3 text-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="mt-2 lg:mt-3 text-center opacity-0 group-hover:opacity-100 transition-opacity">
               <span className="text-xs text-gray-500">Clique para ver detalhes →</span>
             </div>
           </div>

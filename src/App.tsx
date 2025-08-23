@@ -46,6 +46,7 @@ const mockMetrics: DashboardMetrics = {
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showClientAnalytics, setShowClientAnalytics] = useState(false);
   const [showActivityHistory, setShowActivityHistory] = useState(false);
   const [showClientPortal, setShowClientPortal] = useState(false);
@@ -142,7 +143,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        <div className="ml-64">
+        <div className="lg:ml-64">
           <div className="p-8">
             <ClientAnalytics onBack={() => setShowClientAnalytics(false)} />
           </div>
@@ -156,7 +157,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        <div className="ml-64">
+        <div className="lg:ml-64">
           <div className="p-8">
             <ActivityHistory onBack={() => setShowActivityHistory(false)} />
           </div>
@@ -170,7 +171,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        <div className="ml-64">
+        <div className="lg:ml-64">
           <div className="p-8">
             <AdvancedDashboard />
           </div>
@@ -184,7 +185,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        <div className="ml-64">
+        <div className="lg:ml-64">
           <div className="p-8">
             <ChurnAnalysis />
           </div>
@@ -198,7 +199,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        <div className="ml-64">
+        <div className="lg:ml-64">
           <div className="p-8">
             <ClientSegmentation />
           </div>
@@ -212,7 +213,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        <div className="ml-64">
+        <div className="lg:ml-64">
           <FlowBuilder />
         </div>
       </div>
@@ -224,7 +225,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        <div className="ml-64">
+        <div className="lg:ml-64">
           <div className="p-8">
             <TemplateEditor />
           </div>
@@ -238,7 +239,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        <div className="ml-64">
+        <div className="lg:ml-64">
           <div className="p-8">
             <SalesReport onBack={() => setShowSalesReport(false)} />
           </div>
@@ -313,9 +314,9 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-      <div className="ml-64">
+      <div className="lg:ml-64">
         {/* Demo Portal Toggle */}
-        <div className="bg-blue-600 text-white p-2 text-center">
+        <div className="bg-blue-600 text-white p-2 text-center lg:block hidden">
           <button 
             onClick={() => setShowClientPortal(!showClientPortal)}
             className="text-sm hover:underline"
@@ -323,12 +324,23 @@ const Dashboard = () => {
             🔄 Demo: {showClientPortal ? 'Voltar ao Sistema' : 'Portal do Cliente'}
           </button>
         </div>
-        <div className="p-8">
+        
+        {/* Mobile Demo Toggle */}
+        <div className="lg:hidden bg-blue-600 text-white p-3 text-center">
+          <button 
+            onClick={() => setShowClientPortal(!showClientPortal)}
+            className="text-sm hover:underline font-medium"
+          >
+            🔄 Demo: {showClientPortal ? 'Voltar ao Sistema' : 'Portal do Cliente'}
+          </button>
+        </div>
+        
+        <div className="p-4 lg:p-8">
           {renderContent()}
         </div>
         
         {/* System Footer */}
-        <footer className="bg-gray-50 border-t border-gray-200 py-4 px-8">
+        <footer className="bg-gray-50 border-t border-gray-200 py-4 px-4 lg:px-8">
           <div className="text-center">
             <p className="text-xs text-gray-500">
               Signius - Sistema de Gestão Comercial (

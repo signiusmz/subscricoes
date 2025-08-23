@@ -152,7 +152,7 @@ export const DashboardHeader: React.FC = () => {
   };
 
   return (
-    <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 text-white rounded-xl p-8 mb-8 relative overflow-hidden">
+    <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 text-white rounded-xl p-4 lg:p-8 mb-8 relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-0 left-0 w-32 h-32 bg-white rounded-full -translate-x-16 -translate-y-16"></div>
@@ -161,14 +161,14 @@ export const DashboardHeader: React.FC = () => {
       </div>
 
       <div className="relative z-10">
-        <div className="grid lg:grid-cols-3 gap-8 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-center">
           {/* Greeting Section */}
           <div className="lg:col-span-2">
             <div className="mb-4">
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-2">
                 {getGreeting()}, {user?.name?.split(' ')[0] || 'Utilizador'}! 👋
               </h1>
-              <p className="text-blue-100 text-lg mb-4">
+              <p className="text-blue-100 text-base lg:text-lg mb-4">
                 Bem-vindo ao painel de gestão da {company?.name || 'sua empresa'}
               </p>
               <div className="flex items-center gap-4 text-blue-100 text-sm">
@@ -184,14 +184,14 @@ export const DashboardHeader: React.FC = () => {
             </div>
 
             {/* Motivational Quote */}
-            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4 border border-white border-opacity-20">
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-3 lg:p-4 border border-white border-opacity-20">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                   <span className="text-yellow-900 font-bold text-sm">💡</span>
                 </div>
                 <div>
                   <p className="text-white font-medium text-sm mb-1">Frase do Momento</p>
-                  <p className="text-blue-100 italic leading-relaxed">
+                  <p className="text-blue-100 italic leading-relaxed text-sm lg:text-base">
                     "{currentQuote}"
                   </p>
                 </div>
@@ -201,7 +201,7 @@ export const DashboardHeader: React.FC = () => {
 
           {/* Weather Section */}
           <div className="lg:col-span-1">
-            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-6 border border-white border-opacity-20">
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4 lg:p-6 border border-white border-opacity-20">
               <div className="text-center mb-4">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <MapPin size={16} className="text-blue-200" />
@@ -209,7 +209,7 @@ export const DashboardHeader: React.FC = () => {
                 </div>
                 <div className="flex items-center justify-center gap-3 mb-3">
                   {getWeatherIcon(weather.condition)}
-                  <span className="text-3xl font-bold text-white">{weather.temperature}°C</span>
+                  <span className="text-2xl lg:text-3xl font-bold text-white">{weather.temperature}°C</span>
                 </div>
                 <p className="text-blue-100 text-sm font-medium">{weather.description}</p>
               </div>
@@ -240,101 +240,101 @@ export const DashboardHeader: React.FC = () => {
         </div>
 
         {/* Quick Stats Bar */}
-        <div className="mt-6 pt-6 border-t border-white border-opacity-20">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center cursor-pointer">
+        <div className="mt-4 lg:mt-6 pt-4 lg:pt-6 border-t border-white border-opacity-20">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4 text-center cursor-pointer">
             <div>
-              <p className="text-2xl font-bold text-white">45</p>
+              <p className="text-xl lg:text-2xl font-bold text-white">45</p>
               <p className="text-blue-200 text-sm">Clientes Ativos</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">78</p>
+              <p className="text-xl lg:text-2xl font-bold text-white">78</p>
               <p className="text-blue-200 text-sm">Serviços</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">12</p>
+              <p className="text-xl lg:text-2xl font-bold text-white">12</p>
               <p className="text-blue-200 text-sm">A Expirar</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">8.4</p>
+              <p className="text-xl lg:text-2xl font-bold text-white">8.4</p>
               <p className="text-blue-200 text-sm">Satisfação Média</p>
             </div>
           </div>
           
           {/* Quick Access to Advanced Features */}
-          <div className="mt-6 pt-6 border-t border-white border-opacity-20">
+          <div className="mt-4 lg:mt-6 pt-4 lg:pt-6 border-t border-white border-opacity-20">
             <h4 className="text-lg font-semibold text-white mb-4">🚀 Funcionalidades Avançadas</h4>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-2 lg:gap-3">
               <button
                 onClick={() => {
                   const event = new CustomEvent('openAdvancedAnalytics');
                   window.dispatchEvent(event);
                 }}
-                className="bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg p-3 text-center transition-all"
+                className="bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg p-2 lg:p-3 text-center transition-all"
               >
-                <div className="text-2xl mb-1">📊</div>
-                <div className="text-xs text-blue-100">Analytics IA</div>
+                <div className="text-lg lg:text-2xl mb-1">📊</div>
+                <div className="text-xs lg:text-xs text-blue-100">Analytics IA</div>
               </button>
               <button
                 onClick={() => {
                   const event = new CustomEvent('openChurnAnalysis');
                   window.dispatchEvent(event);
                 }}
-                className="bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg p-3 text-center transition-all"
+                className="bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg p-2 lg:p-3 text-center transition-all"
               >
-                <div className="text-2xl mb-1">🤖</div>
-                <div className="text-xs text-blue-100">Churn IA</div>
+                <div className="text-lg lg:text-2xl mb-1">🤖</div>
+                <div className="text-xs lg:text-xs text-blue-100">Churn IA</div>
               </button>
               <button
                 onClick={() => {
                   const event = new CustomEvent('openClientSegmentation');
                   window.dispatchEvent(event);
                 }}
-                className="bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg p-3 text-center transition-all"
+                className="bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg p-2 lg:p-3 text-center transition-all"
               >
-                <div className="text-2xl mb-1">🎯</div>
-                <div className="text-xs text-blue-100">Segmentação</div>
+                <div className="text-lg lg:text-2xl mb-1">🎯</div>
+                <div className="text-xs lg:text-xs text-blue-100">Segmentação</div>
               </button>
               <button
                 onClick={() => {
                   const event = new CustomEvent('openFlowBuilder');
                   window.dispatchEvent(event);
                 }}
-                className="bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg p-3 text-center transition-all"
+                className="bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg p-2 lg:p-3 text-center transition-all"
               >
-                <div className="text-2xl mb-1">⚡</div>
-                <div className="text-xs text-blue-100">Fluxos</div>
+                <div className="text-lg lg:text-2xl mb-1">⚡</div>
+                <div className="text-xs lg:text-xs text-blue-100">Fluxos</div>
               </button>
               <button
                 onClick={() => {
                   const event = new CustomEvent('openTemplateEditor');
                   window.dispatchEvent(event);
                 }}
-                className="bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg p-3 text-center transition-all"
+                className="bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg p-2 lg:p-3 text-center transition-all"
               >
-                <div className="text-2xl mb-1">📝</div>
-                <div className="text-xs text-blue-100">Templates</div>
+                <div className="text-lg lg:text-2xl mb-1">📝</div>
+                <div className="text-xs lg:text-xs text-blue-100">Templates</div>
               </button>
             </div>
             
             {/* Sales Performance */}
-            <div className="mt-6 pt-6 border-t border-white border-opacity-20">
+            <div className="mt-4 lg:mt-6 pt-4 lg:pt-6 border-t border-white border-opacity-20">
               <h4 className="text-lg font-semibold text-white mb-4">🏆 Performance de Vendas</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white bg-opacity-10 rounded-lg p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                <div className="bg-white bg-opacity-10 rounded-lg p-3 lg:p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-yellow-400 text-lg">🏆</span>
                     <span className="text-sm font-semibold text-white">Melhor Vendedor do Mês</span>
                   </div>
-                  <p className="text-lg font-bold text-white">João Silva</p>
-                  <p className="text-sm text-blue-100">85.000 MT • 12 clientes • 6 contratos</p>
+                  <p className="text-base lg:text-lg font-bold text-white">João Silva</p>
+                  <p className="text-xs lg:text-sm text-blue-100">85.000 MT • 12 clientes • 6 contratos</p>
                 </div>
-                <div className="bg-white bg-opacity-10 rounded-lg p-4">
+                <div className="bg-white bg-opacity-10 rounded-lg p-3 lg:p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-gray-300 text-lg">🥈</span>
                     <span className="text-sm font-semibold text-white">Mês Anterior</span>
                   </div>
-                  <p className="text-lg font-bold text-white">João Silva</p>
-                  <p className="text-sm text-blue-100">78.000 MT • 11 clientes • 5 contratos</p>
+                  <p className="text-base lg:text-lg font-bold text-white">João Silva</p>
+                  <p className="text-xs lg:text-sm text-blue-100">78.000 MT • 11 clientes • 5 contratos</p>
                 </div>
               </div>
             </div>
