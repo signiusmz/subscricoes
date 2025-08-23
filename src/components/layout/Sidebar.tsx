@@ -30,9 +30,6 @@ interface SidebarProps {
 const getMenuItems = (userRole: string) => [
   { id: 'dashboard', label: 'Dashboard', icon: Home },
   { id: 'clients', label: 'Clientes', icon: Users },
-  ...(userRole === 'admin' || userRole === 'manager' ? [
-    { id: 'users', label: 'Utilizadores', icon: User }
-  ] : []),
   { id: 'services', label: 'Serviços', icon: FileText },
   { id: 'subscriptions', label: 'Subscrições', icon: CreditCard },
   { id: 'billing', label: 'Facturação', icon: Receipt },
@@ -40,6 +37,7 @@ const getMenuItems = (userRole: string) => [
   { id: 'contracts', label: 'Contratos', icon: PenTool },
   { id: 'reports', label: 'Relatórios', icon: BarChart3 },
   ...(userRole === 'admin' ? [
+    { id: 'users', label: 'Utilizadores', icon: User },
     { id: 'users', label: 'Utilizadores', icon: User },
     { id: 'sender', label: 'Envios', icon: Send },
     { id: 'settings', label: 'Configurações', icon: Settings }
