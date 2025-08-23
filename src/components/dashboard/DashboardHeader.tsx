@@ -320,6 +320,7 @@ export const DashboardHeader: React.FC = () => {
             <div className="mt-4 lg:mt-6 pt-4 lg:pt-6 border-t border-white border-opacity-20">
               <h4 className="text-lg font-semibold text-white mb-4">🏆 Performance de Vendas</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                <div className="bg-white bg-opacity-10 rounded-lg p-3 lg:p-4">
                   <p className="text-xl lg:text-2xl font-bold text-white">0</p>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-yellow-400 text-lg">🏆</span>
@@ -330,6 +331,7 @@ export const DashboardHeader: React.FC = () => {
                 </div>
                 <div className="bg-white bg-opacity-10 rounded-lg p-3 lg:p-4">
                   <p className="text-xl lg:text-2xl font-bold text-white">0</p>
+                  <div className="flex items-center gap-2 mb-2">
                     <span className="text-gray-300 text-lg">🥈</span>
                     <span className="text-sm font-semibold text-white">Mês Anterior</span>
                   </div>
