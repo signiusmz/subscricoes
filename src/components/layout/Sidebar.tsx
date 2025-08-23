@@ -13,7 +13,6 @@ import {
   Edit,
   Camera,
   Upload,
-  Star
   Send
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -124,23 +123,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
           <div className="flex-1 min-w-0 text-left">
             <p className="text-sm font-medium text-gray-900 truncate">{user?.name}</p>
             <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-          </div>
-        </button>
-        
-        <button
-          onClick={() => {
-            // Simulate NPS evaluation
-            const npsScore = Math.floor(Math.random() * 11); // 0-10
-            alert(`✅ Avaliação enviada!\n\n⭐ Sua nota: ${npsScore}/10\n💬 Obrigado pelo seu feedback!\n\nSua opinião é muito importante para melhorarmos nossos serviços.`);
-          }}
-          className="w-full flex items-center gap-3 p-3 rounded-lg bg-orange-50 mb-3 hover:bg-orange-100 transition-colors border border-orange-200"
-        >
-          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-orange-500">
-            <Star size={16} className="text-white" />
-          </div>
-          <div className="flex-1 text-left">
-            <p className="text-sm font-medium text-orange-900">Avaliar Serviço</p>
-            <p className="text-xs text-orange-700">Dê sua opinião</p>
           </div>
         </button>
         
