@@ -315,6 +315,29 @@ export const DashboardHeader: React.FC = () => {
                 <div className="text-xs text-blue-100">Templates</div>
               </button>
             </div>
+            
+            {/* Sales Performance */}
+            <div className="mt-6 pt-6 border-t border-white border-opacity-20">
+              <h4 className="text-lg font-semibold text-white mb-4">🏆 Performance de Vendas</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white bg-opacity-10 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Trophy className="text-yellow-400" size={16} />
+                    <span className="text-sm font-semibold text-white">Melhor Vendedor do Mês</span>
+                  </div>
+                  <p className="text-lg font-bold text-white">João Silva</p>
+                  <p className="text-sm text-blue-100">85.000 MT • 12 clientes • 6 contratos</p>
+                </div>
+                <div className="bg-white bg-opacity-10 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Medal className="text-gray-300" size={16} />
+                    <span className="text-sm font-semibold text-white">Mês Anterior</span>
+                  </div>
+                  <p className="text-lg font-bold text-white">João Silva</p>
+                  <p className="text-sm text-blue-100">78.000 MT • 11 clientes • 5 contratos</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

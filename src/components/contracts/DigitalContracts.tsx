@@ -662,6 +662,51 @@ export const DigitalContracts: React.FC = () => {
     alert(`✅ Contrato gerado automaticamente!\n\n📄 Número: ${newContract.number}\n👤 Cliente: ${client.companyName}\n🛍️ Serviços: ${serviceNames.length}\n💰 Valor Total: ${totalValue.toLocaleString()} MT\n📅 Vigência: ${formatDate(earliestStart)} - ${formatDate(latestEnd)}\n📝 Status: Rascunho (pronto para edição)\n🤖 Gerado automaticamente com base nas subscrições ativas`);
   };
 
+  const handleSaveTemplate = (templateData: any) => {
+    if (editingTemplate) {
+      setTemplates(templates.map(t => 
+        t.id === editingTemplate.id 
+          ? { ...t, ...templateData, content: templateContent }
+          : t
+      ));
+      alert(`✅ Template "${templateData.name}" atualizado com sucesso!`);
+    } else {
+      const newTemplate: ContractTemplate = {
+        id: Date.now().toString(),
+        name: templateData.name,
+        description: templateData.description,
+        category: templateData.category,
+        content: templateContent,
+        variables: templateContent.match(/\{[^}]+\}/g) || [],
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        usageCount: 0
+      };
+      setTemplates([...templates, newTemplate]);
+      alert(`✅ Novo template "${newTemplate.name}" criado com sucesso!`);
+    }
+    setShowTemplateModal(false);
+    setEditingTemplate(null);
+    setTemplateContent('');
+  };
+
+  const handleEditTemplate = (template: ContractTemplate) => {
+    setEditingTemplate(template);
+    setTemplateContent(template.content);
+    setShowTemplateModal(true);
+  };
+
+  const handleDeleteTemplate = (templateId: string) => {
+    if (confirm('Tem certeza que deseja eliminar este template?')) {
+      setTemplates(templates.filter(t => t.id !== templateId));
+      alert('Template eliminado com sucesso!');
+    }
+  };
+
+  const insertVariable = (variable: string) => {
+    setTemplateContent(templateContent + ' ' + variable);
+  };
+
   const handleDownloadPDF = (contract: Contract) => {
     const client = mockClients.find(c => c.id === contract.clientId);
     if (!client) {
@@ -698,6 +743,7 @@ export const DigitalContracts: React.FC = () => {
         <div style="margin-top: 40px; padding: 20px; background: #ecfdf5; border-radius: 8px; border-left: 4px solid #10b981;">
           <h3 style="color: #059669; margin-top: 0;">ASSINATURA DIGITAL</h3>
           <p><strong>Data de Assinatura:</strong> ${formatDate(contract.signedAt)}</p>
+    const salesperson = mockSalespeople.find(s => s.id === clientData.salespersonId);
           <p><strong>Hash de Segurança:</strong> ${contract.signatureHash}</p>
           <p style="color: #059669; font-weight: bold;">✓ Contrato assinado digitalmente</p>
         </div>
@@ -726,6 +772,11 @@ export const DigitalContracts: React.FC = () => {
     setShowEditModal(true);
   };
 
+  const handleViewContract = (contract: Contract) => {
+    setViewingContract(contract);
+    setShowViewModal(true);
+  };
+
   const handleSaveEdit = () => {
     if (!editingContract) return;
 
@@ -751,6 +802,13 @@ export const DigitalContracts: React.FC = () => {
     
     const contract = contracts.find(c => c.id === contractId);
     alert(`✅ Contrato enviado!\n\n📧 Contrato "${contract?.number}" enviado para ${contract?.clientName}\n📨 Email: ${mockClients.find(cl => cl.id === contract?.clientId)?.email}\n📅 Enviado em: ${new Date().toLocaleString('pt-PT')}\n🔔 Cliente será notificado por email`);
+  };
+
+  const getCategoryBadge = (category: string) => {
+    const cat = templateCategories.find(c => c.id === category);
+    if (!cat) return null;
+    const Icon = cat.icon;
+    return <span className={`px-2 py-1 text-xs font-semibold rounded-full ${cat.color} flex items-center gap-1`}><Icon size={12} />{cat.label}</span>;
   };
 
   const handleSignContract = (contractId: string) => {
@@ -833,47 +891,53 @@ export const DigitalContracts: React.FC = () => {
     const totalValue = clientSubscriptions.reduce((sum, sub) => sum + sub.totalWithIva, 0);
     const serviceNames = clientSubscriptions.map(sub => sub.serviceName);
     const earliestStart = clientSubscriptions.reduce((earliest, sub) => 
-      sub.startDate < earliest ? sub.startDate : earliest, 
-      clientSubscriptions[0].startDate
-    );
-    const latestEnd = clientSubscriptions.reduce((latest, sub) => 
-      sub.nextBilling > latest ? sub.nextBilling : latest, 
-      clientSubscriptions[0].nextBilling
-    );
-
-    // Replace variables in template content
-    let contractContent = template.content;
-    const replacements = {
-      '{contrato_numero}': `CONT-2024-${String(contracts.length + 1).padStart(3, '0')}`,
-      '{cliente_nome}': client.companyName,
-      '{cliente_representante}': client.representative,
-      '{cliente_nuit}': client.nuit,
-      '{cliente_endereco}': client.address,
-      '{cliente_email}': client.email,
-      '{cliente_telefone}': client.phone,
-      '{empresa_nome}': 'TechSolutions Lda',
-      '{empresa_nuit}': '400123456',
-      '{empresa_endereco}': 'Av. Julius Nyerere, 123, Maputo',
-      '{empresa_email}': 'info@techsolutions.mz',
-      '{empresa_telefone}': '+258 21 123 456',
-      '{empresa_representante}': 'João Silva',
-      '{servicos_lista}': serviceNames.map(name => `<li><strong>${name}</strong></li>`).join(''),
-      '{contrato_valor_total}': totalValue.toLocaleString(),
-      '{contrato_valor_extenso}': formatAmountInWords(totalValue),
-      '{contrato_data_inicio}': formatDate(earliestStart),
-      '{contrato_data_fim}': formatDate(latestEnd),
-      '{contrato_data_assinatura}': new Date().toLocaleDateString('pt-PT'),
-      '{data_geracao}': new Date().toLocaleDateString('pt-PT'),
-      '{servicos_manutencao}': serviceNames.join(', '),
-      '{servicos_consultoria}': serviceNames.join(', '),
-      '{periodicidade_manutencao}': 'Mensal',
-      '{metodologia_trabalho}': 'reuniões presenciais e remotas',
-      '{forma_pagamento}': 'Conforme ciclos de faturação'
-    };
-
-    Object.entries(replacements).forEach(([key, value]) => {
-      contractContent = contractContent.replace(new RegExp(key.replace(/[{}]/g, '\\$&'), 'g'), value);
-    });
+    // Use template if selected
+    let baseContent = '';
+    if (clientData.templateId) {
+      const template = templates.find(t => t.id === clientData.templateId);
+      if (template) {
+        baseContent = template.content;
+        // Update template usage
+        setTemplates(templates.map(t => 
+          t.id === template.id 
+            ? { ...t, usageCount: t.usageCount + 1, lastUsed: new Date().toISOString() }
+            : t
+        ));
+      }
+    }
+    
+    if (!baseContent) {
+      // Default content if no template selected
+      baseContent = `<div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; line-height: 1.6;">
+        <h1 style="text-align: center; color: #1e40af;">CONTRATO DE PRESTAÇÃO DE SERVIÇOS</h1>
+        <p><strong>CONTRATANTE:</strong> {cliente_nome}</p>
+        <p><strong>CONTRATADA:</strong> {empresa_nome}</p>
+        <p><strong>VALOR:</strong> {contrato_valor_formatado}</p>
+    let contractContent = baseContent
+      .replace(/\{contrato_numero\}/g, `CONT-2024-${String(contracts.length + 1).padStart(3, '0')}`)
+      .replace(/\{cliente_nome\}/g, client.companyName)
+      .replace(/\{cliente_representante\}/g, client.representative)
+      .replace(/\{cliente_email\}/g, client.email)
+      .replace(/\{cliente_telefone\}/g, client.phone)
+      .replace(/\{cliente_nuit\}/g, client.nuit)
+      .replace(/\{cliente_endereco\}/g, client.address)
+      .replace(/\{empresa_nome\}/g, 'TechSolutions Lda')
+      .replace(/\{empresa_email\}/g, 'info@techsolutions.mz')
+      .replace(/\{empresa_telefone\}/g, '+258 21 123 456')
+      .replace(/\{empresa_endereco\}/g, 'Av. Julius Nyerere, 123, Maputo')
+      .replace(/\{empresa_nuit\}/g, '400123456')
+      .replace(/\{vendedor_nome\}/g, salesperson?.name || 'Representante da Empresa')
+      .replace(/\{vendedor_email\}/g, salesperson?.email || 'vendedor@techsolutions.mz')
+      .replace(/\{vendedor_telefone\}/g, salesperson?.phone || '+258 84 000 0000')
+      .replace(/\{contrato_valor\}/g, totalValue.toString())
+      .replace(/\{contrato_valor_formatado\}/g, `${totalValue.toLocaleString()} MT`)
+      .replace(/\{contrato_valor_extenso\}/g, formatAmountInWords(totalValue))
+      .replace(/\{servicos_lista\}/g, `<ul style="margin: 0; padding-left: 20px;">${servicesList}</ul>`)
+      .replace(/\{contrato_data_inicio\}/g, new Date().toLocaleDateString('pt-PT'))
+      .replace(/\{contrato_data_fim\}/g, new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-PT'))
+      .replace(/\{data_hoje\}/g, new Date().toLocaleDateString('pt-PT'))
+      .replace(/\{servicos_count\}/g, clientSubscriptions.length.toString())
+      .replace(/\{servico_principal\}/g, clientSubscriptions[0]?.serviceName || '');
 
     const newContract: Contract = {
       id: Date.now().toString(),
@@ -887,6 +951,8 @@ export const DigitalContracts: React.FC = () => {
       endDate: latestEnd,
       status: 'draft',
       createdAt: new Date().toISOString(),
+      templateId: clientData.templateId,
+      salespersonId: clientData.salespersonId
       isAutoGenerated: true,
       services: serviceNames
     };
@@ -894,7 +960,7 @@ export const DigitalContracts: React.FC = () => {
     setContracts([newContract, ...contracts]);
     setShowTemplateModal(false);
     setSelectedClientId('');
-    
+    alert(`✅ Contrato gerado com sucesso!\n\n📄 Número: ${newContract.number}\n👤 Cliente: ${client.companyName}\n👨‍💼 Vendedor: ${salesperson?.name || 'Não atribuído'}\n💰 Valor: ${totalValue.toLocaleString()} MT\n📅 Vigência: 12 meses\n🛍️ Serviços: ${clientSubscriptions.length}\n📋 Status: Rascunho`);
     // Update template last used
     setContractTemplates(contractTemplates.map(t => 
       t.id === template.id 
@@ -927,10 +993,690 @@ export const DigitalContracts: React.FC = () => {
     return matchesSearch && matchesCategory;
   });
 
-  return (
+  const renderContracts = () => (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold text-gray-900">Gestão de Contratos</h3>
+        <button 
+          onClick={() => setShowGenerateModal(true)}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
+        >
+          <Plus size={20} />
+          Gerar Contrato
+        </button>
+      </div>
+
+      {/* Status Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Contratos</p>
+              <p className="text-2xl font-bold text-gray-900">{contracts.length}</p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+              <FileText size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Assinados</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {contracts.filter(c => c.status === 'signed').length}
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-green-100 text-green-600">
+              <CheckCircle size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Pendentes</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {contracts.filter(c => c.status === 'sent').length}
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-orange-100 text-orange-600">
+              <Clock size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Valor Total</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {contracts.reduce((total, c) => total + c.value, 0).toLocaleString()} MT
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-emerald-100 text-emerald-600">
+              <DollarSign size={24} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          <input
+            type="text"
+            placeholder="Pesquisar contratos..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as any)}
+          className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+          <option value="all">Todos os Status</option>
+          <option value="draft">Rascunhos</option>
+          <option value="sent">Enviados</option>
+          <option value="signed">Assinados</option>
+          <option value="cancelled">Cancelados</option>
+        </select>
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contrato</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vigência</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {paginatedContracts.map((contract) => (
+                <tr key={contract.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{contract.number}</div>
+                      <div className="text-sm text-gray-500">{contract.title}</div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{contract.clientName}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{contract.value.toLocaleString()} MT</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                    {formatDate(contract.startDate)} - {formatDate(contract.endDate)}
+                  </td>
+                  <td className="px-6 py-4">{getStatusBadge(contract.status)}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => handleViewContract(contract)}
+                        className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
+                        title="Visualizar"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <button 
+                        onClick={() => handleDownloadContract(contract)}
+                        className="text-green-600 hover:text-green-900 p-1 hover:bg-green-50 rounded"
+                        title="Download PDF"
+                      >
+                        <Download size={16} />
+                      </button>
+                      <button 
+                        onClick={() => handleEditContract(contract)}
+                        className="text-orange-600 hover:text-orange-900 p-1 hover:bg-orange-50 rounded"
+                        title="Editar"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      {contract.status === 'draft' && (
+                        <button 
+                          onClick={() => handleSendContract(contract)}
+                          className="text-purple-600 hover:text-purple-900 p-1 hover:bg-purple-50 rounded"
+                          title="Enviar"
+                        >
+                          <Send size={16} />
+                        </button>
+                      )}
+                      {contract.status === 'sent' && (
+                        <button 
+                          onClick={() => handleSignContract(contract.id)}
+                          className="text-emerald-600 hover:text-emerald-900 p-1 hover:bg-emerald-50 rounded"
+                          title="Assinar"
+                        >
+                          <CheckCircle size={16} />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filteredContracts.length}
+          itemsPerPage={itemsPerPage}
+        />
+      </div>
+    </div>
+  );
+
+  const renderTemplates = () => (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold text-gray-900">Templates de Contratos</h3>
+        <button 
+          onClick={() => {
+            setEditingTemplate(null);
+            setTemplateContent('');
+            setShowTemplateModal(true);
+          }}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
+        >
+          <Plus size={20} />
+          Novo Template
+        </button>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Templates</p>
+              <p className="text-2xl font-bold text-gray-900">{templates.length}</p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+              <Layout size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Templates Ativos</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {templates.filter(t => t.isActive).length}
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-green-100 text-green-600">
+              <CheckCircle size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Mais Usado</p>
+              <p className="text-lg font-bold text-gray-900">
+                {templates.reduce((max, t) => t.usageCount > max.usageCount ? t : max, templates[0])?.name.substring(0, 15) || 'N/A'}
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-purple-100 text-purple-600">
+              <Star size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Variáveis</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {availableVariables.reduce((sum, cat) => sum + cat.variables.length, 0)}
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-orange-100 text-orange-600">
+              <Hash size={24} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          <input
+            type="text"
+            placeholder="Pesquisar templates..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+          <option value="all">Todas as Categorias</option>
+          {templateCategories.map((category) => (
+            <option key={category.id} value={category.id}>{category.label}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Templates Grid */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {paginatedTemplates.map((template) => (
+          <div key={template.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <h4 className="font-semibold text-gray-900 mb-2">{template.name}</h4>
+                <p className="text-sm text-gray-600 mb-3">{template.description}</p>
+                {getCategoryBadge(template.category)}
+              </div>
+              <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                template.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}>
+                {template.isActive ? 'Ativo' : 'Inativo'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="text-center">
+                <div className="text-lg font-bold text-gray-900">{template.usageCount}</div>
+                <div className="text-xs text-gray-600">Usos</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-gray-900">{template.variables.length}</div>
+                <div className="text-xs text-gray-600">Variáveis</div>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleEditTemplate(template)}
+                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <Edit size={16} />
+                Editar
+              </button>
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(template.content);
+                  alert('Template copiado para a área de transferência!');
+                }}
+                className="border border-gray-300 text-gray-700 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Copy size={16} />
+              </button>
+              <button 
+                onClick={() => handleDeleteTemplate(template.id)}
+                className="border border-red-300 text-red-600 py-2 px-3 rounded-lg hover:bg-red-50 transition-colors"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <Pagination
+        currentPage={templatesCurrentPage}
+        totalPages={templatesTotalPages}
+        onPageChange={setTemplatesCurrentPage}
+        totalItems={filteredTemplates.length}
+        itemsPerPage={itemsPerPage}
+      />
+    </div>
+  );
+
+  const tabs = [
+    { id: 'contracts', label: 'Contratos', icon: FileText },
+    { id: 'templates', label: 'Templates', icon: Layout }
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Contratos Digitais</h2>
+        
+        {/* Navigation Tabs */}
+        <div className="border-b border-gray-200">
+          <nav className="flex space-x-8">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 ${
+                    activeTab === tab.id
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <Icon size={16} />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+      </div>
+
+      {/* Content */}
+      {activeTab === 'contracts' && renderContracts()}
+      {activeTab === 'templates' && renderTemplates()}
+
+      {/* Generate Contract Modal */}
+      {showGenerateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Gerar Novo Contrato</h3>
+            
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const contractData = {
+                clientId: formData.get('clientId') as string,
+                title: formData.get('title') as string,
+                templateId: formData.get('templateId') as string,
+                salespersonId: formData.get('salespersonId') as string
+              };
+              handleGenerateContract(contractData);
+            }} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Cliente *</label>
+                <select
+                  name="clientId"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Selecionar cliente</option>
+                  {mockClients.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.companyName} - {client.representative}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Template (opcional)</label>
+                <select
+                  name="templateId"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Contrato básico (sem template)</option>
+                  {templates.filter(t => t.isActive).map((template) => (
+                    <option key={template.id} value={template.id}>
+                      {template.name} - {template.usageCount} usos
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Vendedor/Representante *</label>
+                <select
+                  name="salespersonId"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Selecionar vendedor</option>
+                  {mockSalespeople.map((salesperson) => (
+                    <option key={salesperson.id} value={salesperson.id}>
+                      {salesperson.name} - {salesperson.email}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Título do Contrato</label>
+                <input
+                  type="text"
+                  name="title"
+                  placeholder="Ex: Contrato de Prestação de Serviços Contábeis"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowGenerateModal(false)}
+                  className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Gerar Contrato
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Contract Modal */}
+      {showViewModal && viewingContract && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Visualizar Contrato</h3>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleDownloadContract(viewingContract)}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                >
+                  <Download size={16} />
+                  Download PDF
+                </button>
+                <button
+                  onClick={() => setShowViewModal(false)}
+                  className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+            
+            <div className="border border-gray-300 rounded-lg p-4 bg-white max-h-96 overflow-y-auto">
+              <div dangerouslySetInnerHTML={{ __html: viewingContract.content }} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Template Modal */}
+      {showTemplateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-6xl w-full mx-4 max-h-[95vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              {editingTemplate ? 'Editar Template' : 'Novo Template'}
+            </h3>
+            
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const templateData = {
+                name: formData.get('name') as string,
+                description: formData.get('description') as string,
+                category: formData.get('category') as string
+              };
+              handleSaveTemplate(templateData);
+            }} className="space-y-6">
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Nome do Template *</label>
+                  <input
+                    type="text"
+                    name="name"
+                    defaultValue={editingTemplate?.name || ''}
+                    placeholder="Ex: Prestação de Serviços Contábeis"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Categoria *</label>
+                  <select
+                    name="category"
+                    defaultValue={editingTemplate?.category || 'service'}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
+                    {templateCategories.map((category) => (
+                      <option key={category.id} value={category.id}>{category.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Descrição *</label>
+                  <input
+                    type="text"
+                    name="description"
+                    defaultValue={editingTemplate?.description || ''}
+                    placeholder="Descrição do template..."
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Conteúdo do Template *</label>
+                  <HTMLEditor
+                    value={templateContent}
+                    onChange={setTemplateContent}
+                    placeholder="Digite o conteúdo do template aqui..."
+                    height="400px"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Variáveis Disponíveis</label>
+                  <div className="border border-gray-300 rounded-lg p-4 max-h-96 overflow-y-auto bg-gray-50">
+                    {availableVariables.map((category) => (
+                      <div key={category.category} className="mb-4">
+                        <h4 className="font-semibold text-gray-900 mb-2">{category.category}</h4>
+                        <div className="space-y-1">
+                          {category.variables.map((variable) => (
+                            <div key={variable.key} className="flex items-start gap-2">
+                              <button
+                                type="button"
+                                onClick={() => insertVariable(variable.key)}
+                                className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded hover:bg-blue-200 transition-colors font-mono"
+                              >
+                                {variable.key}
+                              </button>
+                              <span className="text-xs text-gray-600 flex-1">{variable.description}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowTemplateModal(false);
+                    setEditingTemplate(null);
+                    setTemplateContent('');
+                  }}
+                  className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  {editingTemplate ? 'Atualizar Template' : 'Criar Template'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Contract Modal */}
+      {showEditModal && editingContract && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-6xl w-full mx-4 max-h-[95vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Editar Contrato</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Título do Contrato</label>
+                <input
+                  type="text"
+                  value={editingContract.title}
+                  onChange={(e) => setEditingContract({...editingContract, title: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Conteúdo do Contrato</label>
+                <HTMLEditor
+                  value={contractContent}
+                  onChange={setContractContent}
+                  placeholder="Digite o conteúdo do contrato aqui..."
+                  height="400px"
+                />
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingContract(null);
+                    setContractContent('');
+                  }}
+                  className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveContract}
+                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Salvar Alterações
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Contratos Digitais</h2>
           <p className="text-gray-600 mt-1">Gestão completa de contratos com assinatura digital</p>

@@ -5,6 +5,7 @@ interface MPesaConfig {
   initiatorIdentifier: string;
   securityCredential: string;
   environment: 'sandbox' | 'production';
+  entityCode?: string;
 }
 
 interface PaymentRequest {
@@ -25,12 +26,24 @@ interface PaymentResponse {
 export class MPesaService {
   private config: MPesaConfig;
   private baseUrl: string;
+  private productionConfig: MPesaConfig;
 
   constructor(config: MPesaConfig) {
     this.config = config;
     this.baseUrl = config.environment === 'production' 
       ? 'https://api.vm.co.mz' 
       : 'https://api.sandbox.vm.co.mz';
+    
+    // Production configuration for Signius
+    this.productionConfig = {
+      apiKey: 'moynu1zlhkb7op1urcoth1vqmrcqcywv',
+      publicKey: 'MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAyrOP7fgXIJgJyp6nP/Vtlu8kW94Qu+gJjfMaTNOSd/mQJChqXiMWsZPH8uOoZGeR/9m7Y8vAU83D96usXUaKoDYiVmxoMBkfmw8DJAtHHt/8LWDdoAS/kpXyZJ5dt19Pv+rTApcjg7AoGczT+yIU7xp4Ku23EqQz70V5Rud+Qgerf6So28Pt3qZ9hxgUA6lgF7OjoYOIAKPqg07pHp2eOp4P6oQW8oXsS+cQkaPVo3nM1f+fctFGQtgLJ0y5VG61ZiWWWFMOjYFkBSbNOyJpQVcMKPcfdDRKq+9r5DFLtFGztPYIAovBm3a1Q6XYDkGYZWtnD8mDJxgEiHWCzog0wZqJtfNREnLf1g2ZOanTDcrEFzsnP2MQwIatV8M6q/fYrh5WejlNm4ujnKUVbnPMYH0wcbXQifSDhg2jcnRLHh9CF9iabkxAzjbYkaG1qa4zG+bCidLCRe0cEQvt0+/lQ40yESvpWF60omTy1dLSd10gl2//0v4IMjLMn9tgxhPp9c+C2Aw7x2Yjx3GquSYhU6IL41lrURwDuCQpg3F30QwIHgy1D8xIfQzno3XywiiUvoq4YfCkN9WiyKz0btD6ZX02RRK6DrXTFefeKjWf0RHREHlfwkhesZ4X168Lxe9iCWjP2d0xUB+lr10835ZUpYYIr4Gon9NTjkoOGwFyS5ECAwEAAQ==',
+      serviceProviderCode: '901384',
+      initiatorIdentifier: 'signius_api',
+      securityCredential: 'encrypted_credential_here',
+      environment: 'production',
+      entityCode: '901384'
+    };
   }
 
   /**
@@ -38,15 +51,16 @@ export class MPesaService {
    */
   private async generateBearerToken(): Promise<string> {
     try {
-      // Para demo, simular geração de token
-      if (this.config.environment === 'sandbox') {
+      const configToUse = this.config.environment === 'production' ? this.productionConfig : this.config;
+      
+      if (configToUse.environment === 'sandbox') {
         return 'demo_bearer_token_' + Date.now();
       }
       
       const response = await fetch(`${this.baseUrl}/ipg/v1x/oauth/token`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${this.config.apiKey}`,
+          'Authorization': `Bearer ${configToUse.apiKey}`,
           'Content-Type': 'application/json'
         }
       });
@@ -69,9 +83,9 @@ export class MPesaService {
   async processC2BPayment(paymentData: PaymentRequest): Promise<PaymentResponse> {
     try {
       const bearerToken = await this.generateBearerToken();
+      const configToUse = this.config.environment === 'production' ? this.productionConfig : this.config;
       
-      // Para demo, simular resposta de sucesso
-      if (this.config.environment === 'sandbox') {
+      if (configToUse.environment === 'sandbox') {
         // Simular delay de processamento
         await new Promise(resolve => setTimeout(resolve, 3000));
         
@@ -89,7 +103,7 @@ export class MPesaService {
         input_Country: 'MZ',
         input_Currency: 'MZN',
         input_CustomerMSISDN: paymentData.msisdn,
-        input_ServiceProviderCode: this.config.serviceProviderCode,
+        input_ServiceProviderCode: configToUse.serviceProviderCode,
         input_ThirdPartyReference: paymentData.thirdPartyReference,
         input_TransactionReference: paymentData.reference,
         input_PurchasedItemsDesc: 'Pagamento de Subscrição Signius'
@@ -123,10 +137,11 @@ export class MPesaService {
   async queryTransactionStatus(transactionId: string): Promise<any> {
     try {
       const bearerToken = await this.generateBearerToken();
+      const configToUse = this.config.environment === 'production' ? this.productionConfig : this.config;
 
       const requestBody = {
         input_QueryReference: transactionId,
-        input_ServiceProviderCode: this.config.serviceProviderCode,
+        input_ServiceProviderCode: configToUse.serviceProviderCode,
         input_ThirdPartyReference: transactionId
       };
 

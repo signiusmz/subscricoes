@@ -20,6 +20,7 @@ import { ServicesTable } from './components/services/ServicesTable';
 import { SubscriptionsTable } from './components/subscriptions/SubscriptionsTable';
 import { BillingModule } from './components/billing/BillingModule';
 import { ReportsAnalytics } from './components/reports/ReportsAnalytics';
+import { SalesReport } from './components/reports/SalesReport';
 import { SettingsPanel } from './components/settings/SettingsPanel';
 import { ClientPortal } from './components/client-portal/ClientPortal';
 import { SenderModule } from './components/sender/SenderModule';
@@ -55,6 +56,7 @@ const Dashboard = () => {
   const [showClientSegmentation, setShowClientSegmentation] = useState(false);
   const [showFlowBuilder, setShowFlowBuilder] = useState(false);
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
+  const [showSalesReport, setShowSalesReport] = useState(false);
   const { company, user, updateUser } = useAuth();
 
   // Listen for upgrade modal trigger from sidebar - MOVED TO TOP
@@ -90,6 +92,10 @@ const Dashboard = () => {
     const handleOpenTemplateEditor = () => {
       setShowTemplateEditor(true);
     };
+    
+    const handleOpenSalesReport = () => {
+      setShowSalesReport(true);
+    };
 
     window.addEventListener('openUpgradeModal', handleOpenUpgradeModal);
     window.addEventListener('openClientAnalytics', handleOpenClientAnalytics);
@@ -99,6 +105,7 @@ const Dashboard = () => {
     window.addEventListener('openClientSegmentation', handleOpenClientSegmentation);
     window.addEventListener('openFlowBuilder', handleOpenFlowBuilder);
     window.addEventListener('openTemplateEditor', handleOpenTemplateEditor);
+    window.addEventListener('openSalesReport', handleOpenSalesReport);
     
     return () => {
       window.removeEventListener('openUpgradeModal', handleOpenUpgradeModal);
@@ -109,6 +116,7 @@ const Dashboard = () => {
       window.removeEventListener('openClientSegmentation', handleOpenClientSegmentation);
       window.removeEventListener('openFlowBuilder', handleOpenFlowBuilder);
       window.removeEventListener('openTemplateEditor', handleOpenTemplateEditor);
+      window.removeEventListener('openSalesReport', handleOpenSalesReport);
     };
   }, []);
 
@@ -224,6 +232,20 @@ const Dashboard = () => {
       </div>
     );
   }
+  
+  // Show sales report if requested
+  if (showSalesReport) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <div className="ml-64">
+          <div className="p-8">
+            <SalesReport onBack={() => setShowSalesReport(false)} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleUpgradeSuccess = (planId: string, transactionId: string) => {
     // Update company plan in context
@@ -279,6 +301,8 @@ const Dashboard = () => {
         return <SenderModule />;
       case 'reports':
         return <ReportsAnalytics />;
+      case 'sales':
+        return <SalesReport />;
       case 'settings':
         return <SettingsPanel />;
       default:
