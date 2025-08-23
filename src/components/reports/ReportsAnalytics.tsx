@@ -22,7 +22,8 @@ interface ScheduledReport {
   id: string;
   name: string;
   reportType: string;
-  frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly';
+  Play,
+  Zap
   recipients: string[];
   nextRun: string;
   lastRun?: string;
