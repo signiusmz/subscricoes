@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { FileText, Download, Edit, Send, Eye, CheckCircle, Clock, AlertCircle, Search, Filter, Calendar, User, Building, DollarSign, FileSignature as Signature, Hash, Users, Plus, X, Save, RefreshCw, Star, Trash2 } from 'lucide-react';
 import { PDFGenerator } from '../../utils/pdfGenerator';
-import { formatAmountInWords } from '../../utils/numberToWords';
 import { HTMLEditor } from '../common/HTMLEditor';
 import { Pagination } from '../common/Pagination';
 import { formatAmountInWords } from '../../utils/numberToWords';
@@ -891,7 +890,11 @@ export const DigitalContracts: React.FC = () => {
 
     const totalValue = clientSubscriptions.reduce((sum, sub) => sum + sub.totalWithIva, 0);
     const serviceNames = clientSubscriptions.map(sub => sub.serviceName);
-    const earliestStart = clientSubscriptions.reduce((earliest, sub) => 
+    const earliestStart = clientSubscriptions.reduce((earlies
+    }
+    )
+  }
+}t, sub) => 
     // Use template if selected
     let baseContent = '';
     if (clientData.templateId) {
