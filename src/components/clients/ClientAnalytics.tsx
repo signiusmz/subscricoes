@@ -28,7 +28,12 @@ import {
   UserX,
   Phone,
   Mail,
-  MapPin
+  MapPin,
+  Building,
+  FileText,
+  Send,
+  MessageSquare,
+  Bell
 } from 'lucide-react';
 
 interface ClientAnalytics {
@@ -56,6 +61,11 @@ interface ClientAnalytics {
   contractsCount: number;
   averageContractValue: number;
   renewalRate: number;
+  communicationPreference: 'email' | 'whatsapp' | 'sms';
+  lastContactDate: string;
+  responseRate: number;
+  averagePaymentDelay: number;
+  totalContractValue: number;
 }
 
 const mockClientAnalytics: ClientAnalytics[] = [
@@ -83,7 +93,12 @@ const mockClientAnalytics: ClientAnalytics[] = [
     lastActivity: '2024-03-30',
     contractsCount: 3,
     averageContractValue: 66667,
-    renewalRate: 100
+    renewalRate: 100,
+    communicationPreference: 'email',
+    lastContactDate: '2024-03-28',
+    responseRate: 98,
+    averagePaymentDelay: 2,
+    totalContractValue: 200000
   },
   {
     id: '2',
@@ -109,7 +124,12 @@ const mockClientAnalytics: ClientAnalytics[] = [
     lastActivity: '2024-03-29',
     contractsCount: 2,
     averageContractValue: 90000,
-    renewalRate: 100
+    renewalRate: 100,
+    communicationPreference: 'whatsapp',
+    lastContactDate: '2024-03-27',
+    responseRate: 95,
+    averagePaymentDelay: 1,
+    totalContractValue: 180000
   },
   {
     id: '3',
@@ -135,7 +155,12 @@ const mockClientAnalytics: ClientAnalytics[] = [
     lastActivity: '2024-03-27',
     contractsCount: 2,
     averageContractValue: 80000,
-    renewalRate: 100
+    renewalRate: 100,
+    communicationPreference: 'email',
+    lastContactDate: '2024-03-25',
+    responseRate: 92,
+    averagePaymentDelay: 0,
+    totalContractValue: 160000
   },
   {
     id: '4',
@@ -161,7 +186,12 @@ const mockClientAnalytics: ClientAnalytics[] = [
     lastActivity: '2024-03-28',
     contractsCount: 4,
     averageContractValue: 37500,
-    renewalRate: 95
+    renewalRate: 95,
+    communicationPreference: 'email',
+    lastContactDate: '2024-03-26',
+    responseRate: 97,
+    averagePaymentDelay: 1,
+    totalContractValue: 150000
   },
   {
     id: '5',
@@ -187,7 +217,12 @@ const mockClientAnalytics: ClientAnalytics[] = [
     lastActivity: '2024-03-31',
     contractsCount: 2,
     averageContractValue: 67500,
-    renewalRate: 100
+    renewalRate: 100,
+    communicationPreference: 'whatsapp',
+    lastContactDate: '2024-03-29',
+    responseRate: 89,
+    averagePaymentDelay: 0,
+    totalContractValue: 135000
   },
   {
     id: '6',
@@ -213,7 +248,12 @@ const mockClientAnalytics: ClientAnalytics[] = [
     lastActivity: '2024-03-20',
     contractsCount: 5,
     averageContractValue: 24000,
-    renewalRate: 80
+    renewalRate: 80,
+    communicationPreference: 'sms',
+    lastContactDate: '2024-03-18',
+    responseRate: 75,
+    averagePaymentDelay: 5,
+    totalContractValue: 120000
   },
   {
     id: '7',
@@ -239,7 +279,12 @@ const mockClientAnalytics: ClientAnalytics[] = [
     lastActivity: '2024-03-18',
     contractsCount: 4,
     averageContractValue: 23750,
-    renewalRate: 90
+    renewalRate: 90,
+    communicationPreference: 'email',
+    lastContactDate: '2024-03-16',
+    responseRate: 88,
+    averagePaymentDelay: 3,
+    totalContractValue: 95000
   },
   {
     id: '8',
@@ -265,7 +310,12 @@ const mockClientAnalytics: ClientAnalytics[] = [
     lastActivity: '2024-03-25',
     contractsCount: 6,
     averageContractValue: 14167,
-    renewalRate: 92
+    renewalRate: 92,
+    communicationPreference: 'whatsapp',
+    lastContactDate: '2024-03-23',
+    responseRate: 85,
+    averagePaymentDelay: 2,
+    totalContractValue: 85000
   },
   {
     id: '9',
@@ -291,7 +341,12 @@ const mockClientAnalytics: ClientAnalytics[] = [
     lastActivity: '2024-03-22',
     contractsCount: 3,
     averageContractValue: 25000,
-    renewalRate: 85
+    renewalRate: 85,
+    communicationPreference: 'email',
+    lastContactDate: '2024-03-20',
+    responseRate: 82,
+    averagePaymentDelay: 4,
+    totalContractValue: 75000
   },
   {
     id: '10',
@@ -317,7 +372,12 @@ const mockClientAnalytics: ClientAnalytics[] = [
     lastActivity: '2024-03-10',
     contractsCount: 8,
     averageContractValue: 8125,
-    renewalRate: 75
+    renewalRate: 75,
+    communicationPreference: 'sms',
+    lastContactDate: '2024-03-08',
+    responseRate: 68,
+    averagePaymentDelay: 8,
+    totalContractValue: 65000
   },
   {
     id: '11',
@@ -343,7 +403,12 @@ const mockClientAnalytics: ClientAnalytics[] = [
     lastActivity: '2024-03-15',
     contractsCount: 7,
     averageContractValue: 6429,
-    renewalRate: 70
+    renewalRate: 70,
+    communicationPreference: 'email',
+    lastContactDate: '2024-03-12',
+    responseRate: 72,
+    averagePaymentDelay: 12,
+    totalContractValue: 45000
   }
 ];
 
@@ -352,9 +417,12 @@ interface ClientAnalyticsProps {
 }
 
 export const ClientAnalytics: React.FC<ClientAnalyticsProps> = ({ onBack }) => {
-  const [activeView, setActiveView] = useState<'overview' | 'segments' | 'ltv' | 'risk'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'segments' | 'ltv' | 'risk' | 'communication' | 'behavior'>('overview');
   const [selectedSegment, setSelectedSegment] = useState<'all' | 'premium' | 'gold' | 'silver' | 'bronze'>('all');
-  const [sortBy, setSortBy] = useState<'ltv' | 'revenue' | 'age' | 'satisfaction'>('ltv');
+  const [sortBy, setSortBy] = useState<'ltv' | 'revenue' | 'age' | 'satisfaction' | 'risk'>('ltv');
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [selectedClients, setSelectedClients] = useState<string[]>([]);
+  const [showActionModal, setShowActionModal] = useState(false);
 
   const formatAccountAge = (days: number) => {
     const years = Math.floor(days / 365);
@@ -413,6 +481,19 @@ export const ClientAnalytics: React.FC<ClientAnalyticsProps> = ({ onBack }) => {
     }
   };
 
+  const getCommunicationIcon = (preference: string) => {
+    switch (preference) {
+      case 'email':
+        return <Mail className="text-blue-600" size={16} />;
+      case 'whatsapp':
+        return <MessageSquare className="text-green-600" size={16} />;
+      case 'sms':
+        return <Phone className="text-purple-600" size={16} />;
+      default:
+        return <Bell className="text-gray-600" size={16} />;
+    }
+  };
+
   const filteredClients = mockClientAnalytics.filter(client => 
     selectedSegment === 'all' || client.segment === selectedSegment
   );
@@ -427,6 +508,9 @@ export const ClientAnalytics: React.FC<ClientAnalyticsProps> = ({ onBack }) => {
         return b.accountAge - a.accountAge;
       case 'satisfaction':
         return b.satisfactionScore - a.satisfactionScore;
+      case 'risk':
+        const riskOrder = { high: 3, medium: 2, low: 1 };
+        return riskOrder[b.riskLevel] - riskOrder[a.riskLevel];
       default:
         return 0;
     }
@@ -450,6 +534,64 @@ export const ClientAnalytics: React.FC<ClientAnalyticsProps> = ({ onBack }) => {
     low: mockClientAnalytics.filter(c => c.riskLevel === 'low').length,
     medium: mockClientAnalytics.filter(c => c.riskLevel === 'medium').length,
     high: mockClientAnalytics.filter(c => c.riskLevel === 'high').length
+  };
+
+  const communicationStats = {
+    email: mockClientAnalytics.filter(c => c.communicationPreference === 'email').length,
+    whatsapp: mockClientAnalytics.filter(c => c.communicationPreference === 'whatsapp').length,
+    sms: mockClientAnalytics.filter(c => c.communicationPreference === 'sms').length
+  };
+
+  const handleExportAnalysis = (format: 'pdf' | 'excel' | 'csv') => {
+    if (format === 'csv') {
+      const csvContent = [
+        ['Cliente', 'Representante', 'Email', 'Segmento', 'LTV', 'Receita Total', 'Satisfação', 'Risco', 'Tendência'].join(','),
+        ...sortedClients.map(client => [
+          client.companyName,
+          client.representative,
+          client.email,
+          client.segment,
+          client.ltv.toString(),
+          client.totalRevenue.toString(),
+          client.satisfactionScore.toString(),
+          client.riskLevel,
+          client.growthTrend
+        ].join(','))
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `analise-clientes-${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+    setShowExportModal(false);
+    alert(`Análise exportada em formato ${format.toUpperCase()}!`);
+  };
+
+  const handleBulkAction = (action: string) => {
+    if (selectedClients.length === 0) {
+      alert('Selecione pelo menos um cliente');
+      return;
+    }
+
+    switch (action) {
+      case 'contact':
+        alert(`Enviando mensagem para ${selectedClients.length} cliente(s) selecionado(s)`);
+        break;
+      case 'segment':
+        alert(`Alterando segmento de ${selectedClients.length} cliente(s)`);
+        break;
+      case 'export':
+        handleExportAnalysis('csv');
+        break;
+    }
+    setSelectedClients([]);
+    setShowActionModal(false);
   };
 
   const renderOverview = () => (
@@ -705,6 +847,20 @@ export const ClientAnalytics: React.FC<ClientAnalyticsProps> = ({ onBack }) => {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-4 py-3 text-left">
+                  <input
+                    type="checkbox"
+                    checked={selectedClients.length === filteredClients.length && filteredClients.length > 0}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedClients(filteredClients.map(c => c.id));
+                      } else {
+                        setSelectedClients([]);
+                      }
+                    }}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Segmento</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">LTV</th>
@@ -716,6 +872,20 @@ export const ClientAnalytics: React.FC<ClientAnalyticsProps> = ({ onBack }) => {
             <tbody className="divide-y divide-gray-200">
               {filteredClients.slice(0, 10).map((client) => (
                 <tr key={client.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedClients.includes(client.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedClients([...selectedClients, client.id]);
+                        } else {
+                          setSelectedClients(selectedClients.filter(id => id !== client.id));
+                        }
+                      }}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                  </td>
                   <td className="px-4 py-3">
                     <div>
                       <p className="font-medium text-gray-900">{client.companyName}</p>
@@ -745,6 +915,22 @@ export const ClientAnalytics: React.FC<ClientAnalyticsProps> = ({ onBack }) => {
             </tbody>
           </table>
         </div>
+
+        {selectedClients.length > 0 && (
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-blue-800">
+                {selectedClients.length} cliente(s) selecionado(s)
+              </span>
+              <button
+                onClick={() => setShowActionModal(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors"
+              >
+                Ações em Lote
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -812,7 +998,10 @@ export const ClientAnalytics: React.FC<ClientAnalyticsProps> = ({ onBack }) => {
               <option value="age">Mais Antigos</option>
               <option value="satisfaction">Maior Satisfação</option>
             </select>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+            <button 
+              onClick={() => setShowExportModal(true)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+            >
               <Download size={16} />
               Exportar
             </button>
@@ -1020,10 +1209,16 @@ export const ClientAnalytics: React.FC<ClientAnalyticsProps> = ({ onBack }) => {
                 </div>
                 
                 <div className="flex gap-2">
-                  <button className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700 transition-colors">
+                  <button 
+                    onClick={() => alert(`Iniciando ação de retenção para ${client.companyName}`)}
+                    className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700 transition-colors"
+                  >
                     Ação Urgente
                   </button>
-                  <button className="border border-red-600 text-red-600 px-3 py-1 rounded text-xs hover:bg-red-50 transition-colors">
+                  <button 
+                    onClick={() => alert(`Visualizando perfil completo de ${client.companyName}`)}
+                    className="border border-red-600 text-red-600 px-3 py-1 rounded text-xs hover:bg-red-50 transition-colors"
+                  >
                     Ver Detalhes
                   </button>
                 </div>
@@ -1089,11 +1284,283 @@ export const ClientAnalytics: React.FC<ClientAnalyticsProps> = ({ onBack }) => {
     </div>
   );
 
+  const renderCommunication = () => (
+    <div className="space-y-6">
+      {/* Communication Preferences */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {Object.entries(communicationStats).map(([channel, count]) => {
+          const percentage = (count / mockClientAnalytics.length) * 100;
+          const channelData = {
+            email: { icon: Mail, color: 'blue', label: 'Email' },
+            whatsapp: { icon: MessageSquare, color: 'green', label: 'WhatsApp' },
+            sms: { icon: Phone, color: 'purple', label: 'SMS' }
+          };
+          const data = channelData[channel as keyof typeof channelData];
+          const Icon = data.icon;
+          
+          return (
+            <div key={channel} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="text-center">
+                <div className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-${data.color}-100`}>
+                  <Icon className={`text-${data.color}-600`} size={32} />
+                </div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">{data.label}</h4>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{count}</p>
+                <p className="text-sm text-gray-600 mb-3">clientes</p>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className={`h-2 rounded-full bg-${data.color}-500`}
+                    style={{ width: `${percentage}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">{percentage.toFixed(1)}%</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Communication Analytics */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Analytics de Comunicação</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="text-center p-6 bg-blue-50 rounded-lg border border-blue-200">
+            <Mail className="text-blue-600 mx-auto mb-3" size={32} />
+            <p className="text-3xl font-bold text-blue-900 mb-2">847</p>
+            <p className="text-sm text-blue-700 font-medium mb-2">Emails Enviados</p>
+            <div className="space-y-1 text-xs text-blue-600">
+              <p>Taxa de abertura: 68%</p>
+              <p>Taxa de clique: 12%</p>
+              <p>Bounces: 2.1%</p>
+            </div>
+            <div className="mt-4 w-full bg-blue-200 rounded-full h-2">
+              <div className="bg-blue-600 h-2 rounded-full" style={{ width: '68%' }}></div>
+            </div>
+          </div>
+          
+          <div className="text-center p-6 bg-green-50 rounded-lg border border-green-200">
+            <MessageSquare className="text-green-600 mx-auto mb-3" size={32} />
+            <p className="text-3xl font-bold text-green-900 mb-2">567</p>
+            <p className="text-sm text-green-700 font-medium mb-2">WhatsApp Enviados</p>
+            <div className="space-y-1 text-xs text-green-600">
+              <p>Taxa de entrega: 98%</p>
+              <p>Taxa de leitura: 89%</p>
+              <p>Respostas: 23%</p>
+            </div>
+            <div className="mt-4 w-full bg-green-200 rounded-full h-2">
+              <div className="bg-green-600 h-2 rounded-full" style={{ width: '89%' }}></div>
+            </div>
+          </div>
+          
+          <div className="text-center p-6 bg-purple-50 rounded-lg border border-purple-200">
+            <Phone className="text-purple-600 mx-auto mb-3" size={32} />
+            <p className="text-3xl font-bold text-purple-900 mb-2">234</p>
+            <p className="text-sm text-purple-700 font-medium mb-2">SMS Enviados</p>
+            <div className="space-y-1 text-xs text-purple-600">
+              <p>Taxa de entrega: 95%</p>
+              <p>Taxa de leitura: 78%</p>
+              <p>Respostas: 8%</p>
+            </div>
+            <div className="mt-4 w-full bg-purple-200 rounded-full h-2">
+              <div className="bg-purple-600 h-2 rounded-full" style={{ width: '78%' }}></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Client Communication Details */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Detalhes de Comunicação por Cliente</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Canal Preferido</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Taxa Resposta</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Último Contacto</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {mockClientAnalytics.slice(0, 8).map((client) => (
+                <tr key={client.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    <div>
+                      <p className="font-medium text-gray-900">{client.companyName}</p>
+                      <p className="text-sm text-gray-500">{client.representative}</p>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      {getCommunicationIcon(client.communicationPreference)}
+                      <span className="text-sm text-gray-900 capitalize">{client.communicationPreference}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-16 bg-gray-200 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full ${
+                            client.responseRate >= 90 ? 'bg-green-500' :
+                            client.responseRate >= 70 ? 'bg-yellow-500' : 'bg-red-500'
+                          }`}
+                          style={{ width: `${client.responseRate}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-sm font-medium text-gray-900">{client.responseRate}%</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900">{formatDate(client.lastContactDate)}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-1">
+                      <button 
+                        onClick={() => alert(`Enviando mensagem para ${client.companyName} via ${client.communicationPreference}`)}
+                        className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
+                        title="Enviar mensagem"
+                      >
+                        <Send size={16} />
+                      </button>
+                      <button 
+                        onClick={() => alert(`Visualizando histórico de comunicação de ${client.companyName}`)}
+                        className="text-green-600 hover:text-green-900 p-1 hover:bg-green-50 rounded"
+                        title="Ver histórico"
+                      >
+                        <Eye size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderBehavior = () => (
+    <div className="space-y-6">
+      {/* Payment Behavior Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {['excellent', 'good', 'average', 'poor'].map((behavior) => {
+          const count = mockClientAnalytics.filter(c => c.paymentBehavior === behavior).length;
+          const percentage = (count / mockClientAnalytics.length) * 100;
+          
+          return (
+            <div key={behavior} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="text-center">
+                <div className={`w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center ${
+                  behavior === 'excellent' ? 'bg-green-100' :
+                  behavior === 'good' ? 'bg-blue-100' :
+                  behavior === 'average' ? 'bg-yellow-100' : 'bg-red-100'
+                }`}>
+                  <DollarSign className={`${
+                    behavior === 'excellent' ? 'text-green-600' :
+                    behavior === 'good' ? 'text-blue-600' :
+                    behavior === 'average' ? 'text-yellow-600' : 'text-red-600'
+                  }`} size={24} />
+                </div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2 capitalize">
+                  {behavior === 'excellent' ? 'Excelente' :
+                   behavior === 'good' ? 'Bom' :
+                   behavior === 'average' ? 'Médio' : 'Fraco'}
+                </h4>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{count}</p>
+                <p className="text-sm text-gray-600 mb-3">clientes</p>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className={`h-2 rounded-full ${
+                      behavior === 'excellent' ? 'bg-green-500' :
+                      behavior === 'good' ? 'bg-blue-500' :
+                      behavior === 'average' ? 'bg-yellow-500' : 'bg-red-500'
+                    }`}
+                    style={{ width: `${percentage}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">{percentage.toFixed(1)}%</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Payment Behavior Details */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Comportamento de Pagamento Detalhado</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Comportamento</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Atraso Médio</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Taxa Renovação</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Último Pagamento</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tendência</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {mockClientAnalytics.map((client) => (
+                <tr key={client.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    <div>
+                      <p className="font-medium text-gray-900">{client.companyName}</p>
+                      <p className="text-sm text-gray-500">{client.representative}</p>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getPaymentBehaviorColor(client.paymentBehavior)}`}>
+                      {client.paymentBehavior === 'excellent' ? 'Excelente' :
+                       client.paymentBehavior === 'good' ? 'Bom' :
+                       client.paymentBehavior === 'average' ? 'Médio' : 'Fraco'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`text-sm font-medium ${
+                      client.averagePaymentDelay <= 2 ? 'text-green-600' :
+                      client.averagePaymentDelay <= 7 ? 'text-yellow-600' : 'text-red-600'
+                    }`}>
+                      {client.averagePaymentDelay} dias
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-16 bg-gray-200 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full ${
+                            client.renewalRate >= 90 ? 'bg-green-500' :
+                            client.renewalRate >= 70 ? 'bg-yellow-500' : 'bg-red-500'
+                          }`}
+                          style={{ width: `${client.renewalRate}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-sm font-medium text-gray-900">{client.renewalRate}%</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900">{formatDate(client.lastPayment)}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1">
+                      {getTrendIcon(client.growthTrend)}
+                      <span className="text-sm text-gray-900 capitalize">{client.growthTrend}</span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+
   const tabs = [
     { id: 'overview', label: 'Visão Geral', icon: Eye },
     { id: 'segments', label: 'Segmentação', icon: Users },
     { id: 'ltv', label: 'Análise LTV', icon: Crown },
-    { id: 'risk', label: 'Análise de Risco', icon: AlertCircle }
+    { id: 'risk', label: 'Análise de Risco', icon: AlertCircle },
+    { id: 'communication', label: 'Comunicação', icon: MessageSquare },
+    { id: 'behavior', label: 'Comportamento', icon: Activity }
   ];
 
   return (
@@ -1111,11 +1578,17 @@ export const ClientAnalytics: React.FC<ClientAnalyticsProps> = ({ onBack }) => {
           <p className="text-gray-600">Insights avançados sobre LTV, segmentação e comportamento dos clientes</p>
         </div>
         <div className="flex gap-3">
-          <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
+          <button 
+            onClick={() => window.location.reload()}
+            className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+          >
             <RefreshCw size={16} />
             Atualizar
           </button>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+          <button 
+            onClick={() => setShowExportModal(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+          >
             <Download size={16} />
             Exportar Análise
           </button>
@@ -1150,6 +1623,92 @@ export const ClientAnalytics: React.FC<ClientAnalyticsProps> = ({ onBack }) => {
       {activeView === 'segments' && renderSegments()}
       {activeView === 'ltv' && renderLTVAnalysis()}
       {activeView === 'risk' && renderRiskAnalysis()}
+      {activeView === 'communication' && renderCommunication()}
+      {activeView === 'behavior' && renderBehavior()}
+
+      {/* Export Modal */}
+      {showExportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Exportar Análise</h3>
+            <p className="text-gray-600 mb-6">
+              Escolha o formato para exportar a análise completa de clientes:
+            </p>
+            
+            <div className="space-y-3">
+              <button
+                onClick={() => handleExportAnalysis('pdf')}
+                className="w-full bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <FileText size={16} />
+                Exportar como PDF
+              </button>
+              <button
+                onClick={() => handleExportAnalysis('excel')}
+                className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <FileText size={16} />
+                Exportar como Excel
+              </button>
+              <button
+                onClick={() => handleExportAnalysis('csv')}
+                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <FileText size={16} />
+                Exportar como CSV
+              </button>
+              <button
+                onClick={() => setShowExportModal(false)}
+                className="w-full border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Actions Modal */}
+      {showActionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Ações em Lote</h3>
+            <p className="text-gray-600 mb-6">
+              {selectedClients.length} cliente(s) selecionado(s)
+            </p>
+            
+            <div className="space-y-3">
+              <button
+                onClick={() => handleBulkAction('contact')}
+                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <Send size={16} />
+                Enviar Mensagem
+              </button>
+              <button
+                onClick={() => handleBulkAction('segment')}
+                className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <Users size={16} />
+                Alterar Segmento
+              </button>
+              <button
+                onClick={() => handleBulkAction('export')}
+                className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <Download size={16} />
+                Exportar Selecionados
+              </button>
+              <button
+                onClick={() => setShowActionModal(false)}
+                className="w-full border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
