@@ -40,6 +40,7 @@ const getMenuItems = (userRole: string) => [
   { id: 'contracts', label: 'Contratos', icon: PenTool },
   { id: 'reports', label: 'Relatórios', icon: BarChart3 },
   ...(userRole === 'admin' ? [
+    { id: 'users', label: 'Utilizadores', icon: User },
     { id: 'sender', label: 'Envios', icon: Send },
     { id: 'settings', label: 'Configurações', icon: Settings }
   ] : [])
