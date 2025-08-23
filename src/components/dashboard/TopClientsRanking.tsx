@@ -186,17 +186,17 @@ export const TopClientsRanking: React.FC = () => {
       case 'oldest':
         return [...mockClientsLTV]
           .sort((a, b) => b.accountAge - a.accountAge)
-          .slice(0, 10);
+          .slice(0, 5);
       case 'revenue':
         return [...mockClientsLTV]
           .sort((a, b) => b.totalRevenue - a.totalRevenue)
-          .slice(0, 10);
+          .slice(0, 5);
       case 'ltv':
         return [...mockClientsLTV]
           .sort((a, b) => b.ltv - a.ltv)
-          .slice(0, 10);
+          .slice(0, 5);
       default:
-        return mockClientsLTV.slice(0, 10);
+        return mockClientsLTV.slice(0, 5);
     }
   };
 
@@ -266,7 +266,7 @@ export const TopClientsRanking: React.FC = () => {
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">{getRankingTitle()}</h3>
-            <p className="text-sm text-gray-600">Top 10 clientes por categoria</p>
+            <p className="text-sm text-gray-600">Top 5 clientes por categoria</p>
           </div>
         </div>
         
@@ -464,7 +464,7 @@ export const TopClientsRanking: React.FC = () => {
             <div className="text-lg font-bold text-gray-900">
               {(rankingData.reduce((sum, c) => sum + c.satisfactionScore, 0) / rankingData.length).toFixed(1)}
             </div>
-            <div className="text-sm text-gray-600">top 10</div>
+            <div className="text-sm text-gray-600">top 5</div>
           </div>
         </div>
       </div>
