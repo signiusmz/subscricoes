@@ -688,7 +688,7 @@ export const TaxManagement: React.FC = () => {
                     type="number"
                     name="rate"
                     defaultValue={editingRate?.rate || ''}
-                    placeholder="Ex: 16"
+                    placeholder="Ex: 17"
                     min="0"
                     max="100"
                     step="0.01"
