@@ -599,6 +599,7 @@ export const SubscriptionsTable: React.FC = () => {
                     <div>
                       <div className="text-sm font-medium text-gray-900">{subscription.serviceName}</div>
                       <div className="text-sm text-gray-500">Validade: {subscription.serviceValidity} mês{subscription.serviceValidity > 1 ? 'es' : ''}</div>
+                    </div>
                     <div className="text-sm text-gray-500">
                       Ciclo: {subscription.cycle || subscription.serviceValidity} mês{(subscription.cycle || subscription.serviceValidity) > 1 ? 'es' : ''}
                       {subscription.autoRenew && (
@@ -889,7 +890,7 @@ export const SubscriptionsTable: React.FC = () => {
                     <p className="text-blue-700"><strong>Cliente:</strong> <span id="summary-client">Selecione um cliente</span></p>
                     <p className="text-blue-700"><strong>Serviço:</strong> <span id="summary-service">Selecione um serviço</span></p>
                   </div>
-                <div>
+                  <div>
                     <p className="text-blue-700"><strong>Ciclo:</strong> <span id="summary-cycle">Selecione o ciclo</span></p>
                     <p className="text-blue-700"><strong>Valor:</strong> <span id="summary-price">0 MT</span></p>
                   </div>
