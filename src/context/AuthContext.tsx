@@ -72,7 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       const mockUser: User = {
         id: '1',
-        name: 'João Silva',
+        name: 'Administrador',
         email,
         role: 'admin',
         companyId: '1',
@@ -81,16 +81,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const mockCompany: Company = {
         id: '1',
-        name: 'TechSolutions Lda',
-        email: 'admin@techsolutions.mz',
-        nuit: '400123456',
-        address: 'Av. Julius Nyerere, 123, Maputo',
+        name: 'Sua Empresa',
+        email: 'admin@suaempresa.mz',
+        nuit: '400000000',
+        address: 'Endereço da sua empresa',
         plan: 'professional',
         planPrice: 1500,
         createdAt: new Date().toISOString(),
         isActive: true,
-        trialEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
-        isTrialActive: true
+        trialEndDate: undefined,
+        isTrialActive: false
       };
 
       setUser(mockUser);

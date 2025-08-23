@@ -64,8 +64,8 @@ interface Transaction {
 const mockCompanies: Company[] = [
   {
     id: '1',
-    name: 'TechSolutions Lda',
-    email: 'admin@techsolutions.mz',
+    name: 'Empresa Exemplo 1',
+    email: 'admin@empresa1.mz',
     plan: 'professional',
     planPrice: 1500,
     status: 'active',
@@ -75,8 +75,8 @@ const mockCompanies: Company[] = [
   },
   {
     id: '2',
-    name: 'Construções Maputo SA',
-    email: 'admin@construcoesmaputo.mz',
+    name: 'Empresa Exemplo 2',
+    email: 'admin@empresa2.mz',
     plan: 'enterprise',
     planPrice: 3500,
     status: 'active',

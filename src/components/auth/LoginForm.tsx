@@ -7,8 +7,8 @@ interface LoginFormProps {
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
-  const [email, setEmail] = useState('admin@techsolutions.mz');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isSuperAdminLogin, setIsSuperAdminLogin] = useState(false);
   const { login, loginSuperAdmin, isLoading } = useAuth();
 
@@ -25,8 +25,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
     {
       title: 'Administrador da Empresa',
       description: 'Gestão completa da empresa - Todos os módulos',
-      email: 'admin@techsolutions.mz',
-      password: 'password123',
+      email: 'admin@suaempresa.mz',
+      password: 'admin123',
       color: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
       textColor: 'text-blue-800',
       isSuperAdmin: false
@@ -34,7 +34,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
     {
       title: 'Gestor/Manager',
       description: 'Gestão de clientes, serviços e relatórios',
-      email: 'manager@techsolutions.mz',
+      email: 'gestor@suaempresa.mz',
       password: 'manager123',
       color: 'bg-green-50 border-green-200 hover:bg-green-100',
       textColor: 'text-green-800',

@@ -69,11 +69,11 @@ export interface ReportData {
 
 export class PDFGenerator {
   private static companyInfo: CompanyInfo = {
-    name: 'TechSolutions Lda',
-    address: 'Av. Julius Nyerere, 123, Maputo',
-    phone: '+258 21 123 456',
-    email: 'info@techsolutions.mz',
-    nuit: '400123456'
+    name: 'Sua Empresa Lda',
+    address: 'Endereço da sua empresa',
+    phone: '+258 21 000 000',
+    email: 'info@suaempresa.mz',
+    nuit: '400000000'
   };
 
   private static addHeader(doc: jsPDF, title: string) {

@@ -52,38 +52,14 @@ interface Payment {
 let globalInvoices: Invoice[] = [
   {
     id: '1',
-    number: 'FAC-2024-001',
+    number: 'FAC-' + new Date().getFullYear() + '-001',
     subscriptionId: '1',
     clientId: '1',
-    clientName: 'Transportes Maputo Lda',
-    serviceName: 'Contabilidade Mensal',
-    amount: 5000,
-    issueDate: '2024-01-01',
-    dueDate: '2024-01-31',
-    status: 'paid',
-    paymentMethod: 'transfer',
-    paidDate: '2024-01-25',
-    receiptId: '1',
-    paidAmount: 5000,
-    payments: [{
-      id: '1',
-      invoiceId: '1',
-      amount: 5000,
-      date: '2024-01-25',
-      method: 'transfer',
-      reference: 'TRF-001'
-    }]
-  },
-  {
-    id: '2',
-    number: 'FAC-2024-002',
-    subscriptionId: '2',
-    clientId: '2',
-    clientName: 'Construções Beira SA',
-    serviceName: 'Auditoria Anual',
-    amount: 15000,
-    issueDate: '2024-02-01',
-    dueDate: '2024-02-29',
+    clientName: 'Cliente Exemplo',
+    serviceName: 'Serviço Exemplo',
+    amount: 1000,
+    issueDate: new Date().toISOString().split('T')[0],
+    dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     status: 'pending'
   },
   {

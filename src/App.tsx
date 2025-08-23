@@ -35,13 +35,13 @@ import { TawkToChat } from './components/common/TawkToChat';
 import { DashboardMetrics } from './types';
 
 const mockMetrics: DashboardMetrics = {
-  totalClients: 45,
-  activeServices: 78,
-  expiringServices: 12,
-  expiredServices: 5,
-  averageSatisfaction: 8.4,
-  monthlyRevenue: 234500,
-  growthRate: 15.7
+  totalClients: 0,
+  activeServices: 0,
+  expiringServices: 0,
+  expiredServices: 0,
+  averageSatisfaction: 0,
+  monthlyRevenue: 0,
+  growthRate: 0
 };
 
 const Dashboard = () => {

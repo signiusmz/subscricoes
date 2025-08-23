@@ -121,10 +121,10 @@ export const SettingsPanel: React.FC = () => {
   const [companySettings, setCompanySettings] = useState<CompanySettings>({
     name: company?.name || '',
     email: company?.email || '',
-    phone: '+258 21 123 456',
+    phone: '+258 21 000 000',
     address: company?.address || '',
     nuit: company?.nuit || '',
-    website: 'https://techsolutions.mz',
+    website: 'https://suaempresa.mz',
     timezone: 'Africa/Maputo',
     currency: 'MZN'
   });
@@ -134,10 +134,10 @@ export const SettingsPanel: React.FC = () => {
   
   // Mock usage data
   const usageData = {
-    clients: 45,
-    users: 3,
-    storage: 2.3, // GB
-    apiCalls: 1250
+    clients: 0,
+    users: 1,
+    storage: 0.1, // GB
+    apiCalls: 0
   };
 
   const getUsagePercentage = (current: number, max: number | string) => {

@@ -7,9 +7,9 @@ import { Pagination } from '../common/Pagination';
 const mockUsers: UserType[] = [
   {
     id: '1',
-    name: 'João Silva',
-    email: 'joao@techsolutions.mz',
-    phone: '+258 84 123 4567',
+    name: 'Administrador',
+    email: 'admin@suaempresa.mz',
+    phone: '+258 84 000 0001',
     role: 'admin',
     companyId: '1',
     createdAt: '2024-01-15T00:00:00Z',
@@ -18,9 +18,9 @@ const mockUsers: UserType[] = [
   },
   {
     id: '2',
-    name: 'Maria Santos',
-    email: 'maria@techsolutions.mz',
-    phone: '+258 85 987 6543',
+    name: 'Gestor',
+    email: 'gestor@suaempresa.mz',
+    phone: '+258 85 000 0002',
     role: 'manager',
     companyId: '1',
     createdAt: '2024-02-01T00:00:00Z',
@@ -29,9 +29,9 @@ const mockUsers: UserType[] = [
   },
   {
     id: '3',
-    name: 'Carlos Mendes',
-    email: 'carlos@techsolutions.mz',
-    phone: '+258 86 555 7777',
+    name: 'Utilizador',
+    email: 'utilizador@suaempresa.mz',
+    phone: '+258 86 000 0003',
     role: 'user',
     companyId: '1',
     createdAt: '2024-02-15T00:00:00Z',

@@ -169,7 +169,7 @@ export const DashboardHeader: React.FC = () => {
                 {getGreeting()}, {user?.name?.split(' ')[0] || 'Utilizador'}! 👋
               </h1>
               <p className="text-blue-100 text-base lg:text-lg mb-4">
-                Bem-vindo ao painel de gestão da {company?.name || 'sua empresa'}
+                Bem-vindo ao sistema de gestão da {company?.name || 'sua empresa'}
               </p>
               <div className="flex items-center gap-4 text-blue-100 text-sm">
                 <div className="flex items-center gap-2">
@@ -320,21 +320,21 @@ export const DashboardHeader: React.FC = () => {
             <div className="mt-4 lg:mt-6 pt-4 lg:pt-6 border-t border-white border-opacity-20">
               <h4 className="text-lg font-semibold text-white mb-4">🏆 Performance de Vendas</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                <div className="bg-white bg-opacity-10 rounded-lg p-3 lg:p-4">
+                  <p className="text-xl lg:text-2xl font-bold text-white">0</p>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-yellow-400 text-lg">🏆</span>
                     <span className="text-sm font-semibold text-white">Melhor Vendedor do Mês</span>
                   </div>
-                  <p className="text-base lg:text-lg font-bold text-white">João Silva</p>
-                  <p className="text-xs lg:text-sm text-blue-100">85.000 MT • 12 clientes • 6 contratos</p>
+                  <p className="text-base lg:text-lg font-bold text-white">-</p>
+                  <p className="text-xs lg:text-sm text-blue-100">Nenhum dado ainda</p>
                 </div>
                 <div className="bg-white bg-opacity-10 rounded-lg p-3 lg:p-4">
-                  <div className="flex items-center gap-2 mb-2">
+                  <p className="text-xl lg:text-2xl font-bold text-white">0</p>
                     <span className="text-gray-300 text-lg">🥈</span>
                     <span className="text-sm font-semibold text-white">Mês Anterior</span>
                   </div>
-                  <p className="text-base lg:text-lg font-bold text-white">João Silva</p>
-                  <p className="text-xs lg:text-sm text-blue-100">78.000 MT • 11 clientes • 5 contratos</p>
+                  <p className="text-base lg:text-lg font-bold text-white">-</p>
+                  <p className="text-xs lg:text-sm text-blue-100">Nenhum dado ainda</p>
                 </div>
               </div>
             </div>

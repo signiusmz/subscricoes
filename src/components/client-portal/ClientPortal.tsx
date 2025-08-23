@@ -102,12 +102,12 @@ const mockClientInvoices: ClientPortalInvoice[] = [
 ];
 
 const mockClientInfo = {
-  companyName: 'Transportes Maputo Lda',
-  representative: 'João Macamo',
-  email: 'joao@transportesmaputo.mz',
-  phone: '+258 84 123 4567',
-  nuit: '400567890',
-  address: 'Av. Eduardo Mondlane, 567, Maputo'
+  companyName: 'Sua Empresa Lda',
+  representative: 'Seu Nome',
+  email: 'seu@email.com',
+  phone: '+258 84 000 0000',
+  nuit: '400000000',
+  address: 'Endereço da sua empresa'
 };
 
 export const ClientPortal: React.FC = () => {

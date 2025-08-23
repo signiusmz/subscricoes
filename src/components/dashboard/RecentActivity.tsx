@@ -13,62 +13,10 @@ interface ActivityItem {
 const mockActivities: ActivityItem[] = [
   {
     id: '1',
-    type: 'payment',
-    message: 'Pagamento recebido de Transportes Maputo Lda',
-    time: '30 minutos atrás',
-    value: 5000,
-    status: 'success'
-  },
-  {
-    id: '2',
-    type: 'client',
-    message: 'Novo cliente registado: Hotel Polana',
-    time: '1 hora atrás',
-    status: 'success'
-  },
-  {
-    id: '3',
-    type: 'renewal',
-    message: 'Renovação automática: Construções Beira SA',
-    time: '2 horas atrás',
-    value: 15000,
-    status: 'success'
-  },
-  {
-    id: '4',
     type: 'service',
-    message: 'Lembrete de renovação enviado para 3 clientes',
-    time: '3 horas atrás',
-    status: 'warning'
-  },
-  {
-    id: '5',
-    type: 'notification',
-    message: 'Relatório mensal gerado automaticamente',
-    time: '4 horas atrás',
+    message: 'Sistema iniciado com sucesso',
+    time: 'Agora mesmo',
     status: 'success'
-  },
-  {
-    id: '6',
-    type: 'client',
-    message: 'Cliente Farmácia Central atualizou dados',
-    time: '6 horas atrás',
-    status: 'success'
-  },
-  {
-    id: '7',
-    type: 'service',
-    message: 'Serviço expirado: Consultoria Fiscal',
-    time: '1 dia atrás',
-    status: 'warning'
-  },
-  {
-    id: '8',
-    type: 'payment',
-    message: 'Fatura vencida: Construções Beira SA',
-    time: '1 dia atrás',
-    value: 8000,
-    status: 'warning'
   }
 ];
 
