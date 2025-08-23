@@ -494,9 +494,6 @@ export const DigitalContracts: React.FC = () => {
   const [editingContract, setEditingContract] = useState<Contract | null>(null);
   const [editingTemplate, setEditingTemplate] = useState<ContractTemplate | null>(null);
   const [editContent, setEditContent] = useState('');
-  const [showTemplateModal, setShowTemplateModal] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<ContractTemplate | null>(null);
-  const [templateContent, setTemplateContent] = useState('');
   const [templates, setTemplates] = useState<ContractTemplate[]>(mockTemplates);
   const [templateContent, setTemplateContent] = useState('');
   const [selectedClientId, setSelectedClientId] = useState('');
