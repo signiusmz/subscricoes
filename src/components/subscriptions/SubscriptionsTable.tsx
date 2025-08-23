@@ -1017,7 +1017,7 @@ export const SubscriptionsTable: React.FC = () => {
                   type="submit"
                   className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
-                  {editingSubscription ? 'Atualizar' : 'Adicionar'}
+                  Salvar Nível de Satisfação
                 </button>
               </div>
             </form>
