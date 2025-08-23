@@ -116,7 +116,7 @@ export class PDFGenerator {
     
     // Footer line
     doc.setDrawColor(200, 200, 200);
-    doc.line(20, pageHeight - 40, 190, pageHeight - 40);
+    doc.line(20, pageHeight - 30, 190, pageHeight - 30);
     
     // Main footer text - centered
     doc.setFontSize(8);
@@ -129,27 +129,27 @@ export class PDFGenerator {
     const pageWidth = doc.internal.pageSize.width;
     const centerX = (pageWidth - textWidth) / 2;
     
-    doc.text(mainFooterText, centerX, pageHeight - 30);
+    doc.text(mainFooterText, centerX, pageHeight - 22);
     
     // Company licensing info - centered
     const companyText = `Sistema Licenciado para: ${this.companyInfo.name}`;
     const companyTextWidth = doc.getTextWidth(companyText);
     const companyCenterX = (pageWidth - companyTextWidth) / 2;
     
-    doc.text(companyText, companyCenterX, pageHeight - 25);
+    doc.text(companyText, companyCenterX, pageHeight - 17);
     
     // Generation date - centered
     const dateText = `Documento gerado em ${new Date().toLocaleDateString('pt-PT')}`;
     const dateTextWidth = doc.getTextWidth(dateText);
     const dateCenterX = (pageWidth - dateTextWidth) / 2;
     
-    doc.text(dateText, dateCenterX, pageHeight - 20);
+    doc.text(dateText, dateCenterX, pageHeight - 12);
     
     // Page number
     const pageCount = doc.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
-      doc.text(`Página ${i} de ${pageCount}`, 170, pageHeight - 15);
+      doc.text(`Página ${i} de ${pageCount}`, 170, pageHeight - 7);
     }
   }
 
@@ -369,7 +369,7 @@ export class PDFGenerator {
     }
     
     // Notes
-    if (invoiceData.notes) {
+    if (invoiceData.notes && invoiceData.notes !== 'Obrigado pela sua preferência!') {
       currentY += 25;
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(10);
@@ -513,7 +513,7 @@ export class PDFGenerator {
     }
     
     // Notes
-    if (receiptData.notes) {
+    if (receiptData.notes && receiptData.notes !== 'Pagamento processado com sucesso!') {
       currentY += 15;
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');

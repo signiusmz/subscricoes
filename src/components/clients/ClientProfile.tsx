@@ -648,7 +648,7 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({ client, onBack }) 
                               status: invoice.status,
                               paymentMethod: payment?.method,
                               paidDate: payment?.date,
-                              notes: 'Obrigado pela sua preferência!'
+                              notes: undefined
                             };
                             PDFGenerator.generateInvoice(invoiceData);
                           }}

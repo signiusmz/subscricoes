@@ -272,7 +272,7 @@ export const BillingModule: React.FC = () => {
       status: invoice.status,
       paymentMethod: invoice.paymentMethod,
       paidDate: invoice.paidDate,
-      notes: invoice.notes || 'Obrigado pela sua preferência!'
+      notes: invoice.notes
     };
     
     PDFGenerator.generateInvoice(invoiceData);
@@ -298,7 +298,7 @@ export const BillingModule: React.FC = () => {
       amount: receipt.amount,
       paymentMethod: receipt.paymentMethod,
       reference: receipt.reference,
-      notes: receipt.notes || 'Pagamento processado com sucesso!'
+      notes: receipt.notes
     };
     
     PDFGenerator.generateReceipt(receiptData);
