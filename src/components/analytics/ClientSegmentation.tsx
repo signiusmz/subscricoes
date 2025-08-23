@@ -24,6 +24,7 @@ import {
   Zap,
   CheckCircle,
   AlertCircle,
+  AlertTriangle,
   ArrowRight,
   RefreshCw,
   Download,
