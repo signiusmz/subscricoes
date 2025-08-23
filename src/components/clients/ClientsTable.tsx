@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Plus, Edit, Trash2, Mail, Phone, MapPin, Calendar, Eye, Users, UserCheck, UserX, Clock, Building, User } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, Mail, Phone, MapPin, Calendar, Eye, Users, UserCheck, UserX, Clock, Building, User, Filter, Download, Upload, FileText, Star } from 'lucide-react';
 import { Client } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { ClientProfile } from './ClientProfile';
@@ -60,6 +60,36 @@ const mockClients: Client[] = [
     salespersonId: '1',
     createdAt: '2024-02-01',
     isActive: false
+  },
+  {
+    id: '4',
+    companyId: '1',
+    companyName: 'Hotel Polana',
+    representative: 'Carlos Mendes',
+    email: 'carlos@hotelpolana.mz',
+    phone: '87 444 5555',
+    phoneCountryCode: '+258',
+    nuit: '400111222',
+    address: 'Av. Julius Nyerere, 1380, Maputo',
+    anniversary: '05-10',
+    salespersonId: '3',
+    createdAt: '2024-03-01',
+    isActive: true
+  },
+  {
+    id: '5',
+    companyId: '1',
+    companyName: 'Supermercado Shoprite',
+    representative: 'Ana Costa',
+    email: 'ana@shoprite.mz',
+    phone: '82 333 4444',
+    phoneCountryCode: '+258',
+    nuit: '400333444',
+    address: 'Shopping Maputo, Loja 15',
+    anniversary: '12-25',
+    salespersonId: '2',
+    createdAt: '2024-03-15',
+    isActive: true
   }
 ];
 
@@ -89,10 +119,17 @@ const mockUsers = [
 
 export const ClientsTable: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [salespersonFilter, setSalespersonFilter] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showBulkActionsModal, setShowBulkActionsModal] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [clients, setClients] = useState<Client[]>(mockClients);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [selectedClients, setSelectedClients] = useState<string[]>([]);
+  const [sortField, setSortField] = useState<'name' | 'date' | 'salesperson'>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   if (selectedClient) {
     return <ClientProfile client={selectedClient} onBack={() => setSelectedClient(null)} />;
@@ -103,11 +140,44 @@ export const ClientsTable: React.FC = () => {
     return salesperson ? salesperson.name : 'Não atribuído';
   };
 
-  const filteredClients = mockClients.filter(client =>
-    client.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.representative.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredClients = clients.filter(client => {
+    const matchesSearch = client.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         client.representative.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         client.email.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || 
+                         (statusFilter === 'active' && client.isActive) ||
+                         (statusFilter === 'inactive' && !client.isActive);
+    
+    const matchesSalesperson = salespersonFilter === 'all' || client.salespersonId === salespersonFilter;
+    
+    return matchesSearch && matchesStatus && matchesSalesperson;
+  }).sort((a, b) => {
+    let aValue, bValue;
+    
+    switch (sortField) {
+      case 'name':
+        aValue = a.companyName.toLowerCase();
+        bValue = b.companyName.toLowerCase();
+        break;
+      case 'date':
+        aValue = new Date(a.createdAt).getTime();
+        bValue = new Date(b.createdAt).getTime();
+        break;
+      case 'salesperson':
+        aValue = getSalespersonName(a.salespersonId).toLowerCase();
+        bValue = getSalespersonName(b.salespersonId).toLowerCase();
+        break;
+      default:
+        return 0;
+    }
+    
+    if (sortDirection === 'asc') {
+      return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+    } else {
+      return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+    }
+  });
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-PT');
@@ -147,9 +217,106 @@ export const ClientsTable: React.FC = () => {
     }
   };
 
+  const handleBulkDelete = () => {
+    if (selectedClients.length === 0) {
+      alert('Selecione pelo menos um cliente');
+      return;
+    }
+    
+    if (confirm(`Tem certeza que deseja eliminar ${selectedClients.length} cliente(s)?`)) {
+      setClients(clients.filter(c => !selectedClients.includes(c.id)));
+      setSelectedClients([]);
+      setShowBulkActionsModal(false);
+      alert(`${selectedClients.length} cliente(s) eliminado(s) com sucesso!`);
+    }
+  };
+
+  const handleBulkStatusChange = (newStatus: boolean) => {
+    if (selectedClients.length === 0) {
+      alert('Selecione pelo menos um cliente');
+      return;
+    }
+    
+    setClients(clients.map(c => 
+      selectedClients.includes(c.id) ? { ...c, isActive: newStatus } : c
+    ));
+    setSelectedClients([]);
+    setShowBulkActionsModal(false);
+    alert(`Status de ${selectedClients.length} cliente(s) atualizado!`);
+  };
+
+  const handleExportClients = () => {
+    const csvContent = [
+      ['Nome da Empresa', 'Representante', 'Email', 'Telefone', 'NUIT', 'Endereço', 'Aniversário', 'Gestor', 'Status', 'Data de Criação'].join(','),
+      ...filteredClients.map(client => [
+        client.companyName,
+        client.representative,
+        client.email,
+        `${client.phoneCountryCode} ${client.phone}`,
+        client.nuit,
+        client.address,
+        formatAnniversary(client.anniversary),
+        getSalespersonName(client.salespersonId),
+        client.isActive ? 'Ativo' : 'Inativo',
+        formatDate(client.createdAt)
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `clientes-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImportClients = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const csv = e.target?.result as string;
+      const lines = csv.split('\n');
+      const headers = lines[0].split(',');
+      
+      const importedClients: Client[] = [];
+      
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',');
+        if (values.length >= 6) {
+          const newClient: Client = {
+            id: Date.now().toString() + i,
+            companyId: '1',
+            companyName: values[0]?.trim() || '',
+            representative: values[1]?.trim() || '',
+            email: values[2]?.trim() || '',
+            phone: values[3]?.trim() || '',
+            phoneCountryCode: '+258',
+            nuit: values[4]?.trim() || '',
+            address: values[5]?.trim() || '',
+            anniversary: '01-01',
+            salespersonId: '1',
+            createdAt: new Date().toISOString(),
+            isActive: true
+          };
+          importedClients.push(newClient);
+        }
+      }
+      
+      setClients([...clients, ...importedClients]);
+      setShowImportModal(false);
+      alert(`${importedClients.length} cliente(s) importado(s) com sucesso!`);
+    };
+    
+    reader.readAsText(file);
+  };
+
   const handleSaveClient = (clientData: Partial<Client>) => {
     if (editingClient) {
-      // Update existing client
       setClients(clients.map(c => 
         c.id === editingClient.id 
           ? { ...c, ...clientData }
@@ -157,7 +324,6 @@ export const ClientsTable: React.FC = () => {
       ));
       alert('Cliente atualizado com sucesso!');
     } else {
-      // Add new client
       const newClient: Client = {
         id: Date.now().toString(),
         companyId: '1',
@@ -180,6 +346,22 @@ export const ClientsTable: React.FC = () => {
     setEditingClient(null);
   };
 
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedClients(filteredClients.map(c => c.id));
+    } else {
+      setSelectedClients([]);
+    }
+  };
+
+  const handleSelectClient = (clientId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedClients([...selectedClients, clientId]);
+    } else {
+      setSelectedClients(selectedClients.filter(id => id !== clientId));
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -188,13 +370,29 @@ export const ClientsTable: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-900">Gestão de Clientes</h2>
           <p className="text-gray-600 mt-1">Gerir clientes e acompanhar status dos serviços</p>
         </div>
-        <button 
-          onClick={handleAddClient}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
-        >
-          <Plus size={20} />
-          Novo Cliente
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={() => setShowImportModal(true)}
+            className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center gap-2"
+          >
+            <Upload size={20} />
+            Importar
+          </button>
+          <button 
+            onClick={handleExportClients}
+            className="border border-blue-600 text-blue-600 px-4 py-2 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2"
+          >
+            <Download size={20} />
+            Exportar
+          </button>
+          <button 
+            onClick={handleAddClient}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
+          >
+            <Plus size={20} />
+            Novo Cliente
+          </button>
+        </div>
       </div>
 
       {/* Status Cards */}
@@ -203,7 +401,7 @@ export const ClientsTable: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 mb-1">Total de Clientes</p>
-              <p className="text-2xl font-bold text-gray-900">{mockClients.length}</p>
+              <p className="text-2xl font-bold text-gray-900">{clients.length}</p>
             </div>
             <div className="w-12 h-12 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
               <Users size={24} />
@@ -216,7 +414,7 @@ export const ClientsTable: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 mb-1">Clientes Ativos</p>
               <p className="text-2xl font-bold text-gray-900">
-                {mockClients.filter(c => c.isActive).length}
+                {clients.filter(c => c.isActive).length}
               </p>
             </div>
             <div className="w-12 h-12 rounded-full flex items-center justify-center bg-green-100 text-green-600">
@@ -230,7 +428,7 @@ export const ClientsTable: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 mb-1">Clientes Inativos</p>
               <p className="text-2xl font-bold text-gray-900">
-                {mockClients.filter(c => !c.isActive).length}
+                {clients.filter(c => !c.isActive).length}
               </p>
             </div>
             <div className="w-12 h-12 rounded-full flex items-center justify-center bg-red-100 text-red-600">
@@ -244,7 +442,7 @@ export const ClientsTable: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 mb-1">Novos Este Mês</p>
               <p className="text-2xl font-bold text-gray-900">
-                {mockClients.filter(c => {
+                {clients.filter(c => {
                   const clientDate = new Date(c.createdAt);
                   const now = new Date();
                   return clientDate.getMonth() === now.getMonth() && 
@@ -259,16 +457,70 @@ export const ClientsTable: React.FC = () => {
         </div>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-        <input
-          type="text"
-          placeholder="Pesquisar clientes..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
+      {/* Filters and Search */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <input
+              type="text"
+              placeholder="Pesquisar clientes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as any)}
+            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="all">Todos os Status</option>
+            <option value="active">Ativos</option>
+            <option value="inactive">Inativos</option>
+          </select>
+          <select
+            value={salespersonFilter}
+            onChange={(e) => setSalespersonFilter(e.target.value)}
+            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="all">Todos os Gestores</option>
+            {mockUsers.map((user) => (
+              <option key={user.id} value={user.id}>{user.name}</option>
+            ))}
+          </select>
+          <select
+            value={`${sortField}-${sortDirection}`}
+            onChange={(e) => {
+              const [field, direction] = e.target.value.split('-');
+              setSortField(field as any);
+              setSortDirection(direction as any);
+            }}
+            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="name-asc">Nome A-Z</option>
+            <option value="name-desc">Nome Z-A</option>
+            <option value="date-desc">Mais Recentes</option>
+            <option value="date-asc">Mais Antigos</option>
+            <option value="salesperson-asc">Gestor A-Z</option>
+          </select>
+        </div>
+        
+        {selectedClients.length > 0 && (
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-blue-800">
+                {selectedClients.length} cliente(s) selecionado(s)
+              </span>
+              <button
+                onClick={() => setShowBulkActionsModal(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors"
+              >
+                Ações em Lote
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Table */}
@@ -277,6 +529,14 @@ export const ClientsTable: React.FC = () => {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-6 py-3 text-left">
+                  <input
+                    type="checkbox"
+                    checked={selectedClients.length === filteredClients.length && filteredClients.length > 0}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Cliente
                 </th>
@@ -300,6 +560,14 @@ export const ClientsTable: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredClients.map((client) => (
                 <tr key={client.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedClients.includes(client.id)}
+                      onChange={(e) => handleSelectClient(client.id, e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">{client.companyName}</div>
@@ -371,6 +639,88 @@ export const ClientsTable: React.FC = () => {
         </div>
       </div>
 
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Importar Clientes</h3>
+            <p className="text-gray-600 mb-4">
+              Faça upload de um arquivo CSV com os dados dos clientes.
+            </p>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Arquivo CSV
+              </label>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleImportClients}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <h4 className="font-medium text-blue-900 mb-2">Formato do CSV:</h4>
+              <p className="text-sm text-blue-800">
+                Nome da Empresa, Representante, Email, Telefone, NUIT, Endereço
+              </p>
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowImportModal(false)}
+                className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Actions Modal */}
+      {showBulkActionsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Ações em Lote</h3>
+            <p className="text-gray-600 mb-6">
+              {selectedClients.length} cliente(s) selecionado(s)
+            </p>
+            
+            <div className="space-y-3">
+              <button
+                onClick={() => handleBulkStatusChange(true)}
+                className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <UserCheck size={16} />
+                Ativar Todos
+              </button>
+              <button
+                onClick={() => handleBulkStatusChange(false)}
+                className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg hover:bg-orange-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <UserX size={16} />
+                Desativar Todos
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                className="w-full bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <Trash2 size={16} />
+                Eliminar Todos
+              </button>
+              <button
+                onClick={() => setShowBulkActionsModal(false)}
+                className="w-full border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Add/Edit Client Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -383,7 +733,6 @@ export const ClientsTable: React.FC = () => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
               
-              // Handle anniversary format conversion
               const anniversaryDay = formData.get('anniversaryDay') as string;
               const anniversaryMonth = formData.get('anniversaryMonth') as string;
               const anniversaryValue = anniversaryDay && anniversaryMonth ? 
