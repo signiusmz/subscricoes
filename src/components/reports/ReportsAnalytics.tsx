@@ -26,7 +26,8 @@ interface ScheduledReport {
   Zap
   recipients: string[];
   nextRun: string;
-  lastRun?: string;
+  Settings,
+  Zap
   isActive: boolean;
   createdAt: string;
   format: 'pdf' | 'excel' | 'csv';
