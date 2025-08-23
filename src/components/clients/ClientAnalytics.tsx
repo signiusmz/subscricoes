@@ -908,3 +908,193 @@ export const ClientAnalytics: React.FC<ClientAnalyticsProps> = ({ onBack }) => {
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getRiskColor(client.riskLevel)}`}>
                       {client.riskLevel === 'low' ? 'Baixo' : client.riskLevel === 'medium' ? 'Médio' : 'Alto'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={onBack}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <ArrowLeft size={20} />
+              <span>Voltar</span>
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Análise de Clientes</h1>
+              <p className="text-sm text-gray-600">Insights detalhados sobre o portfólio de clientes</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            {selectedClients.length > 0 && (
+              <button
+                onClick={() => setShowActionModal(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+              >
+                <Send size={16} />
+                Ações ({selectedClients.length})
+              </button>
+            )}
+            <button
+              onClick={() => setShowExportModal(true)}
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+            >
+              <Download size={16} />
+              Exportar
+            </button>
+            <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
+              <RefreshCw size={16} />
+              Atualizar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation Tabs */}
+      <div className="bg-white border-b border-gray-200 px-6">
+        <nav className="flex space-x-8">
+          {[
+            { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
+            { id: 'segments', label: 'Segmentos', icon: PieChart },
+            { id: 'ltv', label: 'LTV Analysis', icon: Crown },
+            { id: 'risk', label: 'Análise de Risco', icon: Target },
+            { id: 'communication', label: 'Comunicação', icon: MessageSquare },
+            { id: 'behavior', label: 'Comportamento', icon: Activity }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveView(tab.id as any)}
+              className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeView === tab.id
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <tab.icon size={16} />
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Content */}
+      <div className="p-6">
+        {activeView === 'overview' && renderOverview()}
+        {activeView === 'segments' && renderSegments()}
+      </div>
+
+      {/* Export Modal */}
+      {showExportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Exportar Análise</h3>
+            <div className="space-y-3">
+              <button
+                onClick={() => handleExportAnalysis('pdf')}
+                className="w-full p-3 text-left border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3"
+              >
+                <FileText className="text-red-600" size={20} />
+                <div>
+                  <p className="font-medium text-gray-900">PDF Report</p>
+                  <p className="text-sm text-gray-500">Relatório completo em PDF</p>
+                </div>
+              </button>
+              <button
+                onClick={() => handleExportAnalysis('excel')}
+                className="w-full p-3 text-left border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3"
+              >
+                <BarChart3 className="text-green-600" size={20} />
+                <div>
+                  <p className="font-medium text-gray-900">Excel Spreadsheet</p>
+                  <p className="text-sm text-gray-500">Dados em planilha Excel</p>
+                </div>
+              </button>
+              <button
+                onClick={() => handleExportAnalysis('csv')}
+                className="w-full p-3 text-left border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3"
+              >
+                <Download className="text-blue-600" size={20} />
+                <div>
+                  <p className="font-medium text-gray-900">CSV Data</p>
+                  <p className="text-sm text-gray-500">Dados em formato CSV</p>
+                </div>
+              </button>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowExportModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Action Modal */}
+      {showActionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Ações para {selectedClients.length} cliente(s)
+            </h3>
+            <div className="space-y-3">
+              <button
+                onClick={() => handleBulkAction('contact')}
+                className="w-full p-3 text-left border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3"
+              >
+                <MessageSquare className="text-blue-600" size={20} />
+                <div>
+                  <p className="font-medium text-gray-900">Enviar Mensagem</p>
+                  <p className="text-sm text-gray-500">Comunicar com clientes selecionados</p>
+                </div>
+              </button>
+              <button
+                onClick={() => handleBulkAction('segment')}
+                className="w-full p-3 text-left border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3"
+              >
+                <Crown className="text-purple-600" size={20} />
+                <div>
+                  <p className="font-medium text-gray-900">Alterar Segmento</p>
+                  <p className="text-sm text-gray-500">Reclassificar clientes</p>
+                </div>
+              </button>
+              <button
+                onClick={() => handleBulkAction('export')}
+                className="w-full p-3 text-left border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3"
+              >
+                <Download className="text-green-600" size={20} />
+                <div>
+                  <p className="font-medium text-gray-900">Exportar Selecionados</p>
+                  <p className="text-sm text-gray-500">Baixar dados dos clientes</p>
+                </div>
+              </button>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowActionModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
