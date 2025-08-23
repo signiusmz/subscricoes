@@ -382,51 +382,6 @@ export const SenderModule: React.FC = () => {
         )}
       </div>
 
-      {/* Common SMTP Providers */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h4 className="font-semibold text-gray-900 mb-4">Configurações Comuns</h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 border border-gray-200 rounded-lg">
-            <h5 className="font-medium text-gray-900 mb-2">Gmail</h5>
-            <div className="text-sm text-gray-600 space-y-1">
-              <p>Servidor: smtp.gmail.com</p>
-              <p>Porta: 587 (TLS)</p>
-              <p>Requer: App Password</p>
-            </div>
-            <button 
-              onClick={() => setSMTPConfig({
-                ...smtpConfig,
-                host: 'smtp.gmail.com',
-                port: 587,
-                secure: true
-              })}
-              className="mt-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded"
-            >
-              Usar Gmail
-            </button>
-          </div>
-          
-          <div className="p-4 border border-gray-200 rounded-lg">
-            <h5 className="font-medium text-gray-900 mb-2">Outlook</h5>
-            <div className="text-sm text-gray-600 space-y-1">
-              <p>Servidor: smtp-mail.outlook.com</p>
-              <p>Porta: 587 (TLS)</p>
-              <p>Requer: Conta Microsoft</p>
-            </div>
-            <button 
-              onClick={() => setSMTPConfig({
-                ...smtpConfig,
-                host: 'smtp-mail.outlook.com',
-                port: 587,
-                secure: true
-              })}
-              className="mt-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded"
-            >
-              Usar Outlook
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* Instructions */}
       <div className="bg-yellow-50 rounded-xl border border-yellow-200 p-6">
