@@ -1158,6 +1158,197 @@ export const DigitalContracts: React.FC = () => {
         </div>
       )}
 
+      {/* Auto Generate Contract Modal */}
+      {showAutoGenerateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <Zap className="text-green-600" size={20} />
+              Gerar Contrato Automaticamente
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Selecionar Cliente *
+                </label>
+                <select
+                  value={selectedClientForGeneration}
+                  onChange={(e) => setSelectedClientForGeneration(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Escolher cliente...</option>
+                  {mockClients.map((client) => {
+                    const subscriptions = getClientSubscriptions(client.id);
+                    return (
+                      <option key={client.id} value={client.id}>
+                        {client.companyName} ({subscriptions.length} subscrição{subscriptions.length !== 1 ? 'ões' : ''} ativa{subscriptions.length !== 1 ? 's' : ''})
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              {/* Preview of subscriptions */}
+              {selectedClientForGeneration && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-blue-900 mb-3">Subscrições Ativas do Cliente</h4>
+                  {(() => {
+                    const subscriptions = getClientSubscriptions(selectedClientForGeneration);
+                    
+                    if (subscriptions.length === 0) {
+                      return (
+                        <div className="text-center py-4">
+                          <AlertCircle className="text-red-500 mx-auto mb-2" size={32} />
+                          <p className="text-red-700 font-medium">Nenhuma subscrição ativa encontrada</p>
+                          <p className="text-red-600 text-sm">Não é possível gerar contrato sem subscrições ativas</p>
+                        </div>
+                      );
+                    }
+                    
+                    return (
+                      <div className="space-y-2">
+                        {subscriptions.map((sub) => {
+                          const service = mockServices.find(s => s.id === sub.serviceId);
+                          return (
+                            <div key={sub.id} className="flex justify-between items-center p-3 bg-white rounded border border-blue-200">
+                              <div>
+                                <p className="font-medium text-gray-900">{service?.name}</p>
+                                <p className="text-sm text-gray-600">Próxima cobrança: {new Date(sub.nextBilling).toLocaleDateString('pt-PT')}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-bold text-blue-900">{sub.totalWithIva.toLocaleString()} MT</p>
+                                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Ativa</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                        <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded">
+                          <div className="flex justify-between items-center">
+                            <span className="font-semibold text-green-900">Valor Total do Contrato:</span>
+                            <span className="text-xl font-bold text-green-900">
+                              {subscriptions.reduce((sum, sub) => sum + sub.totalWithIva, 0).toLocaleString()} MT
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+            
+            <div className="flex gap-3 pt-6">
+              <button
+                onClick={() => {
+                  setShowAutoGenerateModal(false);
+                  setSelectedClientForGeneration('');
+                }}
+                className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleAutoGenerateContract}
+                disabled={!selectedClientForGeneration || getClientSubscriptions(selectedClientForGeneration).length === 0}
+                className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <Zap size={16} />
+                Gerar Contrato
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Contract Modal */}
+      {showEditModal && editingContract && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Edit className="text-purple-600" size={20} />
+                Editar Contrato: {editingContract.number}
+              </h3>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Editor */}
+              <div className="lg:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Conteúdo do Contrato
+                </label>
+                <HTMLEditor
+                  value={contractContent}
+                  onChange={setContractContent}
+                  placeholder="Digite o conteúdo do contrato..."
+                  height="400px"
+                />
+              </div>
+              
+              {/* Contract Info */}
+              <div className="space-y-4">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3">Informações do Contrato</h4>
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <span className="text-gray-600">Número:</span>
+                      <span className="font-medium text-gray-900 ml-2">{editingContract.number}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Cliente:</span>
+                      <span className="font-medium text-gray-900 ml-2">{editingContract.clientName}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Valor:</span>
+                      <span className="font-medium text-gray-900 ml-2">{editingContract.value.toLocaleString()} MT</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Status:</span>
+                      <span className="ml-2">{getStatusBadge(editingContract.status)}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {editingContract.autoGenerated && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Zap className="text-green-600" size={16} />
+                      <span className="font-semibold text-green-900">Gerado Automaticamente</span>
+                    </div>
+                    <p className="text-sm text-green-800">
+                      Este contrato foi gerado com base nas subscrições ativas do cliente.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex gap-3 pt-6 border-t border-gray-200">
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveEditedContract}
+                className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <Save size={16} />
+                Salvar Alterações
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Template Editor Modal */}
       {showTemplateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
