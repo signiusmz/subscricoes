@@ -851,7 +851,6 @@ export const ClientPortal: React.FC = () => {
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: FileText },
-    { id: 'contracts', label: 'Contratos', icon: FileText },
     { id: 'documents', label: 'Documentos', icon: FileCheck }
   ];
 
