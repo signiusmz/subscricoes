@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, CreditCard, Calendar, Download, Eye, RefreshCw, Star, User, LogOut, Bell, Settings, MessageSquare, Phone, Mail, MapPin, Building, Clock, CheckCircle, AlertCircle, DollarSign, Send, Edit, Save, X, Plus, Smartphone } from 'lucide-react';
+import { FileText, CreditCard, Calendar, Download, Eye, RefreshCw, Star, User, LogOut, Bell, Settings, MessageSquare, Phone, Mail, MapPin, Building, Clock, CheckCircle, AlertCircle, DollarSign, Send, Edit, Save, X } from 'lucide-react';
 import { PDFGenerator, ClientInfo } from '../../utils/pdfGenerator';
 import { useAuth } from '../../context/AuthContext';
 
@@ -217,12 +217,8 @@ export const ClientPortal: React.FC = () => {
     address: 'Av. Eduardo Mondlane, 567, Maputo'
   });
 
-  const salesperson = {
-    name: 'Maria Silva',
     email: 'maria.silva@signius.com',
-    phone: '+258 84 123 4567',
-    nuit: '400123456',
-    address: 'Av. Julius Nyerere, 123, Maputo'
+    phone: '+258 84 123 4567'
   };
 
   const formatDate = (dateString: string) => {
