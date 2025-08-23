@@ -38,6 +38,11 @@ export class MPesaService {
    */
   private async generateBearerToken(): Promise<string> {
     try {
+      // Para demo, simular geração de token
+      if (this.config.environment === 'sandbox') {
+        return 'demo_bearer_token_' + Date.now();
+      }
+      
       const response = await fetch(`${this.baseUrl}/ipg/v1x/oauth/token`, {
         method: 'GET',
         headers: {
@@ -64,6 +69,20 @@ export class MPesaService {
   async processC2BPayment(paymentData: PaymentRequest): Promise<PaymentResponse> {
     try {
       const bearerToken = await this.generateBearerToken();
+      
+      // Para demo, simular resposta de sucesso
+      if (this.config.environment === 'sandbox') {
+        // Simular delay de processamento
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        return {
+          output_ResponseCode: 'INS-0',
+          output_ResponseDesc: 'Request processed successfully',
+          output_TransactionID: 'T' + Date.now(),
+          output_ConversationID: 'C' + Date.now(),
+          output_ThirdPartyReference: paymentData.thirdPartyReference
+        };
+      }
 
       const requestBody = {
         input_Amount: paymentData.amount.toString(),

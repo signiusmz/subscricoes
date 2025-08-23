@@ -68,7 +68,10 @@ export const MPesaPayment: React.FC<MPesaPaymentProps> = ({
       if (result.output_ResponseCode === 'INS-0') {
         setPaymentStatus('success');
         setTransactionId(result.output_TransactionID);
-        onPaymentSuccess(result.output_TransactionID);
+        // Aguardar um pouco antes de chamar o callback para mostrar o sucesso
+        setTimeout(() => {
+          onPaymentSuccess(result.output_TransactionID);
+        }, 2000);
       } else {
         throw new Error(result.output_ResponseDesc || 'Erro no pagamento');
       }
