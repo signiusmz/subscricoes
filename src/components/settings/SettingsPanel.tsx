@@ -178,9 +178,7 @@ export const SettingsPanel: React.FC = () => {
   const tabs = [
     { id: 'profile', label: 'Perfil', icon: User },
     { id: 'company', label: 'Empresa', icon: Building },
-    { id: 'notifications', label: 'Notificações', icon: Bell },
-    { id: 'integrations', label: 'Integrações', icon: Globe },
-    { id: 'security', label: 'Segurança', icon: Shield }
+    { id: 'notifications', label: 'Notificações', icon: Bell }
   ];
 
   const renderProfile = () => (
@@ -832,8 +830,6 @@ export const SettingsPanel: React.FC = () => {
       {activeTab === 'profile' && renderProfile()}
       {activeTab === 'company' && renderCompany()}
       {activeTab === 'notifications' && renderNotifications()}
-      {activeTab === 'integrations' && renderIntegrations()}
-      {activeTab === 'security' && renderSecurity()}
     </div>
   );
 };
