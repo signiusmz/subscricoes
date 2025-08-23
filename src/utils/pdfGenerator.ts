@@ -248,9 +248,9 @@ export class PDFGenerator {
     const remainingAmount = invoiceData.amount - paidAmount;
     const isFullyPaid = remainingAmount <= 0;
     
-    doc.setFillColor(isFullyPaid ? 240, 253, 244 : 254, 242, 242);
+    doc.setFillColor(...(isFullyPaid ? [240, 253, 244] : [254, 242, 242]));
     doc.rect(120, currentY, 70, 8, 'F');
-    doc.setDrawColor(isFullyPaid ? 34, 197, 94 : 239, 68, 68);
+    doc.setDrawColor(...(isFullyPaid ? [34, 197, 94] : [239, 68, 68]));
     doc.rect(120, currentY, 70, 8);
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(10);
