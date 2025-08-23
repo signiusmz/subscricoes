@@ -565,10 +565,6 @@ export const TaxManagement: React.FC = () => {
       {/* Export Options */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h4 className="text-lg font-semibold text-gray-900 mb-4">Exportar Relatórios Fiscais</h4>
-        
-        <div className="grid md:grid-cols-3 gap-4">
-          <button
-            onClick={() => alert('Relatório de IVA exportado em PDF!')}
             className="flex items-center justify-center gap-3 p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
           >
             <FileText className="text-blue-600" size={24} />
