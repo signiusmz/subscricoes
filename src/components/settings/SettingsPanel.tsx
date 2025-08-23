@@ -1,1238 +1,863 @@
 import React, { useState } from 'react';
-import { Save, Building, User, Bell, CreditCard, Shield, Smartphone, Mail, MessageSquare, Key, Globe, Edit, Users, Plus, Trash2, UserCheck, UserX, Phone, Eye, Download } from 'lucide-react';
+import { 
+  User, 
+  Building, 
+  Shield, 
+  Bell, 
+  Palette, 
+  Globe, 
+  Save,
+  Edit,
+  Camera,
+  Upload,
+  MessageSquare,
+  Mail,
+  Smartphone,
+  Server,
+  Eye,
+  EyeOff,
+  CheckCircle,
+  XCircle,
+  QrCode,
+  Wifi,
+  WifiOff
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-// Mock users data
-const mockUsers = [
-  {
-    id: '1',
-    name: 'João Silva',
-    email: 'joao@techsolutions.mz',
-    phone: '+258 84 123 4567',
-    role: 'admin',
-    isActive: true,
-    createdAt: '2024-01-15',
-    lastLogin: '2024-03-15T10:30:00Z'
-  },
-  {
-    id: '2',
-    name: 'Maria Santos',
-    email: 'maria@techsolutions.mz',
-    phone: '+258 85 987 6543',
-    role: 'manager',
-    isActive: true,
-    createdAt: '2024-02-01',
-    lastLogin: '2024-03-14T15:45:00Z'
-  },
-  {
-    id: '3',
-    name: 'Carlos Mendes',
-    email: 'carlos@techsolutions.mz',
-    phone: '+258 86 555 7777',
-    role: 'user',
-    isActive: false,
-    createdAt: '2024-02-15',
-    lastLogin: '2024-03-10T09:20:00Z'
-  }
-];
+interface WhatsAppConfig {
+  phoneNumber: string;
+  isConnected: boolean;
+  qrCode?: string;
+  lastConnected?: string;
+}
 
-const roleLabels = {
-  admin: 'Administrador',
-  manager: 'Gestor',
-  user: 'Utilizador'
-};
+interface EmailConfig {
+  smtpHost: string;
+  smtpPort: number;
+  smtpUser: string;
+  smtpPassword: string;
+  smtpSecure: boolean;
+  fromName: string;
+  fromEmail: string;
+  isConfigured: boolean;
+}
 
 export const SettingsPanel: React.FC = () => {
-  const { user, company } = useAuth();
-  const [activeTab, setActiveTab] = useState('company');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isEditingCompany, setIsEditingCompany] = useState(false);
-  const [isEditingUser, setIsEditingUser] = useState(false);
-  const [showAddUserModal, setShowAddUserModal] = useState(false);
-  const [editingUserData, setEditingUserData] = useState<any>(null);
-  const [users, setUsers] = useState(mockUsers);
-  const [companyLogo, setCompanyLogo] = useState<string | null>(null);
-
-  const [companySettings, setCompanySettings] = useState({
-    name: company?.name || '',
-    email: company?.email || '',
-    nuit: company?.nuit || '',
-    address: company?.address || '',
-    phone: '+258 84 123 4567',
-    website: 'https://techsolutions.mz'
+  const { user, company, updateUser } = useAuth();
+  const [activeTab, setActiveTab] = useState('profile');
+  const [showPassword, setShowPassword] = useState(false);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(user?.profilePhoto || null);
+  
+  // WhatsApp state
+  const [whatsappConfig, setWhatsappConfig] = useState<WhatsAppConfig>({
+    phoneNumber: '+258 84 123 4567',
+    isConnected: false,
+    qrCode: undefined,
+    lastConnected: undefined
   });
-
-  const [userSettings, setUserSettings] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: '+258 84 987 6543',
-    role: user?.role || 'admin'
-  });
-
-  const [notificationSettings, setNotificationSettings] = useState({
-    emailReminders: true,
-    smsReminders: false,
-    whatsappReminders: true,
-    npsRequests: true,
-    systemAlerts: true,
-    marketingEmails: false
-  });
-
-  const [integrationSettings, setIntegrationSettings] = useState({
-    mpesaEnabled: false,
-    mpesaApiKey: '',
-    emailProvider: 'smtp',
-    smtpHost: 'smtp.gmail.com',
-    smtpPort: '587',
+  
+  // Email state
+  const [emailConfig, setEmailConfig] = useState<EmailConfig>({
+    smtpHost: '',
+    smtpPort: 587,
     smtpUser: '',
     smtpPassword: '',
-    smsProvider: 'twilio',
-    twilioSid: '',
-    twilioToken: '',
-    whatsappToken: ''
+    smtpSecure: true,
+    fromName: company?.name || '',
+    fromEmail: '',
+    isConfigured: false
   });
 
-  const handleSave = async () => {
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    setIsEditingCompany(false);
-    alert('Configurações salvas com sucesso!');
-  };
-
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) { // 2MB limit
-        alert('O arquivo deve ter no máximo 2MB');
+      if (file.size > 5 * 1024 * 1024) {
+        alert('A imagem deve ter no máximo 5MB');
         return;
       }
       
-      if (!file.type.startsWith('image/')) {
-        alert('Por favor, selecione apenas arquivos de imagem');
-        return;
-      }
-
       const reader = new FileReader();
       reader.onload = (e) => {
-        setCompanyLogo(e.target?.result as string);
+        const result = e.target?.result as string;
+        setProfilePhoto(result);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleCancelEdit = () => {
-    setIsEditingCompany(false);
-    // Reset form to original values
-    setCompanySettings({
-      name: company?.name || '',
-      email: company?.email || '',
-      nuit: company?.nuit || '',
-      address: company?.address || '',
-      phone: '+258 84 123 4567',
-      website: 'https://techsolutions.mz'
-    });
+  const removePhoto = () => {
+    setProfilePhoto(null);
   };
 
-  const handleCancelUserEdit = () => {
-    setIsEditingUser(false);
-    // Reset form to original values
-    setUserSettings({
-      name: user?.name || '',
-      email: user?.email || '',
-      phone: '+258 84 987 6543',
-      role: user?.role || 'admin'
-    });
+  const handleUpdateProfile = (profileData: any) => {
+    updateUser({ ...profileData, profilePhoto });
+    alert('Perfil atualizado com sucesso!');
   };
 
-  const handleAddUser = () => {
-    setEditingUserData(null);
-    setShowAddUserModal(true);
-  };
-
-  const handleEditUserInModal = (userData: any) => {
-    setEditingUserData(userData);
-    setShowAddUserModal(true);
-  };
-
-  const handleDeleteUser = (userId: string) => {
-    if (userId === user?.id) {
-      alert('Não pode eliminar o seu próprio utilizador!');
-      return;
-    }
-    
-    if (confirm('Tem certeza que deseja eliminar este utilizador?')) {
-      setUsers(users.filter(u => u.id !== userId));
-      alert('Utilizador eliminado com sucesso!');
-    }
-  };
-
-  const handleToggleUserStatus = (userId: string) => {
-    if (userId === user?.id) {
-      alert('Não pode desativar o seu próprio utilizador!');
-      return;
-    }
-    
-    setUsers(users.map(u => 
-      u.id === userId 
-        ? { ...u, isActive: !u.isActive }
-        : u
-    ));
-    alert('Status do utilizador atualizado!');
-  };
-
-  const handleSaveUserModal = (userData: any) => {
-    if (editingUserData) {
-      // Update existing user
-      setUsers(users.map(u => 
-        u.id === editingUserData.id 
-          ? { ...u, ...userData }
-          : u
-      ));
-      alert('Utilizador atualizado com sucesso!');
+  const handleWhatsAppConnect = () => {
+    if (whatsappConfig.isConnected) {
+      // Disconnect
+      setWhatsappConfig(prev => ({
+        ...prev,
+        isConnected: false,
+        qrCode: undefined,
+        lastConnected: undefined
+      }));
+      alert('WhatsApp desconectado com sucesso!');
     } else {
-      // Add new user
-      const newUser = {
-        id: Date.now().toString(),
-        ...userData,
-        isActive: true,
-        createdAt: new Date().toISOString().split('T')[0],
-        lastLogin: new Date().toISOString()
-      };
-      setUsers([...users, newUser]);
-      alert('Utilizador adicionado com sucesso!');
+      // Generate QR Code (simulate)
+      const mockQrCode = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2ZmZiIvPgogIDx0ZXh0IHg9IjEwMCIgeT0iMTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjE0IiBmaWxsPSIjMzMzIj5RUiBDb2RlPC90ZXh0Pgo8L3N2Zz4K';
+      
+      setWhatsappConfig(prev => ({
+        ...prev,
+        qrCode: mockQrCode
+      }));
+      
+      // Simulate connection after 3 seconds
+      setTimeout(() => {
+        setWhatsappConfig(prev => ({
+          ...prev,
+          isConnected: true,
+          qrCode: undefined,
+          lastConnected: new Date().toISOString()
+        }));
+        alert('WhatsApp conectado com sucesso!');
+      }, 3000);
     }
-    setShowAddUserModal(false);
-    setEditingUserData(null);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-PT');
-  };
-
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('pt-PT');
-  };
-
-  const getStatusBadge = (isActive: boolean) => {
-    return (
-      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-        isActive
-          ? 'bg-green-100 text-green-800'
-          : 'bg-red-100 text-red-800'
-      }`}>
-        {isActive ? 'Ativo' : 'Inativo'}
-      </span>
-    );
-  };
-
-  const getRoleBadge = (role: string) => {
-    const roleConfig = {
-      admin: { bg: 'bg-purple-100', text: 'text-purple-800' },
-      manager: { bg: 'bg-blue-100', text: 'text-blue-800' },
-      user: { bg: 'bg-gray-100', text: 'text-gray-800' }
-    };
+  const handleEmailTest = () => {
+    if (!emailConfig.smtpHost || !emailConfig.smtpUser || !emailConfig.fromEmail) {
+      alert('Por favor, preencha todos os campos obrigatórios');
+      return;
+    }
     
-    const config = roleConfig[role as keyof typeof roleConfig] || roleConfig.user;
+    // Simulate email test
+    setTimeout(() => {
+      setEmailConfig(prev => ({ ...prev, isConfigured: true }));
+      alert('Configuração de email testada com sucesso! Email de teste enviado.');
+    }, 1000);
+  };
+
+  const handleSaveEmailConfig = () => {
+    if (!emailConfig.smtpHost || !emailConfig.smtpUser || !emailConfig.fromEmail) {
+      alert('Por favor, preencha todos os campos obrigatórios');
+      return;
+    }
     
-    return (
-      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${config.bg} ${config.text}`}>
-        {roleLabels[role as keyof typeof roleLabels]}
-      </span>
-    );
+    setEmailConfig(prev => ({ ...prev, isConfigured: true }));
+    alert('Configurações de email salvas com sucesso!');
   };
 
   const tabs = [
+    { id: 'profile', label: 'Perfil', icon: User },
     { id: 'company', label: 'Empresa', icon: Building },
-    { id: 'user', label: 'Utilizador', icon: User },
+    { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
+    { id: 'email', label: 'E-mail', icon: Mail },
+    { id: 'security', label: 'Segurança', icon: Shield },
+    { id: 'notifications', label: 'Notificações', icon: Bell },
+    { id: 'appearance', label: 'Aparência', icon: Palette },
+    { id: 'system', label: 'Sistema', icon: Globe }
   ];
 
-  const renderCompanySettings = () => (
+  const renderProfile = () => (
     <div className="space-y-6">
       <div>
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Informações da Empresa</h3>
-          {!isEditingCompany ? (
-            <button
-              onClick={() => setIsEditingCompany(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-            >
-              <Edit size={16} />
-              Editar
-            </button>
-          ) : (
-            <div className="flex gap-2">
-              <button
-                onClick={handleCancelEdit}
-                className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={isLoading}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center gap-2"
-              >
-                {isLoading ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Informações do Perfil</h3>
+        
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.currentTarget);
+          const profileData = {
+            name: formData.get('name') as string,
+            email: formData.get('email') as string,
+            phone: formData.get('phone') as string,
+          };
+          handleUpdateProfile(profileData);
+        }} className="space-y-6">
+          
+          {/* Profile Photo Section */}
+          <div className="flex items-center gap-6">
+            <div className="relative">
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                {profilePhoto ? (
+                  <img 
+                    src={profilePhoto} 
+                    alt="Profile Preview" 
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
-                  <Save size={16} />
+                  <User size={32} className="text-gray-400" />
                 )}
-                {isLoading ? 'Salvando...' : 'Salvar'}
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Company Data - Only show when editing */}
-        {isEditingCompany && (
-          <div className="bg-white border border-gray-200 rounded-xl p-6">
-            {/* Logo Upload Section */}
-            <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
-              <h4 className="text-md font-medium text-gray-900 mb-3">Logotipo da Empresa</h4>
-              <div className="flex items-center gap-4">
-                <div className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-white">
-                  {companyLogo ? (
-                    <img 
-                      src={companyLogo} 
-                      alt="Logo da empresa" 
-                      className="w-full h-full object-contain rounded-lg"
-                    />
-                  ) : (
-                    <Building className="text-gray-400" size={32} />
-                  )}
-                </div>
-                <div>
+              </div>
+              <div className="absolute -bottom-2 -right-2">
+                <label className="bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 transition-colors inline-flex">
+                  <Camera size={16} />
                   <input
                     type="file"
-                    id="logo-upload"
                     accept="image/*"
-                    onChange={handleLogoUpload}
+                    onChange={handlePhotoUpload}
                     className="hidden"
                   />
-                  <label
-                    htmlFor="logo-upload"
-                    className="inline-block px-4 py-2 rounded-lg border border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer"
-                  >
-                    {companyLogo ? 'Alterar Logo' : 'Carregar Logo'}
-                  </label>
-                  <p className="text-xs text-gray-500 mt-1">
-                    PNG, JPG até 2MB. Recomendado: 200x200px
-                  </p>
-                  {companyLogo && (
-                    <button
-                      onClick={() => setCompanyLogo(null)}
-                      className="text-red-600 text-xs hover:text-red-700 mt-1 block"
-                    >
-                      Remover logo
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nome da Empresa</label>
-                <input
-                  type="text"
-                  value={companySettings.name}
-                  onChange={(e) => setCompanySettings({...companySettings, name: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                <input
-                  type="email"
-                  value={companySettings.email}
-                  onChange={(e) => setCompanySettings({...companySettings, email: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">NUIT</label>
-                <input
-                  type="text"
-                  value={companySettings.nuit}
-                  onChange={(e) => setCompanySettings({...companySettings, nuit: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
-                <input
-                  type="text"
-                  value={companySettings.phone}
-                  onChange={(e) => setCompanySettings({...companySettings, phone: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Endereço</label>
-                <input
-                  type="text"
-                  value={companySettings.address}
-                  onChange={(e) => setCompanySettings({...companySettings, address: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Website</label>
-                <input
-                  type="url"
-                  value={companySettings.website}
-                  onChange={(e) => setCompanySettings({...companySettings, website: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Separator Line */}
-      <div className="border-t border-gray-200"></div>
-
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Plano e Utilização</h3>
-        
-        {/* Current Plan Card */}
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-6 mb-6">
-          <div className="flex justify-between items-start mb-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-blue-600 w-12 h-12 rounded-full flex items-center justify-center">
-                <Building className="text-white" size={24} />
-              </div>
-              <div>
-                <h4 className="text-xl font-bold text-blue-900 capitalize">Plano {company?.plan}</h4>
-                <p className="text-blue-700 font-medium">{company?.planPrice} MT/mês</p>
-              </div>
-            </div>
-            <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
-              Ativo
-            </span>
-          </div>
-          
-          {/* Plan Benefits */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-lg p-4 border border-blue-200">
-              <div className="flex items-center gap-2 mb-2">
-                <Users className="text-blue-600" size={16} />
-                <span className="text-sm font-medium text-gray-700">Clientes</span>
-              </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-gray-900">45</span>
-                <span className="text-sm text-gray-500">
-                  / {company?.plan === 'basic' ? '100' : company?.plan === 'professional' ? '500' : '∞'}
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                <div 
-                  className="bg-blue-600 h-2 rounded-full" 
-                  style={{ 
-                    width: company?.plan === 'basic' ? '45%' : 
-                           company?.plan === 'professional' ? '9%' : '100%' 
-                  }}
-                ></div>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-lg p-4 border border-blue-200">
-              <div className="flex items-center gap-2 mb-2">
-                <User className="text-blue-600" size={16} />
-                <span className="text-sm font-medium text-gray-700">Utilizadores</span>
-              </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-gray-900">3</span>
-                <span className="text-sm text-gray-500">
-                  / {company?.plan === 'basic' ? '1' : company?.plan === 'professional' ? '5' : '∞'}
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                <div 
-                  className="bg-blue-600 h-2 rounded-full" 
-                  style={{ 
-                    width: company?.plan === 'basic' ? '100%' : 
-                           company?.plan === 'professional' ? '60%' : '100%' 
-                  }}
-                ></div>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-lg p-4 border border-blue-200">
-              <div className="flex items-center gap-2 mb-2">
-                <Mail className="text-blue-600" size={16} />
-                <span className="text-sm font-medium text-gray-700">Emails/Mês</span>
-              </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-gray-900">1,247</span>
-                <span className="text-sm text-gray-500">
-                  / {company?.plan === 'basic' ? '1,000' : company?.plan === 'professional' ? '5,000' : '∞'}
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                <div 
-                  className="bg-orange-500 h-2 rounded-full" 
-                  style={{ 
-                    width: company?.plan === 'basic' ? '100%' : 
-                           company?.plan === 'professional' ? '25%' : '100%' 
-                  }}
-                ></div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Plan Features */}
-          <div className="mb-6">
-            <h5 className="font-semibold text-gray-900 mb-3">Funcionalidades Incluídas</h5>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {(() => {
-                const features = {
-                  basic: [
-                    'Gestão de até 100 clientes',
-                    'Suporte por email',
-                    '1 utilizador',
-                    'Relatórios básicos',
-                    '1,000 emails/mês'
-                  ],
-                  professional: [
-                    'Gestão de até 500 clientes',
-                    'Suporte prioritário',
-                    'Até 5 utilizadores',
-                    'Relatórios avançados',
-                    '5,000 emails/mês',
-                    'Integrações básicas',
-                    'Automações de fluxo'
-                  ],
-                  enterprise: [
-                    'Clientes ilimitados',
-                    'Suporte 24/7',
-                    'Utilizadores ilimitados',
-                    'Relatórios personalizados',
-                    'Emails ilimitados',
-                    'Todas as integrações',
-                    'Automações avançadas',
-                    'API personalizada'
-                  ]
-                };
-                
-                return features[company?.plan as keyof typeof features]?.map((feature, index) => (
-                  <div key={index} className="flex items-center gap-2 text-sm text-gray-700">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    {feature}
-                  </div>
-                ));
-              })()}
-            </div>
-          </div>
-          
-          {/* Upgrade Section */}
-          {company?.plan !== 'enterprise' && (
-            <div className="border-t border-blue-200 pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h5 className="font-semibold text-gray-900">
-                    Upgrade para {company?.plan === 'basic' ? 'Profissional' : 'Empresarial'}
-                  </h5>
-                  <p className="text-sm text-gray-600">
-                    {company?.plan === 'basic' 
-                      ? 'Mais clientes, utilizadores e funcionalidades avançadas'
-                      : 'Recursos ilimitados e suporte premium'
-                    }
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold text-green-600">
-                    {company?.plan === 'basic' ? '1,500' : '3,500'} MT/mês
-                  </p>
-                  <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
-                    Fazer Upgrade
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-        
-        {/* Billing History */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h4 className="font-semibold text-gray-900">Histórico de Pagamentos</h4>
-            <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-              Ver todos
-            </button>
-          </div>
-          <div className="space-y-3">
-            {[
-              { date: '01/12/2024', amount: company?.planPrice, status: 'Pago', method: 'M-Pesa' },
-              { date: '01/11/2024', amount: company?.planPrice, status: 'Pago', method: 'Transferência' },
-              { date: '01/10/2024', amount: company?.planPrice, status: 'Pago', method: 'M-Pesa' }
-            ].map((payment, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{payment.date}</p>
-                    <p className="text-xs text-gray-500">{payment.method}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">{payment.amount} MT</p>
-                  <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">
-                    {payment.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderUserSettings = () => (
-    <div className="space-y-6">
-      {/* Current User Settings */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Informações do Utilizador</h3>
-        {/* My Profile Section */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Meu Perfil</h3>
-            {!isEditingUser ? (
-              <button
-                onClick={() => setIsEditingUser(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-              >
-                <Edit size={16} />
-                Editar
-              </button>
-            ) : (
-              <div className="flex gap-2">
-                <button
-                  onClick={handleCancelUserEdit}
-                  className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={() => {
-                    setIsEditingUser(false);
-                    alert('Perfil atualizado com sucesso!');
-                  }}
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-                >
-                  <Save size={16} />
-                  Salvar
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* User Data - Only show when editing */}
-          {isEditingUser && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nome</label>
-                <input
-                  type="text"
-                  value={userSettings.name}
-                  onChange={(e) => setUserSettings({...userSettings, name: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                <input
-                  type="email"
-                  value={userSettings.email}
-                  onChange={(e) => setUserSettings({...userSettings, email: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
-                <input
-                  type="text"
-                  value={userSettings.phone}
-                  onChange={(e) => setUserSettings({...userSettings, phone: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Função</label>
-                <select
-                  value={userSettings.role}
-                  onChange={(e) => setUserSettings({...userSettings, role: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="admin">Administrador</option>
-                  <option value="manager">Gestor</option>
-                  <option value="user">Utilizador</option>
-                </select>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Separator Line */}
-        <div className="border-t border-gray-200"></div>
-
-        {/* Users Management Section */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Gestão de Utilizadores</h3>
-              <p className="text-gray-600 text-sm mt-1">Gerir utilizadores e permissões do sistema</p>
-            </div>
-            <button 
-              onClick={handleAddUser}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
-            >
-              <Plus size={20} />
-              Novo Utilizador
-            </button>
-          </div>
-
-          {/* Users Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <div className="bg-blue-100 p-2 rounded-lg">
-                  <Users className="text-blue-600" size={20} />
-                </div>
-                <div>
-                  <p className="text-sm text-blue-600">Total</p>
-                  <p className="text-xl font-bold text-blue-900">{users.length}</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <div className="bg-green-100 p-2 rounded-lg">
-                  <UserCheck className="text-green-600" size={20} />
-                </div>
-                <div>
-                  <p className="text-sm text-green-600">Ativos</p>
-                  <p className="text-xl font-bold text-green-900">
-                    {users.filter(u => u.isActive).length}
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <div className="bg-red-100 p-2 rounded-lg">
-                  <UserX className="text-red-600" size={20} />
-                </div>
-                <div>
-                  <p className="text-sm text-red-600">Inativos</p>
-                  <p className="text-xl font-bold text-red-900">
-                    {users.filter(u => !u.isActive).length}
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <div className="bg-purple-100 p-2 rounded-lg">
-                  <Shield className="text-purple-600" size={20} />
-                </div>
-                <div>
-                  <p className="text-sm text-purple-600">Admins</p>
-                  <p className="text-xl font-bold text-purple-900">
-                    {users.filter(u => u.role === 'admin').length}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Users Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Utilizador
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Contacto
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Função
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Último Login
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {users.map((userData) => (
-                  <tr key={userData.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-gray-400 w-10 h-10 rounded-full flex items-center justify-center">
-                          <User size={20} className="text-white" />
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">{userData.name}</div>
-                          <div className="text-sm text-gray-500">
-                            Criado em {formatDate(userData.createdAt)}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm space-y-1">
-                        <div className="flex items-center gap-2 text-gray-900">
-                          <Mail size={12} />
-                          {userData.email}
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-500">
-                          <Phone size={12} />
-                          {userData.phone}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getRoleBadge(userData.role)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(userData.isActive)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {formatDateTime(userData.lastLogin)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex gap-2">
-                        <button 
-                          onClick={() => handleEditUserInModal(userData)}
-                          className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
-                          title="Editar"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button 
-                          onClick={() => handleToggleUserStatus(userData.id)}
-                          className="text-orange-600 hover:text-orange-900 p-1 hover:bg-orange-50 rounded"
-                          title={userData.isActive ? "Desativar" : "Ativar"}
-                        >
-                          {userData.isActive ? <UserX size={16} /> : <UserCheck size={16} />}
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteUser(userData.id)}
-                          className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
-                          title="Eliminar"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Add/Edit User Modal */}
-        {showAddUserModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                {editingUserData ? 'Editar Utilizador' : 'Novo Utilizador'}
-              </h3>
-              
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                const userData = {
-                  name: formData.get('name') as string,
-                  email: formData.get('email') as string,
-                  phone: formData.get('phone') as string,
-                  role: formData.get('role') as string,
-                };
-                handleSaveUserModal(userData);
-              }} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Nome Completo
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      defaultValue={editingUserData?.name || ''}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      defaultValue={editingUserData?.email || ''}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Telefone
-                    </label>
-                    <input
-                      type="text"
-                      name="phone"
-                      defaultValue={editingUserData?.phone || '+258 '}
-                      placeholder="+258 84 123 4567"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Função
-                    </label>
-                    <select
-                      name="role"
-                      defaultValue={editingUserData?.role || 'user'}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    >
-                      <option value="user">Utilizador</option>
-                      <option value="manager">Gestor</option>
-                      <option value="admin">Administrador</option>
-                    </select>
-                  </div>
-                </div>
-
-                {!editingUserData && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Palavra-passe Temporária
-                    </label>
-                    <input
-                      type="password"
-                      name="password"
-                      placeholder="Será enviada por email"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-                )}
-                
-                <div className="flex gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowAddUserModal(false);
-                      setEditingUserData(null);
-                    }}
-                    className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    {editingUserData ? 'Atualizar' : 'Adicionar'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
-  const renderNotificationSettings = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Preferências de Notificação</h3>
-        <div className="space-y-4">
-          {[
-            { key: 'emailReminders', label: 'Lembretes por Email', icon: Mail },
-            { key: 'smsReminders', label: 'Lembretes por SMS', icon: Smartphone },
-            { key: 'whatsappReminders', label: 'Lembretes por WhatsApp', icon: MessageSquare },
-            { key: 'npsRequests', label: 'Solicitações de NPS', icon: Bell },
-            { key: 'systemAlerts', label: 'Alertas do Sistema', icon: Shield },
-            { key: 'marketingEmails', label: 'Emails de Marketing', icon: Mail }
-          ].map((setting) => {
-            const Icon = setting.icon;
-            return (
-              <div key={setting.key} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <Icon className="text-gray-600" size={20} />
-                  <span className="font-medium text-gray-900">{setting.label}</span>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={notificationSettings[setting.key as keyof typeof notificationSettings]}
-                    onChange={(e) => setNotificationSettings({
-                      ...notificationSettings,
-                      [setting.key]: e.target.checked
-                    })}
-                    className="sr-only peer"
-                    placeholder="+258 84 123 4567"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                 </label>
               </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderIntegrationSettings = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">M-Pesa Integration</h3>
-        <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <CreditCard className="text-green-600" size={24} />
-              <div>
-                <h4 className="font-semibold text-green-900">M-Pesa Payments</h4>
-                <p className="text-green-700 text-sm">Aceitar pagamentos via M-Pesa</p>
+            </div>
+            <div className="flex-1">
+              <h4 className="font-medium text-gray-900 mb-2">Foto de Perfil</h4>
+              <p className="text-sm text-gray-600 mb-3">
+                Formatos aceites: JPG, PNG, GIF (máx. 5MB)
+              </p>
+              <div className="flex gap-2">
+                <label className="text-sm bg-gray-100 text-gray-700 px-3 py-1 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors flex items-center gap-1">
+                  <Upload size={14} />
+                  Carregar Foto
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                  />
+                </label>
+                {profilePhoto && (
+                  <button
+                    type="button"
+                    onClick={removePhoto}
+                    className="text-sm bg-red-100 text-red-700 px-3 py-1 rounded-lg hover:bg-red-200 transition-colors"
+                  >
+                    Remover
+                  </button>
+                )}
               </div>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={integrationSettings.mpesaEnabled}
-                onChange={(e) => setIntegrationSettings({
-                  ...integrationSettings,
-                  mpesaEnabled: e.target.checked
-                })}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-            </label>
           </div>
-          {integrationSettings.mpesaEnabled && (
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">API Key</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nome Completo
+              </label>
               <input
-                type="password"
-                value={integrationSettings.mpesaApiKey}
-                onChange={(e) => setIntegrationSettings({
-                  ...integrationSettings,
-                  mpesaApiKey: e.target.value
-                })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Insira sua API Key do M-Pesa"
+                type="text"
+                name="name"
+                defaultValue={user?.name || ''}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
               />
             </div>
-          )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                defaultValue={user?.email || ''}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Telefone
+              </label>
+              <input
+                type="text"
+                name="phone"
+                defaultValue={user?.phone || ''}
+                placeholder="+258 84 123 4567"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+          
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+            >
+              <Save size={16} />
+              Salvar Alterações
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
+  const renderWhatsApp = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Configurações do WhatsApp</h3>
+        <p className="text-gray-600 mb-6">
+          Configure a integração do WhatsApp para envio automático de mensagens aos clientes.
+        </p>
+      </div>
+
+      {/* Connection Status */}
+      <div className="bg-white border border-gray-200 rounded-xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+              whatsappConfig.isConnected ? 'bg-green-100' : 'bg-red-100'
+            }`}>
+              {whatsappConfig.isConnected ? (
+                <Wifi className="text-green-600" size={24} />
+              ) : (
+                <WifiOff className="text-red-600" size={24} />
+              )}
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-900">Status da Conexão</h4>
+              <p className={`text-sm ${
+                whatsappConfig.isConnected ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {whatsappConfig.isConnected ? 'Conectado' : 'Desconectado'}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {whatsappConfig.isConnected ? (
+              <CheckCircle className="text-green-500" size={20} />
+            ) : (
+              <XCircle className="text-red-500" size={20} />
+            )}
+          </div>
+        </div>
+
+        {whatsappConfig.isConnected && whatsappConfig.lastConnected && (
+          <div className="text-sm text-gray-600">
+            Última conexão: {new Date(whatsappConfig.lastConnected).toLocaleString('pt-PT')}
+          </div>
+        )}
+      </div>
+
+      {/* Phone Number Configuration */}
+      <div className="bg-white border border-gray-200 rounded-xl p-6">
+        <h4 className="font-semibold text-gray-900 mb-4">Número do WhatsApp</h4>
+        <div className="flex gap-4">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Número de Telefone
+            </label>
+            <input
+              type="text"
+              value={whatsappConfig.phoneNumber}
+              onChange={(e) => setWhatsappConfig(prev => ({ ...prev, phoneNumber: e.target.value }))}
+              placeholder="+258 84 123 4567"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Digite o número com código do país (ex: +258 84 123 4567)
+            </p>
+          </div>
         </div>
       </div>
 
+      {/* QR Code Section */}
+      {whatsappConfig.qrCode && (
+        <div className="bg-white border border-gray-200 rounded-xl p-6 text-center">
+          <h4 className="font-semibold text-gray-900 mb-4">Escaneie o QR Code</h4>
+          <div className="flex justify-center mb-4">
+            <div className="w-48 h-48 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+              <img src={whatsappConfig.qrCode} alt="QR Code" className="w-40 h-40" />
+            </div>
+          </div>
+          <p className="text-sm text-gray-600 mb-4">
+            Abra o WhatsApp no seu telefone e escaneie este código para conectar
+          </p>
+          <div className="flex items-center justify-center gap-2 text-blue-600">
+            <QrCode size={16} />
+            <span className="text-sm">Aguardando conexão...</span>
+          </div>
+        </div>
+      )}
+
+      {/* Connection Button */}
+      <div className="flex justify-center">
+        <button
+          onClick={handleWhatsAppConnect}
+          className={`px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2 ${
+            whatsappConfig.isConnected
+              ? 'bg-red-600 text-white hover:bg-red-700'
+              : 'bg-green-600 text-white hover:bg-green-700'
+          }`}
+        >
+          <Smartphone size={16} />
+          {whatsappConfig.isConnected ? 'Desconectar WhatsApp' : 'Conectar WhatsApp'}
+        </button>
+      </div>
+
+      {/* Instructions */}
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+        <h4 className="font-semibold text-blue-900 mb-3">Como conectar:</h4>
+        <ol className="list-decimal list-inside space-y-2 text-sm text-blue-800">
+          <li>Digite o número do WhatsApp da sua empresa</li>
+          <li>Clique em "Conectar WhatsApp"</li>
+          <li>Escaneie o QR Code com o WhatsApp do seu telefone</li>
+          <li>Aguarde a confirmação da conexão</li>
+        </ol>
+      </div>
+    </div>
+  );
+
+  const renderEmail = () => (
+    <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Configurações de Email</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Servidor SMTP</label>
-            <input
-              type="text"
-              value={integrationSettings.smtpHost}
-              onChange={(e) => setIntegrationSettings({
-                ...integrationSettings,
-                smtpHost: e.target.value
-              })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Configurações de E-mail</h3>
+        <p className="text-gray-600 mb-6">
+          Configure o servidor SMTP para envio automático de emails do sistema.
+        </p>
+      </div>
+
+      {/* Configuration Status */}
+      <div className="bg-white border border-gray-200 rounded-xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+              emailConfig.isConfigured ? 'bg-green-100' : 'bg-yellow-100'
+            }`}>
+              <Server className={emailConfig.isConfigured ? 'text-green-600' : 'text-yellow-600'} size={24} />
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-900">Status da Configuração</h4>
+              <p className={`text-sm ${
+                emailConfig.isConfigured ? 'text-green-600' : 'text-yellow-600'
+              }`}>
+                {emailConfig.isConfigured ? 'Configurado' : 'Não configurado'}
+              </p>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Porta</label>
-            <input
-              type="text"
-              value={integrationSettings.smtpPort}
-              onChange={(e) => setIntegrationSettings({
-                ...integrationSettings,
-                smtpPort: e.target.value
-              })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Utilizador</label>
-            <input
-              type="text"
-              value={integrationSettings.smtpUser}
-              onChange={(e) => setIntegrationSettings({
-                ...integrationSettings,
-                smtpUser: e.target.value
-              })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Palavra-passe</label>
-            <input
-              type="password"
-              value={integrationSettings.smtpPassword}
-              onChange={(e) => setIntegrationSettings({
-                ...integrationSettings,
-                smtpPassword: e.target.value
-              })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+          <div className="flex items-center gap-2">
+            {emailConfig.isConfigured ? (
+              <CheckCircle className="text-green-500" size={20} />
+            ) : (
+              <XCircle className="text-yellow-500" size={20} />
+            )}
           </div>
         </div>
       </div>
 
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Configurações de SMS/WhatsApp</h3>
+      {/* SMTP Configuration */}
+      <div className="bg-white border border-gray-200 rounded-xl p-6">
+        <h4 className="font-semibold text-gray-900 mb-4">Configurações SMTP</h4>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Twilio SID</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Servidor SMTP *
+            </label>
             <input
               type="text"
-              value={integrationSettings.twilioSid}
-              onChange={(e) => setIntegrationSettings({
-                ...integrationSettings,
-                twilioSid: e.target.value
-              })}
+              value={emailConfig.smtpHost}
+              onChange={(e) => setEmailConfig(prev => ({ ...prev, smtpHost: e.target.value }))}
+              placeholder="smtp.gmail.com"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Twilio Token</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Porta SMTP *
+            </label>
             <input
-              type="password"
-              value={integrationSettings.twilioToken}
-              onChange={(e) => setIntegrationSettings({
-                ...integrationSettings,
-                twilioToken: e.target.value
-              })}
+              type="number"
+              value={emailConfig.smtpPort}
+              onChange={(e) => setEmailConfig(prev => ({ ...prev, smtpPort: parseInt(e.target.value) }))}
+              placeholder="587"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Usuário SMTP *
+            </label>
+            <input
+              type="text"
+              value={emailConfig.smtpUser}
+              onChange={(e) => setEmailConfig(prev => ({ ...prev, smtpUser: e.target.value }))}
+              placeholder="seu@email.com"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Senha SMTP *
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={emailConfig.smtpPassword}
+                onChange={(e) => setEmailConfig(prev => ({ ...prev, smtpPassword: e.target.value }))}
+                placeholder="••••••••"
+                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
+
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp Token</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="smtpSecure"
+                checked={emailConfig.smtpSecure}
+                onChange={(e) => setEmailConfig(prev => ({ ...prev, smtpSecure: e.target.checked }))}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="smtpSecure" className="text-sm text-gray-700">
+                Usar conexão segura (TLS/SSL)
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Sender Information */}
+      <div className="bg-white border border-gray-200 rounded-xl p-6">
+        <h4 className="font-semibold text-gray-900 mb-4">Informações do Remetente</h4>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Nome a Apresentar *
+            </label>
             <input
-              type="password"
-              value={integrationSettings.whatsappToken}
-              onChange={(e) => setIntegrationSettings({
-                ...integrationSettings,
-                whatsappToken: e.target.value
-              })}
+              type="text"
+              value={emailConfig.fromName}
+              onChange={(e) => setEmailConfig(prev => ({ ...prev, fromName: e.target.value }))}
+              placeholder="Nome da Empresa"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Nome que aparecerá como remetente dos emails
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email do Remetente *
+            </label>
+            <input
+              type="email"
+              value={emailConfig.fromEmail}
+              onChange={(e) => setEmailConfig(prev => ({ ...prev, fromEmail: e.target.value }))}
+              placeholder="noreply@empresa.com"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Endereço de email que aparecerá como remetente
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex gap-4 justify-end">
+        <button
+          onClick={handleEmailTest}
+          className="border border-blue-600 text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-2"
+        >
+          <Mail size={16} />
+          Testar Configuração
+        </button>
+        <button
+          onClick={handleSaveEmailConfig}
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+        >
+          <Save size={16} />
+          Salvar Configurações
+        </button>
+      </div>
+
+      {/* Instructions */}
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+        <h4 className="font-semibold text-blue-900 mb-3">Configurações comuns:</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
+          <div>
+            <strong>Gmail:</strong>
+            <ul className="list-disc list-inside mt-1 space-y-1">
+              <li>Servidor: smtp.gmail.com</li>
+              <li>Porta: 587</li>
+              <li>Seguro: Sim</li>
+            </ul>
+          </div>
+          <div>
+            <strong>Outlook:</strong>
+            <ul className="list-disc list-inside mt-1 space-y-1">
+              <li>Servidor: smtp-mail.outlook.com</li>
+              <li>Porta: 587</li>
+              <li>Seguro: Sim</li>
+            </ul>
           </div>
         </div>
       </div>
     </div>
   );
 
-  const renderSecuritySettings = () => (
+  const renderCompany = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Informações da Empresa</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Nome da Empresa
+            </label>
+            <input
+              type="text"
+              defaultValue={company?.name || ''}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              readOnly
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email da Empresa
+            </label>
+            <input
+              type="email"
+              defaultValue={company?.email || ''}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              readOnly
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              NUIT
+            </label>
+            <input
+              type="text"
+              defaultValue={company?.nuit || ''}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              readOnly
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Plano Atual
+            </label>
+            <input
+              type="text"
+              defaultValue={company?.plan || ''}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent capitalize"
+              readOnly
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Endereço
+            </label>
+            <input
+              type="text"
+              defaultValue={company?.address || ''}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              readOnly
+            />
+          </div>
+        </div>
+        
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+          <p className="text-sm text-blue-800">
+            <strong>Nota:</strong> Para alterar as informações da empresa, entre em contacto com o suporte.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderSecurity = () => (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Configurações de Segurança</h3>
-        <div className="space-y-4">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Key className="text-yellow-600" size={24} />
+        
+        <div className="space-y-6">
+          <div className="bg-white border border-gray-200 rounded-xl p-6">
+            <h4 className="font-semibold text-gray-900 mb-4">Alterar Palavra-passe</h4>
+            
+            <form className="space-y-4">
               <div>
-                <h4 className="font-semibold text-yellow-900">Autenticação de Dois Fatores</h4>
-                <p className="text-yellow-700 text-sm">Adicione uma camada extra de segurança</p>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Palavra-passe Atual
+                </label>
+                <input
+                  type="password"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
-            </div>
-            <button className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors">
-              Ativar 2FA
-            </button>
-          </div>
 
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Shield className="text-red-600" size={24} />
               <div>
-                <h4 className="font-semibold text-red-900">Sessões Ativas</h4>
-                <p className="text-red-700 text-sm">Gerir dispositivos conectados</p>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nova Palavra-passe
+                </label>
+                <input
+                  type="password"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
-            </div>
-            <button className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
-              Ver Sessões
-            </button>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Confirmar Nova Palavra-passe
+                </label>
+                <input
+                  type="password"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Alterar Palavra-passe
+              </button>
+            </form>
           </div>
         </div>
       </div>
     </div>
   );
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'company':
-        return renderCompanySettings();
-      case 'user':
-        return renderUserSettings();
-      default:
-        return renderCompanySettings();
-    }
-  };
+  const renderNotifications = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Preferências de Notificação</h3>
+        
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
+            <div>
+              <h4 className="font-medium text-gray-900">Notificações por Email</h4>
+              <p className="text-sm text-gray-600">Receber notificações importantes por email</p>
+            </div>
+            <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
+            <div>
+              <h4 className="font-medium text-gray-900">Lembretes de Renovação</h4>
+              <p className="text-sm text-gray-600">Alertas sobre serviços próximos do vencimento</p>
+            </div>
+            <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
+            <div>
+              <h4 className="font-medium text-gray-900">Relatórios Semanais</h4>
+              <p className="text-sm text-gray-600">Resumo semanal das atividades</p>
+            </div>
+            <input type="checkbox" className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderAppearance = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Aparência</h3>
+        
+        <div className="space-y-6">
+          <div>
+            <h4 className="font-medium text-gray-900 mb-3">Tema</h4>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="border-2 border-blue-600 rounded-lg p-4 cursor-pointer">
+                <div className="w-full h-20 bg-white border rounded mb-2"></div>
+                <p className="text-sm text-center">Claro</p>
+              </div>
+              <div className="border-2 border-gray-300 rounded-lg p-4 cursor-pointer">
+                <div className="w-full h-20 bg-gray-800 rounded mb-2"></div>
+                <p className="text-sm text-center">Escuro</p>
+              </div>
+              <div className="border-2 border-gray-300 rounded-lg p-4 cursor-pointer">
+                <div className="w-full h-20 bg-gradient-to-br from-white to-gray-800 rounded mb-2"></div>
+                <p className="text-sm text-center">Automático</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderSystem = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Configurações do Sistema</h3>
+        
+        <div className="space-y-4">
+          <div className="bg-white border border-gray-200 rounded-xl p-6">
+            <h4 className="font-semibold text-gray-900 mb-4">Informações do Sistema</h4>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-gray-600">Versão:</span>
+                <span className="ml-2 font-medium">1.0.0</span>
+              </div>
+              <div>
+                <span className="text-gray-600">Última Atualização:</span>
+                <span className="ml-2 font-medium">15/03/2024</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Configurações</h2>
-          <p className="text-gray-600 mt-1">Gerir configurações da empresa e integrações</p>
-        </div>
-      </div>
-
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Sidebar */}
-        <div className="lg:w-64">
-          <nav className="space-y-1">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Configurações</h2>
+        
+        {/* Navigation Tabs */}
+        <div className="border-b border-gray-200">
+          <nav className="flex space-x-8 overflow-x-auto">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all ${
+                  className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${
                     activeTab === tab.id
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  <Icon size={20} />
-                  <span className="font-medium">{tab.label}</span>
+                  <Icon size={16} />
+                  {tab.label}
                 </button>
               );
             })}
           </nav>
         </div>
+      </div>
 
-        {/* Content */}
-        <div className="flex-1">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            {renderContent()}
-          </div>
-        </div>
+      {/* Content */}
+      <div className="bg-gray-50 rounded-xl p-6">
+        {activeTab === 'profile' && renderProfile()}
+        {activeTab === 'company' && renderCompany()}
+        {activeTab === 'whatsapp' && renderWhatsApp()}
+        {activeTab === 'email' && renderEmail()}
+        {activeTab === 'security' && renderSecurity()}
+        {activeTab === 'notifications' && renderNotifications()}
+        {activeTab === 'appearance' && renderAppearance()}
+        {activeTab === 'system' && renderSystem()}
       </div>
     </div>
   );
