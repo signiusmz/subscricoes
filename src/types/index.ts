@@ -75,7 +75,7 @@ export interface Notification {
   id: string;
   companyId: string;
   clientId: string;
-  type: 'email' | 'sms' | 'whatsapp';
+  type: 'email' | 'whatsapp';
   template: 'reminder' | 'renewal' | 'nps' | 'welcome';
   status: 'pending' | 'sent' | 'failed';
   scheduledFor: string;

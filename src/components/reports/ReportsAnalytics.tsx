@@ -547,7 +547,7 @@ export const ReportsAnalytics: React.FC = () => {
       {/* Communication Analytics */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Analytics de Comunicação</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center p-6 bg-blue-50 rounded-lg border border-blue-200">
             <Mail className="text-blue-600 mx-auto mb-3" size={32} />
             <p className="text-3xl font-bold text-blue-900 mb-2">2,847</p>
@@ -573,6 +573,20 @@ export const ReportsAnalytics: React.FC = () => {
             </div>
             <div className="mt-4 w-full bg-green-200 rounded-full h-2">
               <div className="bg-green-600 h-2 rounded-full" style={{ width: '89%' }}></div>
+            </div>
+          </div>
+          
+          <div className="text-center p-6 bg-purple-50 rounded-lg border border-purple-200">
+            <BarChart3 className="text-purple-600 mx-auto mb-3" size={32} />
+            <p className="text-3xl font-bold text-purple-900 mb-2">4,081</p>
+            <p className="text-sm text-purple-700 font-medium mb-2">Total Mensagens</p>
+            <div className="space-y-1 text-xs text-purple-600">
+              <p>Email: 70% (2,847)</p>
+              <p>WhatsApp: 30% (1,234)</p>
+              <p>Taxa geral: 78%</p>
+            </div>
+            <div className="mt-4 w-full bg-purple-200 rounded-full h-2">
+              <div className="bg-purple-600 h-2 rounded-full" style={{ width: '78%' }}></div>
             </div>
           </div>
         </div>
@@ -613,27 +627,27 @@ export const ReportsAnalytics: React.FC = () => {
           </div>
 
           <div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="font-semibold text-gray-900 mb-3">Canal Preferido por Idade</h4>
+            <h4 className="font-semibold text-gray-900 mb-3">Canal Preferido por Perfil</h4>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">18-30 anos</span>
+                <span className="text-sm text-gray-600">Empresas Jovens</span>
                 <div className="flex items-center gap-2">
                   <MessageSquare size={12} className="text-green-600" />
                   <span className="text-sm font-medium text-gray-900">WhatsApp (78%)</span>
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">31-50 anos</span>
+                <span className="text-sm text-gray-600">Empresas Estabelecidas</span>
                 <div className="flex items-center gap-2">
                   <Mail size={12} className="text-blue-600" />
                   <span className="text-sm font-medium text-gray-900">Email (65%)</span>
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">50+ anos</span>
+                <span className="text-sm text-gray-600">Grandes Corporações</span>
                 <div className="flex items-center gap-2">
                   <Mail size={12} className="text-blue-600" />
-                  <span className="text-sm font-medium text-gray-900">Email (82%)</span>
+                  <span className="text-sm font-medium text-gray-900">Email (92%)</span>
                 </div>
               </div>
             </div>

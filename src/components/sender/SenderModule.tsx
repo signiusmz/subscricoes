@@ -91,7 +91,6 @@ export const SenderModule: React.FC = () => {
 
   const tabs = [
     { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
-    { id: 'email', label: 'Email SMTP', icon: Mail }
   ];
 
   const renderWhatsAppTab = () => (
