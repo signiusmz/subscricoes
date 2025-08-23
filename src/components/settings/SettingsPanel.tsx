@@ -62,34 +62,7 @@ interface CompanySettings {
 
 export const SettingsPanel: React.FC = () => {
   const { user, company, updateUser } = useAuth();
-  const [activeTab, setActiveTab] = useState('profile');
-  const [showPassword, setShowPassword] = useState(false);
-  const [profilePhoto, setProfilePhoto] = useState<string | null>(user?.profilePhoto || null);
-  
-  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
-    emailEnabled: true,
-    whatsappEnabled: true,
-    smsEnabled: false,
-    reminderDays: [30, 15, 7, 1],
-    npsAfterDays: 7,
-    birthdayReminders: true
-  });
-
-  const [smtpSettings, setSMTPSettings] = useState<SMTPSettings>({
-    host: 'smtp.gmail.com',
-    port: 587,
-    username: '',
-    password: '',
-    fromName: company?.name || '',
-    fromEmail: '',
-    secure: true
-  });
-
-  const [whatsappSettings, setWhatsAppSettings] = useState<WhatsAppSettings>({
-    apiKey: '',
-    phoneNumber: '',
-    isConnected: false
-  });
+  const [activeTab, setActiveTab] = useState('company');
 
   const [companySettings, setCompanySettings] = useState<CompanySettings>({
     name: company?.name || '',
@@ -101,38 +74,6 @@ export const SettingsPanel: React.FC = () => {
     timezone: 'Africa/Maputo',
     currency: 'MZN'
   });
-
-  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert('A imagem deve ter no máximo 5MB');
-        return;
-      }
-      
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setProfilePhoto(result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSaveProfile = (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget as HTMLFormElement);
-    
-    const profileData = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      phone: formData.get('phone') as string,
-      profilePhoto
-    };
-    
-    updateUser(profileData);
-    alert('Perfil atualizado com sucesso!');
-  };
 
   const handleSaveCompany = (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,162 +93,6 @@ export const SettingsPanel: React.FC = () => {
     setCompanySettings(updatedSettings);
     alert('Configurações da empresa atualizadas com sucesso!');
   };
-
-  const handleSaveNotifications = () => {
-    localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings));
-    alert('Configurações de notificações salvas com sucesso!');
-  };
-
-  const handleTestSMTP = async () => {
-    alert('Testando configurações SMTP...');
-    setTimeout(() => {
-      alert('Teste SMTP realizado com sucesso!');
-    }, 2000);
-  };
-
-  const handleSaveSMTP = () => {
-    localStorage.setItem('smtpSettings', JSON.stringify(smtpSettings));
-    alert('Configurações SMTP salvas com sucesso!');
-  };
-
-  const handleConnectWhatsApp = () => {
-    setWhatsAppSettings({ ...whatsappSettings, isConnected: true });
-    alert('WhatsApp conectado com sucesso!');
-  };
-
-  const tabs = [
-    { id: 'profile', label: 'Perfil', icon: User },
-    { id: 'company', label: 'Empresa', icon: Building },
-    { id: 'notifications', label: 'Notificações', icon: Bell }
-  ];
-
-  const renderProfile = () => (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Informações Pessoais</h3>
-        
-        <form onSubmit={handleSaveProfile} className="space-y-6">
-          {/* Profile Photo */}
-          <div className="flex items-center gap-6">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-                {profilePhoto ? (
-                  <img 
-                    src={profilePhoto} 
-                    alt="Profile Preview" 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <User size={32} className="text-gray-400" />
-                )}
-              </div>
-              <label className="absolute -bottom-2 -right-2 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 transition-colors">
-                <Camera size={16} />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoUpload}
-                  className="hidden"
-                />
-              </label>
-            </div>
-            <div>
-              <h4 className="font-medium text-gray-900">Foto de Perfil</h4>
-              <p className="text-sm text-gray-600">JPG, PNG ou GIF (máx. 5MB)</p>
-              <div className="mt-2 flex gap-2">
-                <label className="text-sm bg-gray-100 text-gray-700 px-3 py-1 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors">
-                  <Upload size={14} className="inline mr-1" />
-                  Carregar Nova
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handlePhotoUpload}
-                    className="hidden"
-                  />
-                </label>
-                {profilePhoto && (
-                  <button
-                    type="button"
-                    onClick={() => setProfilePhoto(null)}
-                    className="text-sm bg-red-100 text-red-700 px-3 py-1 rounded-lg hover:bg-red-200 transition-colors"
-                  >
-                    Remover
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nome Completo
-              </label>
-              <input
-                type="text"
-                name="name"
-                defaultValue={user?.name || ''}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                defaultValue={user?.email || ''}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Telefone
-              </label>
-              <input
-                type="text"
-                name="phone"
-                defaultValue={user?.phone || ''}
-                placeholder="+258 84 123 4567"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nova Palavra-passe (opcional)
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  placeholder="Deixe em branco para manter a atual"
-                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <button
-            type="submit"
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-          >
-            <Save size={16} />
-            Salvar Alterações
-          </button>
-        </form>
-      </div>
-    </div>
-  );
 
   const renderCompany = () => (
     <div className="space-y-6">
@@ -423,118 +208,9 @@ export const SettingsPanel: React.FC = () => {
     </div>
   );
 
-  const renderNotifications = () => (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Configurações de Notificações</h3>
-        
-        {/* Channels */}
-        <div className="mb-6">
-          <h4 className="font-medium text-gray-900 mb-3">Canais de Comunicação</h4>
-          <div className="space-y-3">
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                checked={notificationSettings.emailEnabled}
-                onChange={(e) => setNotificationSettings({...notificationSettings, emailEnabled: e.target.checked})}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <Mail size={16} className="text-blue-600" />
-              <span className="text-sm text-gray-900">Email</span>
-            </label>
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                checked={notificationSettings.whatsappEnabled}
-                onChange={(e) => setNotificationSettings({...notificationSettings, whatsappEnabled: e.target.checked})}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <MessageSquare size={16} className="text-green-600" />
-              <span className="text-sm text-gray-900">WhatsApp</span>
-            </label>
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                checked={notificationSettings.smsEnabled}
-                onChange={(e) => setNotificationSettings({...notificationSettings, smsEnabled: e.target.checked})}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <Smartphone size={16} className="text-purple-600" />
-              <span className="text-sm text-gray-900">SMS</span>
-            </label>
-          </div>
-        </div>
-
-        {/* Reminder Days */}
-        <div className="mb-6">
-          <h4 className="font-medium text-gray-900 mb-3">Dias de Lembrete (antes da expiração)</h4>
-          <div className="flex flex-wrap gap-2">
-            {[60, 30, 15, 7, 3, 1].map(day => (
-              <label key={day} className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={notificationSettings.reminderDays.includes(day)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setNotificationSettings({
-                        ...notificationSettings,
-                        reminderDays: [...notificationSettings.reminderDays, day].sort((a, b) => b - a)
-                      });
-                    } else {
-                      setNotificationSettings({
-                        ...notificationSettings,
-                        reminderDays: notificationSettings.reminderDays.filter(d => d !== day)
-                      });
-                    }
-                  }}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <span className="text-sm text-gray-900">{day} dias</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* Other Settings */}
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Solicitar NPS após quantos dias da renovação?
-            </label>
-            <select
-              value={notificationSettings.npsAfterDays}
-              onChange={(e) => setNotificationSettings({...notificationSettings, npsAfterDays: Number(e.target.value)})}
-              className="w-full max-w-xs px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value={1}>1 dia</option>
-              <option value={3}>3 dias</option>
-              <option value={7}>7 dias</option>
-              <option value={15}>15 dias</option>
-              <option value={30}>30 dias</option>
-            </select>
-          </div>
-          
-          <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              checked={notificationSettings.birthdayReminders}
-              onChange={(e) => setNotificationSettings({...notificationSettings, birthdayReminders: e.target.checked})}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            />
-            <span className="text-sm text-gray-900">Enviar felicitações de aniversário</span>
-          </label>
-        </div>
-        
-        <button
-          onClick={handleSaveNotifications}
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-        >
-          <Save size={16} />
-          Salvar Configurações
-        </button>
-      </div>
-    </div>
-  );
+  const tabs = [
+    { id: 'company', label: 'Empresa', icon: Building }
+  ];
 
   const renderIntegrations = () => (
     <div className="space-y-6">
@@ -803,33 +479,8 @@ export const SettingsPanel: React.FC = () => {
         <p className="text-gray-600">Gerir configurações da conta, empresa e integrações</p>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="flex space-x-8">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <Icon size={16} />
-                {tab.label}
-              </button>
-            );
-          })}
-        </nav>
-      </div>
-
       {/* Content */}
-      {activeTab === 'profile' && renderProfile()}
-      {activeTab === 'company' && renderCompany()}
-      {activeTab === 'notifications' && renderNotifications()}
+      {renderCompany()}
     </div>
   );
 };
