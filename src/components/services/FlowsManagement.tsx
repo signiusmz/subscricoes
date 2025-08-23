@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Plus, Edit, Trash2, Clock, Mail, MessageSquare, Play, Pause } from 'lucide-react';
 import { HTMLEditor } from '../common/HTMLEditor';
+import { Pagination } from '../common/Pagination';
 
 interface Flow {
   id: string;
@@ -104,12 +105,24 @@ export const FlowsManagement: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingFlow, setEditingFlow] = useState<Flow | null>(null);
   const [flows, setFlows] = useState<Flow[]>(mockFlows);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [messageTemplate, setMessageTemplate] = useState('');
 
   const filteredFlows = flows.filter(flow =>
     flow.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     flow.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Pagination
+  const totalPages = Math.ceil(filteredFlows.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedFlows = filteredFlows.slice(startIndex, startIndex + itemsPerPage);
+
+  // Reset to first page when search changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-PT');
@@ -282,7 +295,7 @@ export const FlowsManagement: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredFlows.map((flow) => (
+              {paginatedFlows.map((flow) => (
                 <tr key={flow.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4">
                     <div>
@@ -347,6 +360,13 @@ export const FlowsManagement: React.FC = () => {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filteredFlows.length}
+          itemsPerPage={itemsPerPage}
+        />
       </div>
 
       {/* Add/Edit Flow Modal */}

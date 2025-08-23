@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FileText, Receipt, Plus, Search, Filter, Eye, Download, Edit, Trash2, Calendar, DollarSign, CreditCard, Banknote, Smartphone } from 'lucide-react';
 import { PDFGenerator, InvoiceData, ReceiptData } from '../../utils/pdfGenerator';
 import { useAuth } from '../../context/AuthContext';
+import { Pagination } from '../common/Pagination';
 
 interface Invoice {
   id: string;
@@ -164,6 +165,9 @@ export const BillingModule: React.FC = () => {
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>(globalInvoices);
   const [receipts, setReceipts] = useState<Receipt[]>(mockReceipts);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [receiptsCurrentPage, setReceiptsCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Listen for invoice updates from other components
   React.useEffect(() => {
@@ -181,6 +185,40 @@ export const BillingModule: React.FC = () => {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-PT');
   };
+
+  const filteredInvoices = invoices.filter(invoice => {
+    const matchesSearch = invoice.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         invoice.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         invoice.serviceName.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (statusFilter === 'all') return matchesSearch;
+    return matchesSearch && invoice.status === statusFilter;
+  });
+
+  // Pagination for invoices
+  const invoicesTotalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
+  const invoicesStartIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedInvoices = filteredInvoices.slice(invoicesStartIndex, invoicesStartIndex + itemsPerPage);
+
+  const filteredReceipts = receipts.filter(receipt =>
+    receipt.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    receipt.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    receipt.serviceName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Pagination for receipts
+  const receiptsTotalPages = Math.ceil(filteredReceipts.length / itemsPerPage);
+  const receiptsStartIndex = (receiptsCurrentPage - 1) * itemsPerPage;
+  const paginatedReceipts = filteredReceipts.slice(receiptsStartIndex, receiptsStartIndex + itemsPerPage);
+
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
+
+  React.useEffect(() => {
+    setReceiptsCurrentPage(1);
+  }, [searchTerm]);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -347,21 +385,6 @@ export const BillingModule: React.FC = () => {
     }
   };
 
-  const filteredInvoices = invoices.filter(invoice => {
-    const matchesSearch = invoice.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         invoice.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         invoice.serviceName.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    if (statusFilter === 'all') return matchesSearch;
-    return matchesSearch && invoice.status === statusFilter;
-  });
-
-  const filteredReceipts = receipts.filter(receipt =>
-    receipt.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    receipt.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    receipt.serviceName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   const renderInvoices = () => (
     <div className="space-y-6">
       {/* Header */}
@@ -488,7 +511,7 @@ export const BillingModule: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredInvoices.map((invoice) => (
+              {paginatedInvoices.map((invoice) => (
                 <tr key={invoice.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{invoice.number}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">{invoice.clientName}</td>
@@ -546,6 +569,13 @@ export const BillingModule: React.FC = () => {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={invoicesTotalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filteredInvoices.length}
+          itemsPerPage={itemsPerPage}
+        />
       </div>
     </div>
   );
@@ -643,7 +673,7 @@ export const BillingModule: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredReceipts.map((receipt) => (
+              {paginatedReceipts.map((receipt) => (
                 <tr key={receipt.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{receipt.number}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">{receipt.clientName}</td>
@@ -683,6 +713,13 @@ export const BillingModule: React.FC = () => {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={receiptsCurrentPage}
+          totalPages={receiptsTotalPages}
+          onPageChange={setReceiptsCurrentPage}
+          totalItems={filteredReceipts.length}
+          itemsPerPage={itemsPerPage}
+        />
       </div>
     </div>
   );

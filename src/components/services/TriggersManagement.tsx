@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Plus, Edit, Trash2, Clock, Calendar, AlertCircle, Play, Pause } from 'lucide-react';
+import { Pagination } from '../common/Pagination';
 
 interface Trigger {
   id: string;
@@ -81,11 +82,23 @@ export const TriggersManagement: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingTrigger, setEditingTrigger] = useState<Trigger | null>(null);
   const [triggers, setTriggers] = useState<Trigger[]>(mockTriggers);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const filteredTriggers = triggers.filter(trigger =>
     trigger.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     trigger.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Pagination
+  const totalPages = Math.ceil(filteredTriggers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedTriggers = filteredTriggers.slice(startIndex, startIndex + itemsPerPage);
+
+  // Reset to first page when search changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-PT');
@@ -292,7 +305,7 @@ export const TriggersManagement: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredTriggers.map((trigger) => (
+              {paginatedTriggers.map((trigger) => (
                 <tr key={trigger.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4">
                     <div>
@@ -345,6 +358,13 @@ export const TriggersManagement: React.FC = () => {
             </tbody>
           </table>
         </div>
+       <Pagination
+         currentPage={currentPage}
+         totalPages={totalPages}
+         onPageChange={setCurrentPage}
+         totalItems={filteredTriggers.length}
+         itemsPerPage={itemsPerPage}
+       />
       </div>
 
       {/* Add/Edit Trigger Modal */}
