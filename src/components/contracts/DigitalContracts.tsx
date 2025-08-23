@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Download, Edit, Send, Eye, CheckCircle, Clock, AlertCircle, Search, Filter, Calendar, User, Building, DollarSign, FileSignature as Signature, Hash, Users, Plus, X, Save, RefreshCw } from 'lucide-react';
+import { FileText, Download, Edit, Send, Eye, CheckCircle, Clock, AlertCircle, Search, Filter, Calendar, User, Building, DollarSign, FileSignature as Signature, Hash, Users, Plus, X, Save, RefreshCw, Star, Trash2 } from 'lucide-react';
 import { PDFGenerator } from '../../utils/pdfGenerator';
 import { HTMLEditor } from '../common/HTMLEditor';
 import { Pagination } from '../common/Pagination';
@@ -771,6 +771,162 @@ export const DigitalContracts: React.FC = () => {
     alert(`✅ Contrato assinado digitalmente!\n\n📄 Contrato: ${contract?.number}\n👤 Cliente: ${contract?.clientName}\n🔐 Hash: ${signatureHash}\n📅 Assinado em: ${new Date().toLocaleString('pt-PT')}\n✅ Assinatura válida e registrada`);
   };
 
+  const handleSaveTemplate = (templateData: Partial<ContractTemplate>) => {
+    if (editingTemplate) {
+      setContractTemplates(contractTemplates.map(t => 
+        t.id === editingTemplate.id 
+          ? { ...t, ...templateData, content: templateContent }
+          : t
+      ));
+      alert(`✅ Template "${templateData.name}" atualizado!\n\n📝 Categoria: ${templateCategories.find(c => c.id === templateData.category)?.label}\n🔤 Variáveis: ${templateData.variables?.length || 0}\n📅 Atualizado em: ${new Date().toLocaleString('pt-PT')}`);
+    } else {
+      const newTemplate: ContractTemplate = {
+        id: Date.now().toString(),
+        name: templateData.name || '',
+        description: templateData.description || '',
+        category: templateData.category as 'service' | 'maintenance' | 'consulting' | 'general' || 'general',
+        content: templateContent,
+        variables: templateContent.match(/\{[^}]+\}/g) || [],
+        isActive: true,
+        createdAt: new Date().toISOString()
+      };
+      setContractTemplates([...contractTemplates, newTemplate]);
+      alert(`✅ Novo template "${newTemplate.name}" criado!\n\n📝 Categoria: ${templateCategories.find(c => c.id === newTemplate.category)?.label}\n🔤 Variáveis: ${newTemplate.variables.length}\n📅 Criado em: ${new Date().toLocaleString('pt-PT')}\n🟢 Status: Ativo`);
+    }
+    setShowTemplateEditor(false);
+    setEditingTemplate(null);
+    setTemplateContent('');
+  };
+
+  const handleEditTemplate = (template: ContractTemplate) => {
+    setEditingTemplate(template);
+    setTemplateContent(template.content);
+    setShowTemplateEditor(true);
+  };
+
+  const handleDeleteTemplate = (templateId: string) => {
+    if (confirm('Tem certeza que deseja eliminar este template?')) {
+      setContractTemplates(contractTemplates.filter(t => t.id !== templateId));
+      alert('Template eliminado com sucesso!');
+    }
+  };
+
+  const handleUseTemplate = (template: ContractTemplate) => {
+    if (!selectedClientId) {
+      alert('Selecione um cliente primeiro');
+      return;
+    }
+
+    const client = mockClients.find(c => c.id === selectedClientId);
+    const clientSubscriptions = getClientSubscriptions(selectedClientId);
+
+    if (!client) {
+      alert('Cliente não encontrado');
+      return;
+    }
+
+    if (clientSubscriptions.length === 0) {
+      alert(`❌ Não é possível usar template!\n\n🚫 O cliente "${client.companyName}" não possui subscrições ativas.\n\n💡 Para usar um template:\n1. Vá ao módulo "Subscrições"\n2. Crie pelo menos uma subscrição ativa\n3. Retorne aqui para usar o template\n\n✅ Subscrições ativas são obrigatórias!`);
+      return;
+    }
+
+    const totalValue = clientSubscriptions.reduce((sum, sub) => sum + sub.totalWithIva, 0);
+    const serviceNames = clientSubscriptions.map(sub => sub.serviceName);
+    const earliestStart = clientSubscriptions.reduce((earliest, sub) => 
+      sub.startDate < earliest ? sub.startDate : earliest, 
+      clientSubscriptions[0].startDate
+    );
+    const latestEnd = clientSubscriptions.reduce((latest, sub) => 
+      sub.nextBilling > latest ? sub.nextBilling : latest, 
+      clientSubscriptions[0].nextBilling
+    );
+
+    // Replace variables in template content
+    let contractContent = template.content;
+    const replacements = {
+      '{contrato_numero}': `CONT-2024-${String(contracts.length + 1).padStart(3, '0')}`,
+      '{cliente_nome}': client.companyName,
+      '{cliente_representante}': client.representative,
+      '{cliente_nuit}': client.nuit,
+      '{cliente_endereco}': client.address,
+      '{cliente_email}': client.email,
+      '{cliente_telefone}': client.phone,
+      '{empresa_nome}': 'TechSolutions Lda',
+      '{empresa_nuit}': '400123456',
+      '{empresa_endereco}': 'Av. Julius Nyerere, 123, Maputo',
+      '{empresa_email}': 'info@techsolutions.mz',
+      '{empresa_telefone}': '+258 21 123 456',
+      '{empresa_representante}': 'João Silva',
+      '{servicos_lista}': serviceNames.map(name => `<li><strong>${name}</strong></li>`).join(''),
+      '{contrato_valor_total}': totalValue.toLocaleString(),
+      '{contrato_valor_extenso}': formatAmountInWords(totalValue),
+      '{contrato_data_inicio}': formatDate(earliestStart),
+      '{contrato_data_fim}': formatDate(latestEnd),
+      '{contrato_data_assinatura}': new Date().toLocaleDateString('pt-PT'),
+      '{data_geracao}': new Date().toLocaleDateString('pt-PT'),
+      '{servicos_manutencao}': serviceNames.join(', '),
+      '{servicos_consultoria}': serviceNames.join(', '),
+      '{periodicidade_manutencao}': 'Mensal',
+      '{metodologia_trabalho}': 'reuniões presenciais e remotas',
+      '{forma_pagamento}': 'Conforme ciclos de faturação'
+    };
+
+    Object.entries(replacements).forEach(([key, value]) => {
+      contractContent = contractContent.replace(new RegExp(key.replace(/[{}]/g, '\\$&'), 'g'), value);
+    });
+
+    const newContract: Contract = {
+      id: Date.now().toString(),
+      number: `CONT-2024-${String(contracts.length + 1).padStart(3, '0')}`,
+      clientId: selectedClientId,
+      clientName: client.companyName,
+      title: template.name.replace('Template', '') + ` - ${client.companyName}`,
+      content: contractContent,
+      value: totalValue,
+      startDate: earliestStart,
+      endDate: latestEnd,
+      status: 'draft',
+      createdAt: new Date().toISOString(),
+      isAutoGenerated: true,
+      services: serviceNames
+    };
+
+    setContracts([newContract, ...contracts]);
+    setShowTemplateModal(false);
+    setSelectedClientId('');
+    
+    // Update template last used
+    setContractTemplates(contractTemplates.map(t => 
+      t.id === template.id 
+        ? { ...t, lastUsed: new Date().toISOString() }
+        : t
+    ));
+    
+    alert(`✅ Contrato criado usando template!\n\n📄 Template: ${template.name}\n📋 Número: ${newContract.number}\n👤 Cliente: ${client.companyName}\n🛍️ Serviços: ${serviceNames.length}\n💰 Valor Total: ${totalValue.toLocaleString()} MT\n📅 Vigência: ${formatDate(earliestStart)} - ${formatDate(latestEnd)}\n📝 Status: Rascunho (pronto para edição)`);
+  };
+
+  const insertVariable = (variable: string) => {
+    setTemplateContent(templateContent + ' ' + variable);
+  };
+
+  const getCategoryBadge = (category: string) => {
+    const cat = templateCategories.find(c => c.id === category);
+    if (!cat) return null;
+    
+    return (
+      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${cat.color}`}>
+        {cat.label}
+      </span>
+    );
+  };
+
+  const filteredTemplates = contractTemplates.filter(template => {
+    const matchesSearch = template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         template.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || template.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -779,15 +935,53 @@ export const DigitalContracts: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-900">Contratos Digitais</h2>
           <p className="text-gray-600 mt-1">Gestão completa de contratos com assinatura digital</p>
         </div>
-        <button 
-          onClick={() => setShowGenerateModal(true)}
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
-        >
-          <Plus size={20} />
-          Gerar Contrato
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={() => setShowTemplateModal(true)}
+            className="border border-blue-600 text-blue-600 px-4 py-2 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2"
+          >
+            <FileText size={16} />
+            Usar Template
+          </button>
+          <button 
+            onClick={() => setShowGenerateModal(true)}
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
+          >
+            <Plus size={20} />
+            Gerar Contrato
+          </button>
+        </div>
       </div>
 
+      {/* Navigation Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="flex space-x-8">
+          {[
+            { id: 'contracts', label: 'Contratos', icon: FileText },
+            { id: 'templates', label: 'Templates', icon: Edit }
+          ].map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 ${
+                  activeTab === tab.id
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <Icon size={16} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* Contracts Tab Content */}
+      {activeTab === 'contracts' && (
+        <>
       {/* Status Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -963,6 +1157,197 @@ export const DigitalContracts: React.FC = () => {
           itemsPerPage={itemsPerPage}
         />
       </div>
+        </>
+      )}
+
+      {/* Templates Tab Content */}
+      {activeTab === 'templates' && (
+        <>
+          {/* Templates Header */}
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Templates de Contratos</h3>
+              <p className="text-gray-600">Modelos padronizados para geração automática</p>
+            </div>
+            <button 
+              onClick={() => {
+                setEditingTemplate(null);
+                setTemplateContent('');
+                setShowTemplateEditor(true);
+              }}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center gap-2"
+            >
+              <Plus size={16} />
+              Novo Template
+            </button>
+          </div>
+
+          {/* Template Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Total Templates</p>
+                  <p className="text-2xl font-bold text-gray-900">{contractTemplates.length}</p>
+                </div>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+                  <FileText size={24} />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Templates Ativos</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {contractTemplates.filter(t => t.isActive).length}
+                  </p>
+                </div>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center bg-green-100 text-green-600">
+                  <CheckCircle size={24} />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Mais Usado</p>
+                  <p className="text-lg font-bold text-gray-900">
+                    {contractTemplates.find(t => t.lastUsed)?.name.substring(0, 15) || 'Nenhum'}...
+                  </p>
+                </div>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center bg-purple-100 text-purple-600">
+                  <Star size={24} />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Variáveis</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {availableVariables.reduce((sum, cat) => sum + cat.variables.length, 0)}
+                  </p>
+                </div>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center bg-orange-100 text-orange-600">
+                  <Hash size={24} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Template Filters */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+              <div className="flex flex-wrap gap-3">
+                <div className="flex items-center gap-2">
+                  <Filter className="text-gray-400" size={20} />
+                  <span className="text-sm font-medium text-gray-700">Filtros:</span>
+                </div>
+                {['all', ...templateCategories.map(c => c.id)].map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      selectedCategory === category
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {category === 'all' ? 'Todos' : templateCategories.find(c => c.id === category)?.label}
+                  </button>
+                ))}
+              </div>
+              
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                <input
+                  type="text"
+                  placeholder="Pesquisar templates..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Templates Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTemplates.map((template) => (
+              <div key={template.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900 mb-2">{template.name}</h4>
+                    <p className="text-sm text-gray-600 mb-3">{template.description}</p>
+                    {getCategoryBadge(template.category)}
+                  </div>
+                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                    template.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {template.isActive ? 'Ativo' : 'Inativo'}
+                  </span>
+                </div>
+
+                <div className="mb-4">
+                  <p className="text-xs font-medium text-gray-700 mb-2">Variáveis ({template.variables.length}):</p>
+                  <div className="flex flex-wrap gap-1">
+                    {template.variables.slice(0, 3).map((variable, idx) => (
+                      <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded font-mono">
+                        {variable}
+                      </span>
+                    ))}
+                    {template.variables.length > 3 && (
+                      <span className="text-xs text-gray-500">+{template.variables.length - 3}</span>
+                    )}
+                  </div>
+                </div>
+
+                {template.lastUsed && (
+                  <div className="mb-4 text-xs text-gray-500">
+                    Último uso: {formatDate(template.lastUsed)}
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setSelectedClientId('');
+                      setShowTemplateModal(true);
+                      // Pre-select this template
+                      setTimeout(() => {
+                        const templateSelect = document.getElementById('templateSelect') as HTMLSelectElement;
+                        if (templateSelect) {
+                          templateSelect.value = template.id;
+                        }
+                      }, 100);
+                    }}
+                    className="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm"
+                  >
+                    <FileText size={14} />
+                    Usar
+                  </button>
+                  <button
+                    onClick={() => handleEditTemplate(template)}
+                    className="border border-gray-300 text-gray-700 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <Edit size={14} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteTemplate(template.id)}
+                    className="border border-red-300 text-red-600 py-2 px-3 rounded-lg hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Generate Contract Modal */}
       {showGenerateModal && (
@@ -1186,6 +1571,265 @@ export const DigitalContracts: React.FC = () => {
                       </p>
                     </div>
                   )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Use Template Modal */}
+      {showTemplateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <FileText className="text-blue-600" size={20} />
+              Usar Template de Contrato
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Selecionar Template *
+                </label>
+                <select
+                  id="templateSelect"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Escolha um template</option>
+                  {contractTemplates.filter(t => t.isActive).map((template) => (
+                    <option key={template.id} value={template.id}>
+                      {template.name} - {templateCategories.find(c => c.id === template.category)?.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Selecionar Cliente *
+                </label>
+                <select
+                  value={selectedClientId}
+                  onChange={(e) => setSelectedClientId(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Escolha um cliente</option>
+                  {mockClients.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.companyName} - {client.representative}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Preview of client subscriptions */}
+              {selectedClientId && (
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                    <Eye className="text-blue-600" size={16} />
+                    Subscrições Ativas do Cliente
+                  </h4>
+                  {(() => {
+                    const clientSubscriptions = getClientSubscriptions(selectedClientId);
+                    const client = mockClients.find(c => c.id === selectedClientId);
+                    
+                    if (clientSubscriptions.length === 0) {
+                      return (
+                        <div className="text-center py-6">
+                          <AlertCircle className="text-red-500 mx-auto mb-3" size={32} />
+                          <p className="text-red-700 font-medium">Nenhuma subscrição ativa encontrada</p>
+                          <p className="text-sm text-red-600 mt-1">
+                            Este cliente não possui subscrições ativas. Crie subscrições primeiro.
+                          </p>
+                        </div>
+                      );
+                    }
+
+                    const totalValue = clientSubscriptions.reduce((sum, sub) => sum + sub.totalWithIva, 0);
+                    
+                    return (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-600">Cliente:</span>
+                            <span className="font-medium text-gray-900 ml-2">{client?.companyName}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Total de Serviços:</span>
+                            <span className="font-medium text-gray-900 ml-2">{clientSubscriptions.length}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          {clientSubscriptions.map((sub) => (
+                            <div key={sub.id} className="flex justify-between items-center p-2 bg-white rounded border">
+                              <span className="text-sm text-gray-900">{sub.serviceName}</span>
+                              <span className="text-sm font-medium text-gray-900">{sub.totalWithIva.toLocaleString()} MT</span>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        <div className="pt-3 border-t border-gray-200">
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium text-gray-900">Valor Total do Contrato:</span>
+                            <span className="text-lg font-bold text-blue-600">{totalValue.toLocaleString()} MT</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+            
+            <div className="flex gap-3 pt-6">
+              <button
+                onClick={() => {
+                  setShowTemplateModal(false);
+                  setSelectedClientId('');
+                }}
+                className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  const templateSelect = document.getElementById('templateSelect') as HTMLSelectElement;
+                  const selectedTemplateId = templateSelect.value;
+                  
+                  if (!selectedTemplateId || !selectedClientId) {
+                    alert('Selecione um template e um cliente');
+                    return;
+                  }
+                  
+                  const template = contractTemplates.find(t => t.id === selectedTemplateId);
+                  if (template) {
+                    handleUseTemplate(template);
+                  }
+                }}
+                disabled={!selectedClientId}
+                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Gerar com Template
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Template Editor Modal */}
+      {showTemplateEditor && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl max-w-7xl w-full mx-4 h-[95vh] flex flex-col">
+            {/* Header */}
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <Edit className="text-green-600" size={20} />
+                    {editingTemplate ? `Editando: ${editingTemplate.name}` : 'Novo Template de Contrato'}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Editor HTML avançado com variáveis dinâmicas para contratos padronizados
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowTemplateEditor(false);
+                      setEditingTemplate(null);
+                      setTemplateContent('');
+                    }}
+                    className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={() => {
+                      const templateName = prompt('Nome do template:');
+                      if (!templateName) return;
+                      
+                      const templateDescription = prompt('Descrição do template:');
+                      if (!templateDescription) return;
+                      
+                      const templateCategory = prompt('Categoria (service/maintenance/consulting/general):') || 'general';
+                      
+                      handleSaveTemplate({
+                        name: templateName,
+                        description: templateDescription,
+                        category: templateCategory as any,
+                        variables: templateContent.match(/\{[^}]+\}/g) || []
+                      });
+                    }}
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                  >
+                    <Save size={16} />
+                    Salvar Template
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 flex">
+              {/* Editor */}
+              <div className="flex-1 p-6">
+                <HTMLEditor
+                  value={templateContent}
+                  onChange={setTemplateContent}
+                  placeholder="Digite o conteúdo do template aqui..."
+                  height="600px"
+                />
+              </div>
+
+              {/* Variables Panel */}
+              <div className="w-80 bg-gray-50 border-l border-gray-200 p-6">
+                <h4 className="font-semibold text-gray-900 mb-4">Variáveis Disponíveis</h4>
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {availableVariables.map((category) => (
+                    <div key={category.category}>
+                      <h5 className="font-medium text-gray-800 mb-2">{category.category}</h5>
+                      <div className="space-y-1">
+                        {category.variables.map((variable) => (
+                          <div key={variable.key} className="flex items-start gap-2">
+                            <button
+                              onClick={() => insertVariable(variable.key)}
+                              className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded hover:bg-blue-200 transition-colors font-mono"
+                            >
+                              {variable.key}
+                            </button>
+                            <span className="text-xs text-gray-600 flex-1">{variable.description}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Template Guidelines */}
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <h5 className="font-medium text-gray-800 mb-3">Diretrizes de Template</h5>
+                  <div className="space-y-2 text-xs text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span>Use formato A4 (max-width: 800px)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span>Fonte Arial, line-height: 1.6</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <span>Cores: #2563eb (azul), #059669 (verde)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                      <span>Padding: 20px, margin: 0 auto</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
