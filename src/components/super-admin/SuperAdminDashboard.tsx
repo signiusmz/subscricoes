@@ -1109,6 +1109,173 @@ export const SuperAdminDashboard: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* M-Pesa Configuration Modal */}
+      {showMPesaConfigModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <Smartphone className="text-green-600" size={24} />
+              Configuração M-Pesa API
+            </h3>
+            
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const configData = {
+                apiKey: formData.get('apiKey') as string,
+                publicKey: formData.get('publicKey') as string,
+                serviceProviderCode: formData.get('serviceProviderCode') as string,
+                initiatorIdentifier: formData.get('initiatorIdentifier') as string,
+                securityCredential: formData.get('securityCredential') as string,
+                environment: formData.get('environment') as 'sandbox' | 'production'
+              };
+              handleSaveMPesaConfig(configData);
+            }} className="space-y-6">
+              
+              {/* Environment Selection */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="text-md font-semibold text-gray-900 mb-3">Ambiente</h4>
+                <div className="flex gap-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="environment"
+                      value="sandbox"
+                      defaultChecked={mpesaConfig.environment === 'sandbox'}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Sandbox (Testes)</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="environment"
+                      value="production"
+                      defaultChecked={mpesaConfig.environment === 'production'}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Produção</span>
+                  </label>
+              {/* API Credentials */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <Shield className="text-blue-600" size={18} />
+                  Credenciais da API
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      API Key *
+                    </label>
+                    <input
+                      type="password"
+                      name="apiKey"
+                      defaultValue={mpesaConfig.apiKey}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Sua API Key do M-Pesa"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Public Key *
+                    </label>
+                    <textarea
+                      name="publicKey"
+                      defaultValue={mpesaConfig.publicKey}
+                      rows={3}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="-----BEGIN PUBLIC KEY-----..."
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+                </div>
+              {/* Service Configuration */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <Settings className="text-purple-600" size={18} />
+                  Configuração do Serviço
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Service Provider Code *
+                    </label>
+                    <input
+                      type="text"
+                      name="serviceProviderCode"
+                      defaultValue={mpesaConfig.serviceProviderCode}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Ex: 171717"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Initiator Identifier *
+                    </label>
+                    <input
+                      type="text"
+                      name="initiatorIdentifier"
+                      defaultValue={mpesaConfig.initiatorIdentifier}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Ex: testapi"
+                      required
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Security Credential *
+                    </label>
+                    <input
+                      type="password"
+                      name="securityCredential"
+                      defaultValue={mpesaConfig.securityCredential}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Credencial de segurança encriptada"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+              </div>
+              {/* Instructions */}
+              <div className="bg-yellow-50 rounded-lg border border-yellow-200 p-4">
+                <h4 className="font-semibold text-yellow-900 mb-2 flex items-center gap-2">
+                  <AlertTriangle className="text-yellow-600" size={18} />
+                  Instruções Importantes
+                </h4>
+                <ul className="text-sm text-yellow-800 space-y-1">
+                  <li>• Para obter as credenciais, contacte a Vodacom M-Pesa</li>
+                  <li>• Use sempre o ambiente Sandbox para testes</li>
+                  <li>• A Public Key deve incluir as linhas BEGIN/END</li>
+                  <li>• O Security Credential deve ser encriptado com a Public Key</li>
+                  <li>• Mantenha as credenciais seguras e não as compartilhe</li>
+                </ul>
+              </div>
+              
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowMPesaConfigModal(false)}
+                  className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Salvar Configurações
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
