@@ -399,7 +399,7 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({ client, onBack }) 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">NPS Médio</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Satisfação Média</p>
               <p className="text-2xl font-bold text-gray-900">{getAverageNPS()}</p>
             </div>
             <div className="w-12 h-12 rounded-full flex items-center justify-center bg-purple-100 text-purple-600">
@@ -503,7 +503,7 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({ client, onBack }) 
                   <p className="text-lg font-semibold text-gray-900">{formatDate(subscription.nextBilling)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">NPS</p>
+                  <p className="text-sm text-gray-600">Satisfação</p>
                   <div className="flex items-center gap-1">
                     {subscription.npsScore ? (
                       <>
@@ -519,7 +519,7 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({ client, onBack }) 
 
               {subscription.npsComment && (
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Comentário NPS:</p>
+                  <p className="text-sm text-gray-600 mb-1">Comentário de Satisfação:</p>
                   <p className="text-gray-900">"{subscription.npsComment}"</p>
                 </div>
               )}

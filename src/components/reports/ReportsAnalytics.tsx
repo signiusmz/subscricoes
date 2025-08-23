@@ -24,7 +24,7 @@ const reportTypes = [
   { id: 'revenue', name: 'Relatório de Receitas', description: 'Análise detalhada das receitas por período' },
   { id: 'clients', name: 'Relatório de Clientes', description: 'Crescimento e retenção de clientes' },
   { id: 'services', name: 'Relatório de Serviços', description: 'Performance e utilização dos serviços' },
-  { id: 'nps', name: 'Relatório NPS', description: 'Análise de satisfação dos clientes' }
+  { id: 'nps', name: 'Relatório de Satisfação', description: 'Análise de satisfação dos clientes' }
 ];
 
 export const ReportsAnalytics: React.FC = () => {
@@ -92,7 +92,7 @@ export const ReportsAnalytics: React.FC = () => {
       color: 'purple'
     },
     {
-      title: 'NPS Médio',
+      title: 'Satisfação Média',
       value: currentData.nps.toString(),
       growth: calculateGrowth(currentData.nps, previousData.nps),
       icon: Star,
@@ -386,7 +386,7 @@ export const ReportsAnalytics: React.FC = () => {
         {/* NPS Trend */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Tendência NPS</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Tendência de Satisfação</h3>
             <Star className="text-gray-400" size={20} />
           </div>
           <div className="h-64 bg-gradient-to-t from-orange-50 to-transparent rounded-lg flex items-end justify-between p-4">
@@ -497,7 +497,7 @@ export const ReportsAnalytics: React.FC = () => {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receita</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Clientes</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Serviços</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">NPS</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Satisfação</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Crescimento</th>
               </tr>
             </thead>

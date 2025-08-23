@@ -256,7 +256,7 @@ export const DashboardHeader: React.FC = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-white">8.4</p>
-              <p className="text-blue-200 text-sm">NPS Médio</p>
+              <p className="text-blue-200 text-sm">Satisfação Média</p>
             </div>
           </div>
         </div>

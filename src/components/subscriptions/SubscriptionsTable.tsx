@@ -404,7 +404,7 @@ export const SubscriptionsTable: React.FC = () => {
     setSelectedSubscription(null);
     setNpsScore(0);
     setNpsComment('');
-    alert('Avaliação NPS registrada com sucesso!');
+    alert('Avaliação de satisfação registrada com sucesso!');
   };
 
   const handleSaveSubscription = (subscriptionData: Partial<Subscription>) => {
@@ -672,7 +672,7 @@ export const SubscriptionsTable: React.FC = () => {
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  NPS
+                  Satisfação
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
@@ -1110,7 +1110,7 @@ export const SubscriptionsTable: React.FC = () => {
       {showNPSModal && selectedSubscription && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Avaliação NPS</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Avaliação de Satisfação</h3>
             <p className="text-gray-600 mb-6">
               Cliente: {getExtendedSubscriptions().find(s => s.id === selectedSubscription.id)?.clientName}
             </p>

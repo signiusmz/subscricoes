@@ -39,7 +39,7 @@ export const MetricsCards: React.FC<MetricsCardsProps> = ({ metrics }) => {
       trend: '-1 vs mês passado'
     },
     {
-      title: 'NPS Médio',
+      title: 'Nível de Satisfação',
       value: metrics.averageNPS,
       icon: Star,
       color: 'purple',
