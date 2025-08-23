@@ -4,7 +4,6 @@ import { PDFGenerator } from '../../utils/pdfGenerator';
 import { formatAmountInWords } from '../../utils/numberToWords';
 import { HTMLEditor } from '../common/HTMLEditor';
 import { Pagination } from '../common/Pagination';
-import { formatAmountInWords } from '../../utils/numberToWords';
 
 interface ContractTemplate {
   id: string;
