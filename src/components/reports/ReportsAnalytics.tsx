@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BarChart3, TrendingUp, Download, Calendar, DollarSign, Users, Activity, Star, Filter, FileText, Mail, MessageSquare, Eye, RefreshCw, Clock, Play, Pause, Trash2, PieChart, Target } from 'lucide-react';
+import { BarChart3, TrendingUp, Download, Calendar, DollarSign, Users, Activity, Star, Filter, FileText, Mail, MessageSquare, Eye, RefreshCw, Clock, Play, Pause, Trash2, PieChart, Target, Phone } from 'lucide-react';
 import { PDFGenerator, ReportData } from '../../utils/pdfGenerator';
 import { Pagination } from '../common/Pagination';
 
