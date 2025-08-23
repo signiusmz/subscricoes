@@ -88,14 +88,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
       <div className="p-6 border-b border-gray-200">
         <button 
           onClick={() => onTabChange('dashboard')}
-          className="flex items-center justify-center py-4 w-full hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+          className="flex items-center justify-center py-6 w-full hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
           title="Voltar ao Dashboard"
         >
-          <div className="w-32 h-16 flex items-center justify-center">
+          <div className="w-48 h-24 flex items-center justify-center">
             <img 
               src="https://cdn.signius.pl/wp-content/uploads/2022/09/signius_logo_rgb.svg" 
               alt="Signius Logo" 
-              className="w-32 h-16 object-contain"
+              className="w-48 h-24 object-contain hover:scale-105 transition-transform duration-200"
             />
           </div>
         </button>
