@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, CreditCard, Calendar, Download, Eye, RefreshCw, Star, User, LogOut } from 'lucide-react';
+import { FileText, CreditCard, Calendar, Download, Eye, RefreshCw, Star, User, LogOut, Edit, Camera, Upload, Save, X } from 'lucide-react';
 import { PDFGenerator, ClientInfo } from '../../utils/pdfGenerator';
 import { useAuth } from '../../context/AuthContext';
 
@@ -63,15 +63,28 @@ export const ClientPortal: React.FC = () => {
   const { logout } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showNPSModal, setShowNPSModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [npsScore, setNpsScore] = useState(0);
   const [npsComment, setNpsComment] = useState('');
-
-  const clientInfo = {
+  const [clientData, setClientData] = useState({
     companyName: 'Transportes Maputo Lda',
     representative: 'João Macamo',
     email: 'joao@transportesmaputo.mz',
-    nuit: '400567890'
-  };
+    phone: '84 123 4567',
+    phoneCountryCode: '+258',
+    nuit: '400567890',
+    address: 'Av. Eduardo Mondlane, 567, Maputo',
+    profilePhoto: null as string | null
+  });
+  const [tempProfilePhoto, setTempProfilePhoto] = useState<string | null>(null);
+
+  const countryCodes = [
+    { code: '+258', country: 'Moçambique', flag: '🇲🇿' },
+    { code: '+27', country: 'África do Sul', flag: '🇿🇦' },
+    { code: '+55', country: 'Brasil', flag: '🇧🇷' },
+    { code: '+351', country: 'Portugal', flag: '🇵🇹' },
+    { code: '+244', country: 'Angola', flag: '🇦🇴' }
+  ];
 
   const salesperson = {
     name: 'Maria Silva',
@@ -119,13 +132,58 @@ export const ClientPortal: React.FC = () => {
     alert('Obrigado pelo seu feedback!');
   };
 
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        alert('A imagem deve ter no máximo 5MB');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setTempProfilePhoto(result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    
+    const updatedData = {
+      companyName: formData.get('companyName') as string,
+      representative: formData.get('representative') as string,
+      email: formData.get('email') as string,
+      phone: formData.get('phone') as string,
+      phoneCountryCode: formData.get('phoneCountryCode') as string,
+      nuit: formData.get('nuit') as string,
+      address: formData.get('address') as string,
+      profilePhoto: tempProfilePhoto || clientData.profilePhoto
+    };
+    
+    const password = formData.get('password') as string;
+    
+    setClientData(updatedData);
+    setShowProfileModal(false);
+    setTempProfilePhoto(null);
+    
+    if (password) {
+      alert('Perfil e senha atualizados com sucesso!');
+    } else {
+      alert('Perfil atualizado com sucesso!');
+    }
+  };
+
   const handleGenerateStatement = () => {
     const clientInfoForPDF: ClientInfo = {
-      companyName: clientInfo.companyName,
-      representative: clientInfo.representative,
-      email: clientInfo.email,
+      companyName: clientData.companyName,
+      representative: clientData.representative,
+      email: clientData.email,
       phone: '+258 84 567 890',
-      nuit: clientInfo.nuit,
+      nuit: clientData.nuit,
       address: 'Av. Eduardo Mondlane, 567, Maputo'
     };
     
@@ -360,15 +418,36 @@ export const ClientPortal: React.FC = () => {
                 />
               </div>
               <div>
-                <h1 className="font-semibold text-gray-900">{clientInfo.companyName}</h1>
+                <h1 className="font-semibold text-gray-900">{clientData.companyName}</h1>
                 <p className="text-xs text-gray-500">Portal do Cliente - Signius</p>
               </div>
             </div>
             
             <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">{clientInfo.representative}</p>
-                <p className="text-xs text-gray-500">{clientInfo.email}</p>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-blue-500">
+                  {clientData.profilePhoto ? (
+                    <img 
+                      src={clientData.profilePhoto} 
+                      alt="Profile" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User size={16} className="text-white" />
+                  )}
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-900">{clientData.representative}</p>
+                  <p className="text-xs text-gray-500">{clientData.email}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowProfileModal(true)}
+                className="text-gray-600 hover:text-blue-600 p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                title="Editar Perfil"
+              >
+                <Edit size={20} />
+              </button>
               </div>
               <button 
                 onClick={() => setShowNPSModal(true)}
@@ -480,6 +559,235 @@ export const ClientPortal: React.FC = () => {
                 Enviar
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Profile Edit Modal */}
+      {showProfileModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Edit size={20} className="text-blue-600" />
+                Editar Perfil
+              </h3>
+              <button
+                onClick={() => {
+                  setShowProfileModal(false);
+                  setTempProfilePhoto(null);
+                }}
+                className="text-gray-400 hover:text-gray-600 p-1"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSaveProfile} className="space-y-6">
+              
+              {/* Profile Photo Section */}
+              <div className="text-center">
+                <div className="relative inline-block">
+                  <div className="w-24 h-24 rounded-full overflow-hidden mx-auto bg-gray-200 flex items-center justify-center">
+                    {(tempProfilePhoto || clientData.profilePhoto) ? (
+                      <img 
+                        src={tempProfilePhoto || clientData.profilePhoto || ''} 
+                        alt="Profile Preview" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User size={32} className="text-gray-400" />
+                    )}
+                  </div>
+                  <div className="absolute -bottom-2 -right-2">
+                    <label className="bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 transition-colors inline-flex">
+                      <Camera size={16} />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+                <div className="mt-3 flex justify-center gap-2">
+                  <label className="text-sm bg-gray-100 text-gray-700 px-3 py-1 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors flex items-center gap-1">
+                    <Upload size={14} />
+                    Carregar Foto
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                    />
+                  </label>
+                  {(tempProfilePhoto || clientData.profilePhoto) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTempProfilePhoto(null);
+                        setClientData({...clientData, profilePhoto: null});
+                      }}
+                      className="text-sm bg-red-100 text-red-700 px-3 py-1 rounded-lg hover:bg-red-200 transition-colors"
+                    >
+                      Remover
+                    </button>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Formatos aceites: JPG, PNG, GIF (máx. 5MB)
+                </p>
+              </div>
+
+              {/* Company Information */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <User size={18} className="text-blue-600" />
+                  Informações da Empresa
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Nome da Empresa *
+                    </label>
+                    <input
+                      type="text"
+                      name="companyName"
+                      defaultValue={clientData.companyName}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      NUIT *
+                    </label>
+                    <input
+                      type="text"
+                      name="nuit"
+                      defaultValue={clientData.nuit}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Endereço *
+                    </label>
+                    <input
+                      type="text"
+                      name="address"
+                      defaultValue={clientData.address}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <User size={18} className="text-green-600" />
+                  Dados do Representante
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Nome do Representante *
+                    </label>
+                    <input
+                      type="text"
+                      name="representative"
+                      defaultValue={clientData.representative}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email *
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      defaultValue={clientData.email}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Telefone *
+                    </label>
+                    <div className="flex gap-3">
+                      <select
+                        name="phoneCountryCode"
+                        defaultValue={clientData.phoneCountryCode}
+                        className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
+                      >
+                        {countryCodes.map((country) => (
+                          <option key={country.code} value={country.code}>
+                            {country.flag} {country.code}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        type="text"
+                        name="phone"
+                        defaultValue={clientData.phone}
+                        placeholder="84 123 4567"
+                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Security */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <User size={18} className="text-purple-600" />
+                  Segurança
+                </h4>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nova Senha (opcional)
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="Deixe em branco para manter a atual"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Mínimo 8 caracteres. Deixe em branco se não quiser alterar.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowProfileModal(false);
+                    setTempProfilePhoto(null);
+                  }}
+                  className="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Save size={16} />
+                  Salvar Alterações
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
