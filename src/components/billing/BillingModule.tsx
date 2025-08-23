@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FileText, Receipt, Plus, Search, Filter, Eye, Download, Edit, Trash2, Calendar, DollarSign, CreditCard, Banknote, Smartphone } from 'lucide-react';
 import { PDFGenerator, InvoiceData, ReceiptData } from '../../utils/pdfGenerator';
+import { useAuth } from '../../context/AuthContext';
 
 interface Invoice {
   id: string;
@@ -34,7 +35,8 @@ interface Receipt {
   notes?: string;
 }
 
-const mockInvoices: Invoice[] = [
+// Create a global state for invoices that can be shared across components
+let globalInvoices: Invoice[] = [
   {
     id: '1',
     number: 'FAC-2024-001',
@@ -76,6 +78,16 @@ const mockInvoices: Invoice[] = [
   }
 ];
 
+// Function to add new invoice to global state
+export const addInvoiceToGlobal = (invoice: Invoice) => {
+  globalInvoices = [invoice, ...globalInvoices];
+  // Trigger a custom event to notify components
+  window.dispatchEvent(new CustomEvent('invoicesUpdated', { detail: globalInvoices }));
+};
+
+// Function to get all invoices
+export const getGlobalInvoices = () => globalInvoices;
+
 const mockReceipts: Receipt[] = [
   {
     id: '1',
@@ -108,8 +120,21 @@ export const BillingModule: React.FC = () => {
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
-  const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
+  const [invoices, setInvoices] = useState<Invoice[]>(globalInvoices);
   const [receipts, setReceipts] = useState<Receipt[]>(mockReceipts);
+
+  // Listen for invoice updates from other components
+  React.useEffect(() => {
+    const handleInvoicesUpdate = (event: CustomEvent) => {
+      setInvoices([...event.detail]);
+    };
+
+    window.addEventListener('invoicesUpdated', handleInvoicesUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('invoicesUpdated', handleInvoicesUpdate as EventListener);
+    };
+  }, []);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-PT');

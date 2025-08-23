@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Plus, Edit, Trash2, Calendar, Clock, DollarSign, Users, CheckCircle, AlertCircle, XCircle, RefreshCw, Star, Eye, Send, Filter, Download } from 'lucide-react';
 import { Subscription, Service, Client } from '../../types';
+import { addInvoiceToGlobal } from '../billing/BillingModule';
 
 interface ExtendedSubscription extends Subscription {
   clientName: string;
@@ -297,8 +298,8 @@ export const SubscriptionsTable: React.FC = () => {
       notes: `Renovação automática por ${months} mês${months > 1 ? 'es' : ''}`
     };
     
-    // Add invoice to billing system (in a real app, this would be an API call)
-    // For demo purposes, we'll show a success message with invoice details
+    // Add invoice to global billing system
+    addInvoiceToGlobal(newInvoice);
     
     setSubscriptions(subscriptions.map(s => 
       s.id === selectedSubscription.id 
@@ -316,7 +317,7 @@ export const SubscriptionsTable: React.FC = () => {
     setSelectedSubscription(null);
     
     // Show success message with invoice details
-    alert(`✅ Subscrição renovada com sucesso!\n\n📄 Fatura gerada: ${newInvoiceNumber}\n💰 Valor: ${(selectedSubscription.customPrice || extendedSub.servicePrice).toLocaleString()} MT\n📅 Vencimento: ${formatDate(newInvoice.dueDate)}\n⏱️ Período: ${months} mês${months > 1 ? 'es' : ''}`);
+    alert(`✅ Subscrição renovada com sucesso!\n\n📄 Fatura gerada: ${newInvoiceNumber}\n💰 Valor: ${(selectedSubscription.customPrice || extendedSub.servicePrice).toLocaleString()} MT\n📅 Vencimento: ${formatDate(newInvoice.dueDate)}\n⏱️ Período: ${months} mês${months > 1 ? 'es' : ''}\n\n📋 A fatura aparecerá no módulo Facturação > Facturas`);
   };
 
   const handleSendReminder = (subscriptionId: string) => {
@@ -335,13 +336,15 @@ export const SubscriptionsTable: React.FC = () => {
     }
     
     // Generate renewal invoices for selected subscriptions
-    const renewalInvoices = selectedSubscriptions.map(subId => {
+    const renewalInvoices: any[] = [];
+    
+    selectedSubscriptions.forEach(subId => {
       const subscription = subscriptions.find(s => s.id === subId);
       const extendedSub = getExtendedSubscriptions().find(s => s.id === subId);
       
-      if (!subscription || !extendedSub) return null;
+      if (!subscription || !extendedSub) return;
       
-      return {
+      const newInvoice = {
         id: `${Date.now()}-${subId}`,
         number: `FAC-${new Date().getFullYear()}-${String(Date.now() + parseInt(subId)).slice(-3)}`,
         subscriptionId: subId,
@@ -354,7 +357,11 @@ export const SubscriptionsTable: React.FC = () => {
         status: 'pending' as const,
         notes: 'Fatura de renovação automática'
       };
-    }).filter(Boolean);
+      
+      // Add to global billing system
+      addInvoiceToGlobal(newInvoice);
+      renewalInvoices.push(newInvoice);
+    });
     
     setSubscriptions(subscriptions.map(s => 
       selectedSubscriptions.includes(s.id) 
@@ -363,7 +370,7 @@ export const SubscriptionsTable: React.FC = () => {
     ));
     
     setSelectedSubscriptions([]);
-    alert(`✅ Lembretes enviados para ${selectedSubscriptions.length} subscrição(ões)!\n\n📄 ${renewalInvoices.length} fatura(s) de renovação gerada(s) automaticamente`);
+    alert(`✅ Lembretes enviados para ${selectedSubscriptions.length} subscrição(ões)!\n\n📄 ${renewalInvoices.length} fatura(s) de renovação gerada(s) automaticamente\n\n📋 As faturas aparecerão no módulo Facturação > Facturas`);
   };
 
   const handleRequestNPS = (subscription: Subscription) => {
@@ -431,10 +438,13 @@ export const SubscriptionsTable: React.FC = () => {
         notes: `Fatura inicial da subscrição - Ciclo: ${subscriptionData.cycle} mês${(subscriptionData.cycle || 1) > 1 ? 'es' : ''}`
       };
       
+      // Add invoice to global billing system
+      addInvoiceToGlobal(initialInvoice);
+      
       setSubscriptions([...subscriptions, newSubscription]);
       
       // Show success message with invoice details
-      alert(`✅ Subscrição criada com sucesso!\n\n📄 Fatura inicial gerada: ${invoiceNumber}\n👤 Cliente: ${client?.companyName}\n🔧 Serviço: ${service?.name}\n💰 Valor: ${(subscriptionData.customPrice || service?.price || 0).toLocaleString()} MT\n📅 Vencimento: ${formatDate(initialInvoice.dueDate)}`);
+      alert(`✅ Subscrição criada com sucesso!\n\n📄 Fatura inicial gerada: ${invoiceNumber}\n👤 Cliente: ${client?.companyName}\n🔧 Serviço: ${service?.name}\n💰 Valor: ${(subscriptionData.customPrice || service?.price || 0).toLocaleString()} MT\n📅 Vencimento: ${formatDate(initialInvoice.dueDate)}\n\n📋 A fatura aparecerá no módulo Facturação > Facturas`);
     }
     setShowAddModal(false);
     setEditingSubscription(null);
