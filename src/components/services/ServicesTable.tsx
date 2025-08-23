@@ -571,9 +571,6 @@ export const TaxManagement: React.FC = () => {
             onClick={() => alert('Relatório de IVA exportado em PDF!')}
             className="flex items-center justify-center gap-3 p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
           >
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  IVA
-                </th>
             <FileText className="text-blue-600" size={24} />
             <div className="text-left">
               <p className="font-medium text-blue-900">Relatório de IVA</p>
@@ -750,6 +747,23 @@ export const TaxManagement: React.FC = () => {
                         <span className="ml-2 text-sm text-gray-700">{service.name}</span>
                       </label>
                     ))}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tipo de IVA *
+                    </label>
+                    <select
+                      name="ivaType"
+                      defaultValue={editingService?.ivaType || 'additional'}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    >
+                      <option value="additional">IVA Adicional (16%)</option>
+                      <option value="included">IVA Incluído (16%)</option>
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Adicional: Preço + IVA | Incluído: Preço já com IVA
+                    </p>
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
