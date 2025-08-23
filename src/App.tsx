@@ -15,6 +15,7 @@ import { BillingModule } from './components/billing/BillingModule';
 import { ReportsAnalytics } from './components/reports/ReportsAnalytics';
 import { SettingsPanel } from './components/settings/SettingsPanel';
 import { ClientPortal } from './components/client-portal/ClientPortal';
+import { SenderModule } from './components/sender/SenderModule';
 import { DashboardMetrics } from './types';
 
 const mockMetrics: DashboardMetrics = {
@@ -65,6 +66,8 @@ const Dashboard = () => {
         return <SubscriptionsTable />;
       case 'billing':
         return <BillingModule />;
+      case 'sender':
+        return <SenderModule />;
       case 'reports':
         return <ReportsAnalytics />;
       case 'settings':

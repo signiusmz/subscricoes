@@ -12,7 +12,8 @@ import {
   LogOut,
   Edit,
   Camera,
-  Upload
+  Upload,
+  Send
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useState } from 'react';
@@ -28,6 +29,7 @@ const menuItems = [
   { id: 'services', label: 'Serviços', icon: FileText },
   { id: 'subscriptions', label: 'Subscrições', icon: CreditCard },
   { id: 'billing', label: 'Facturação', icon: Receipt },
+  { id: 'sender', label: 'Envios', icon: Send },
   { id: 'reports', label: 'Relatórios', icon: BarChart3 },
   { id: 'settings', label: 'Configurações', icon: Settings },
 ];
