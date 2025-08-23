@@ -244,6 +244,7 @@ export const TemplateEditor: React.FC = () => {
   const [previewMode, setPreviewMode] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<'all' | 'email' | 'whatsapp' | 'sms'>('all');
+  const [newTemplateType, setNewTemplateType] = useState<'email' | 'whatsapp'>('email');
 
   const filteredTemplates = mockTemplates.filter(template => {
     const matchesCategory = selectedCategory === 'all' || template.category === selectedCategory;
@@ -288,6 +289,7 @@ export const TemplateEditor: React.FC = () => {
     setSelectedTemplate(null);
     setTemplateContent('');
     setTemplateSubject('');
+    setNewTemplateType('email');
     setIsEditing(true);
   };
 
