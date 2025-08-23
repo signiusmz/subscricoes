@@ -1,5 +1,7 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { formatAmountInWords } from './numberToWords';
+import { QRCodeGenerator } from './qrCodeGenerator';
 
 export interface PDFOptions {
   title: string;
@@ -204,43 +206,93 @@ export class PDFGenerator {
     // Total
     currentY += 20;
     
+    // Amount in words
+    const amountInWords = formatAmountInWords(invoiceData.amount);
+    doc.setFillColor(240, 248, 255);
+    doc.rect(20, currentY, 170, 15, 'F');
+    doc.setDrawColor(59, 130, 246);
+    doc.rect(20, currentY, 170, 15);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(59, 130, 246);
+    doc.text('VALOR POR EXTENSO:', 25, currentY + 6);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(0, 0, 0);
+    const splitWords = doc.splitTextToSize(amountInWords, 140);
+    doc.text(splitWords, 25, currentY + 11);
+    
+    currentY += 20;
+    
     // Payment summary table
     doc.setFillColor(59, 130, 246);
-    doc.rect(120, currentY, 70, 8, 'F');
+    doc.rect(20, currentY, 120, 8, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text('RESUMO DE PAGAMENTO', 125, currentY + 5);
+    doc.text('RESUMO DE PAGAMENTO', 25, currentY + 5);
+    
+    // QR Code section
+    const qrCodeDataURL = QRCodeGenerator.generateInvoiceQR(
+      invoiceData.number,
+      'client-id', // In production, get from invoiceData
+      'company-id', // In production, get from invoiceData
+      invoiceData.amount,
+      invoiceData.date
+    );
+    
+    // QR Code box
+    doc.setFillColor(245, 245, 245);
+    doc.rect(145, currentY, 45, 45, 'F');
+    doc.setDrawColor(200, 200, 200);
+    doc.rect(145, currentY, 45, 45);
+    
+    // QR Code placeholder (in production, use actual QR code image)
+    doc.setFillColor(0, 0, 0);
+    for (let i = 0; i < 8; i++) {
+      for (let j = 0; j < 8; j++) {
+        if ((i + j) % 2 === 0) {
+          doc.rect(148 + i * 4, currentY + 3 + j * 4, 3, 3, 'F');
+        }
+      }
+    }
+    
+    // QR Code label
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Escaneie para', 150, currentY + 38);
+    doc.text('ver online', 152, currentY + 42);
     
     currentY += 8;
     
     // Valor da Fatura
     doc.setFillColor(245, 245, 245);
-    doc.rect(120, currentY, 70, 6, 'F');
+    doc.rect(20, currentY, 120, 6, 'F');
     doc.setDrawColor(200, 200, 200);
-    doc.rect(120, currentY, 70, 6);
+    doc.rect(20, currentY, 120, 6);
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text('Valor da Fatura:', 125, currentY + 4);
+    doc.text('Valor da Fatura:', 25, currentY + 4);
     doc.setFont('helvetica', 'bold');
-    doc.text(`${invoiceData.amount.toLocaleString()} MT`, 160, currentY + 4);
+    doc.text(`${invoiceData.amount.toLocaleString()} MT`, 100, currentY + 4);
     
     currentY += 6;
     
     // Valor Recebido
     const paidAmount = invoiceData.paidAmount || 0;
     doc.setFillColor(240, 253, 244);
-    doc.rect(120, currentY, 70, 6, 'F');
+    doc.rect(20, currentY, 120, 6, 'F');
     doc.setDrawColor(34, 197, 94);
-    doc.rect(120, currentY, 70, 6);
+    doc.rect(20, currentY, 120, 6);
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text('Valor Recebido:', 125, currentY + 4);
+    doc.text('Valor Recebido:', 25, currentY + 4);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(34, 197, 94);
-    doc.text(`${paidAmount.toLocaleString()} MT`, 160, currentY + 4);
+    doc.text(`${paidAmount.toLocaleString()} MT`, 100, currentY + 4);
     
     currentY += 6;
     
@@ -249,22 +301,42 @@ export class PDFGenerator {
     const isFullyPaid = remainingAmount <= 0;
     
     doc.setFillColor(...(isFullyPaid ? [240, 253, 244] : [254, 242, 242]));
-    doc.rect(120, currentY, 70, 8, 'F');
+    doc.rect(20, currentY, 120, 8, 'F');
     doc.setDrawColor(...(isFullyPaid ? [34, 197, 94] : [239, 68, 68]));
-    doc.rect(120, currentY, 70, 8);
+    doc.rect(20, currentY, 120, 8);
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text('SALDO A PAGAR:', 125, currentY + 5);
+    doc.text(isFullyPaid ? 'VALOR PAGO:' : 'SALDO A PAGAR:', 25, currentY + 5);
     doc.setTextColor(...(isFullyPaid ? [34, 197, 94] : [239, 68, 68]));
     doc.setFont('helvetica', 'bold');
-    doc.text(`${Math.max(0, remainingAmount).toLocaleString()} MT`, 160, currentY + 5);
+    doc.text(`${Math.max(0, remainingAmount).toLocaleString()} MT`, 100, currentY + 5);
     
-    currentY += 8;
+    currentY += 12;
+    
+    // Amount in words for remaining/paid amount
+    const displayAmount = isFullyPaid ? invoiceData.amount : Math.max(0, remainingAmount);
+    const amountWordsLabel = isFullyPaid ? 'VALOR PAGO POR EXTENSO:' : 'SALDO A PAGAR POR EXTENSO:';
+    const amountWords = formatAmountInWords(displayAmount);
+    
+    doc.setFillColor(250, 250, 250);
+    doc.rect(20, currentY, 120, 12, 'F');
+    doc.setDrawColor(200, 200, 200);
+    doc.rect(20, currentY, 120, 12);
+    
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text(amountWordsLabel, 25, currentY + 4);
+    doc.setFont('helvetica', 'normal');
+    const splitAmountWords = doc.splitTextToSize(amountWords, 110);
+    doc.text(splitAmountWords, 25, currentY + 8);
+    
+    currentY += 15;
     
     // Payment info (if paid)
     if (invoiceData.status === 'paid' && invoiceData.paymentMethod && invoiceData.paidDate) {
-      currentY += 20;
+      currentY += 5;
       doc.setFillColor(34, 197, 94);
       doc.rect(20, currentY, 170, 15, 'F');
       doc.setTextColor(255, 255, 255);
@@ -333,8 +405,25 @@ export class PDFGenerator {
     doc.text(`Email: ${receiptData.clientInfo.email}`, 20, currentY + 10);
     doc.text(`NUIT: ${receiptData.clientInfo.nuit}`, 120, currentY);
     
+    // Amount in words
+    currentY += 20;
+    const amountInWords = formatAmountInWords(receiptData.amount);
+    doc.setFillColor(240, 253, 244);
+    doc.rect(20, currentY, 170, 15, 'F');
+    doc.setDrawColor(34, 197, 94);
+    doc.rect(20, currentY, 170, 15);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(34, 197, 94);
+    doc.text('VALOR PAGO POR EXTENSO:', 25, currentY + 6);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(0, 0, 0);
+    const splitWords = doc.splitTextToSize(amountInWords, 140);
+    doc.text(splitWords, 25, currentY + 11);
+    
     // Payment details
-    currentY += 25;
+    currentY += 20;
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.text('DETALHES DO PAGAMENTO', 20, currentY);
@@ -342,28 +431,60 @@ export class PDFGenerator {
     // Payment table
     currentY += 10;
     doc.setFillColor(34, 197, 94);
-    doc.rect(20, currentY, 170, 8, 'F');
+    doc.rect(20, currentY, 120, 8, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.text('Serviço', 25, currentY + 5);
-    doc.text('Valor Pago', 150, currentY + 5);
+    doc.text('Valor Pago', 100, currentY + 5);
+    
+    // QR Code for receipt
+    const qrCodeDataURL = QRCodeGenerator.generateReceiptQR(
+      receiptData.number,
+      'client-id', // In production, get from receiptData
+      'company-id', // In production, get from receiptData
+      receiptData.amount,
+      receiptData.date
+    );
+    
+    // QR Code box
+    doc.setFillColor(245, 245, 245);
+    doc.rect(145, currentY, 45, 45, 'F');
+    doc.setDrawColor(200, 200, 200);
+    doc.rect(145, currentY, 45, 45);
+    
+    // QR Code placeholder (in production, use actual QR code image)
+    doc.setFillColor(0, 0, 0);
+    for (let i = 0; i < 8; i++) {
+      for (let j = 0; j < 8; j++) {
+        if ((i + j) % 2 === 0) {
+          doc.rect(148 + i * 4, currentY + 3 + j * 4, 3, 3, 'F');
+        }
+      }
+    }
+    
+    // QR Code label
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Escaneie para', 150, currentY + 38);
+    doc.text('ver online', 152, currentY + 42);
     
     currentY += 8;
     doc.setFillColor(240, 253, 244);
-    doc.rect(20, currentY, 170, 12, 'F');
+    doc.rect(20, currentY, 120, 12, 'F');
     doc.setDrawColor(34, 197, 94);
-    doc.rect(20, currentY, 170, 12);
+    doc.rect(20, currentY, 120, 12);
     
     doc.setTextColor(0, 0, 0);
     doc.setFont('helvetica', 'normal');
     doc.text(receiptData.serviceName, 25, currentY + 8);
     doc.setFont('helvetica', 'bold');
-    doc.text(`${receiptData.amount.toLocaleString()} MT`, 150, currentY + 8);
+    doc.text(`${receiptData.amount.toLocaleString()} MT`, 100, currentY + 8);
     
     // Reference (if exists)
     if (receiptData.reference) {
-      currentY += 20;
+      currentY += 15;
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
       doc.text('REFERÊNCIA:', 20, currentY);
