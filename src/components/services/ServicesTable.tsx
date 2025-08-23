@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Plus, Edit, Trash2, Calendar, Clock, DollarSign, GitBranch, FileText, Settings } from 'lucide-react';
 import { Service } from '../../types';
+import { useAuth } from '../../context/AuthContext';
 import { FlowsManagement } from './FlowsManagement';
 import { TriggersManagement } from './TriggersManagement';
 import { Pagination } from '../common/Pagination';
