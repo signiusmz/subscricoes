@@ -1,81 +1,143 @@
 import React, { useState } from 'react';
-import { Search, Plus, Edit, Trash2, Calendar, Clock, DollarSign, GitBranch, FileText, Settings } from 'lucide-react';
-import { Service } from '../../types';
-import { useAuth } from '../../context/AuthContext';
-import { FlowsManagement } from './FlowsManagement';
-import { TriggersManagement } from './TriggersManagement';
-import { Pagination } from '../common/Pagination';
+import { 
+  Calculator, 
+  FileText, 
+  Settings, 
+  Save, 
+  Plus, 
+  Edit, 
+  Trash2,
+  DollarSign,
+  Percent,
+  Calendar,
+  Building,
+  AlertCircle,
+  CheckCircle,
+  Download,
+  Upload,
+  Eye,
+  Filter,
+  Search,
+  BarChart3
+} from 'lucide-react';
 
-const mockServices: Service[] = [
+interface TaxRate {
+  id: string;
+  name: string;
+  rate: number;
+  type: 'iva' | 'irps' | 'irpc' | 'sisa' | 'custom';
+  description: string;
+  isActive: boolean;
+  validFrom: string;
+  validTo?: string;
+  applicableServices: string[];
+}
+
+interface TaxCalculation {
+  id: string;
+  invoiceId: string;
+  clientName: string;
+  serviceName: string;
+  baseAmount: number;
+  taxType: string;
+  taxRate: number;
+  taxAmount: number;
+  totalAmount: number;
+  date: string;
+  status: 'calculated' | 'applied' | 'paid';
+}
+
+interface TaxReport {
+  period: string;
+  totalTaxCollected: number;
+  ivaCollected: number;
+  irpsCollected: number;
+  totalInvoices: number;
+  averageTaxRate: number;
+}
+
+const mockTaxRates: TaxRate[] = [
   {
     id: '1',
-    companyId: '1',
-    clientId: '1',
-    name: 'Contabilidade Mensal',
-    description: 'Serviço completo de contabilidade mensal',
-    price: 5000,
-    validity: 12,
-    startDate: '2024-01-01',
-    endDate: '2024-12-31',
-    status: 'active',
-    autoRenew: true
+    name: 'IVA Padrão',
+    rate: 16,
+    type: 'iva',
+    description: 'Imposto sobre Valor Acrescentado - Taxa padrão',
+    isActive: true,
+    validFrom: '2024-01-01',
+    applicableServices: ['1', '2', '3']
   },
   {
     id: '2',
-    companyId: '1',
-    clientId: '2',
-    name: 'Auditoria Anual',
-    description: 'Auditoria externa das contas anuais',
-    price: 15000,
-    validity: 12,
-    startDate: '2024-02-01',
-    endDate: '2025-01-31',
-    status: 'active',
-    autoRenew: false
-  },
-  {
-    id: '3',
-    companyId: '1',
-    clientId: '3',
-    name: 'Consultoria Fiscal',
-    description: 'Consultoria em questões fiscais e tributárias',
-    price: 3000,
-    validity: 6,
-    startDate: '2023-08-01',
-    endDate: '2024-01-31',
-    status: 'expired',
-    autoRenew: false
+    name: 'IVA Reduzido',
+    rate: 10,
+    type: 'iva',
+    description: 'IVA com taxa reduzida para serviços específicos',
+    isActive: true,
+    validFrom: '2024-01-01',
+    applicableServices: ['4']
   }
 ];
 
-export const ServicesTable: React.FC = () => {
-  const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('services');
+const mockTaxCalculations: TaxCalculation[] = [
+  {
+    id: '1',
+    invoiceId: 'FAC-2024-001',
+    clientName: 'Transportes Maputo Lda',
+    serviceName: 'Contabilidade Mensal',
+    baseAmount: 5000,
+    taxType: 'IVA Padrão',
+    taxRate: 16,
+    taxAmount: 800,
+    totalAmount: 5800,
+    date: '2024-03-01',
+    status: 'paid'
+  },
+  {
+    id: '2',
+    invoiceId: 'FAC-2024-002',
+    clientName: 'Construções Beira SA',
+    serviceName: 'Auditoria Anual',
+    baseAmount: 15000,
+    taxType: 'IVA Padrão',
+    taxRate: 16,
+    taxAmount: 2400,
+    totalAmount: 17400,
+    date: '2024-03-15',
+    status: 'applied'
+  },
+  {
+    id: '3',
+    invoiceId: 'FAC-2024-003',
+    clientName: 'Hotel Polana',
+    serviceName: 'Consultoria Fiscal',
+    baseAmount: 8000,
+    taxType: 'IVA Reduzido',
+    taxRate: 10,
+    taxAmount: 800,
+    totalAmount: 8800,
+    date: '2024-03-20',
+    status: 'calculated'
+  }
+];
+
+const mockServices = [
+  { id: '1', name: 'Contabilidade Mensal' },
+  { id: '2', name: 'Auditoria Anual' },
+  { id: '3', name: 'Consultoria Fiscal' },
+  { id: '4', name: 'Declaração de IVA' },
+  { id: '5', name: 'Folha de Salários' }
+];
+
+export const TaxManagement: React.FC = () => {
+  const [activeTab, setActiveTab] = useState('rates');
+  const [taxRates, setTaxRates] = useState<TaxRate[]>(mockTaxRates);
+  const [taxCalculations, setTaxCalculations] = useState<TaxCalculation[]>(mockTaxCalculations);
+  const [showAddRateModal, setShowAddRateModal] = useState(false);
+  const [editingRate, setEditingRate] = useState<TaxRate | null>(null);
+  const [showCalculator, setShowCalculator] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'expiring' | 'expired'>('all');
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [editingService, setEditingService] = useState<Service | null>(null);
-  const [services, setServices] = useState<Service[]>(mockServices);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
-  const filteredServices = mockServices.filter(service => {
-    const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         service.description.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    if (statusFilter === 'all') return matchesSearch;
-    return matchesSearch && service.status === statusFilter;
-  });
-
-  // Pagination
-  const totalPages = Math.ceil(filteredServices.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedServices = filteredServices.slice(startIndex, startIndex + itemsPerPage);
-
-  // Reset to first page when filters change
-  React.useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, statusFilter]);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'calculated' | 'applied' | 'paid'>('all');
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-PT');
@@ -83,13 +145,11 @@ export const ServicesTable: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      active: { bg: 'bg-green-100', text: 'text-green-800', label: 'Ativo' },
-      expiring: { bg: 'bg-orange-100', text: 'text-orange-800', label: 'A Expirar' },
-      expired: { bg: 'bg-red-100', text: 'text-red-800', label: 'Expirado' }
+      calculated: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Calculado' },
+      applied: { bg: 'bg-orange-100', text: 'text-orange-800', label: 'Aplicado' },
+      paid: { bg: 'bg-green-100', text: 'text-green-800', label: 'Pago' }
     };
-    
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.active;
-    
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.calculated;
     return (
       <span className={`px-2 py-1 text-xs font-semibold rounded-full ${config.bg} ${config.text}`}>
         {config.label}
@@ -97,76 +157,286 @@ export const ServicesTable: React.FC = () => {
     );
   };
 
-  const getDaysUntilExpiry = (endDate: string) => {
-    const today = new Date();
-    const expiry = new Date(endDate);
-    const diffTime = expiry.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+  const getTaxTypeBadge = (type: string) => {
+    const typeConfig = {
+      iva: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'IVA' }
+    };
+    const config = typeConfig[type as keyof typeof typeConfig] || typeConfig.iva;
+    return (
+      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${config.bg} ${config.text}`}>
+        {config.label}
+      </span>
+    );
   };
 
-  const handleAddService = () => {
-    setShowAddModal(true);
+  const calculateTax = (baseAmount: number, taxRateId: string) => {
+    const taxRate = taxRates.find(tr => tr.id === taxRateId);
+    if (!taxRate) return { taxAmount: 0, totalAmount: baseAmount };
+    
+    const taxAmount = (baseAmount * taxRate.rate) / 100;
+    const totalAmount = baseAmount + taxAmount;
+    
+    return { taxAmount, totalAmount };
   };
 
-  const handleEditService = (service: Service) => {
-    setEditingService(service);
-    setShowAddModal(true);
-  };
-
-  const handleDeleteService = (serviceId: string) => {
-    if (confirm('Tem certeza que deseja eliminar este serviço?')) {
-      setServices(services.filter(s => s.id !== serviceId));
-      alert('Serviço eliminado com sucesso!');
-    }
-  };
-
-  const handleSaveService = (serviceData: Partial<Service>) => {
-    if (editingService) {
-      // Update existing service
-      setServices(services.map(s => 
-        s.id === editingService.id 
-          ? { ...s, ...serviceData }
-          : s
+  const handleSaveTaxRate = (rateData: Partial<TaxRate>) => {
+    if (editingRate) {
+      setTaxRates(taxRates.map(tr => 
+        tr.id === editingRate.id 
+          ? { ...tr, ...rateData }
+          : tr
       ));
-      alert(`✅ Serviço "${serviceData.name}" atualizado com sucesso!\n\n💰 Preço: ${serviceData.price?.toLocaleString()} MT\n⏰ Validade: ${serviceData.validity} meses\n🔄 Renovação: ${serviceData.autoRenew ? 'Automática' : 'Manual'}\n📅 Atualizado em: ${new Date().toLocaleString('pt-PT')}`);
+      alert(`✅ Taxa de imposto "${rateData.name}" atualizada!\n\n📊 Taxa: ${rateData.rate}%\n📋 Tipo: ${rateData.type?.toUpperCase()}\n📅 Válida desde: ${rateData.validFrom}\n🟢 Status: ${rateData.isActive ? 'Ativa' : 'Inativa'}`);
     } else {
-      // Add new service
-      const newService: Service = {
+      const newRate: TaxRate = {
         id: Date.now().toString(),
-        companyId: '1',
-        name: serviceData.name || '',
-        description: serviceData.description || '',
-        price: serviceData.price || 0,
-        validity: serviceData.validity || 1,
-        status: 'active',
-        autoRenew: serviceData.autoRenew || false
+        name: rateData.name || '',
+        rate: rateData.rate || 0,
+        type: rateData.type || 'custom',
+        description: rateData.description || '',
+        isActive: true,
+        validFrom: rateData.validFrom || new Date().toISOString().split('T')[0],
+        applicableServices: rateData.applicableServices || []
       };
-      setServices([...services, newService]);
-      alert(`✅ Novo serviço "${newService.name}" criado com sucesso!\n\n💰 Preço: ${newService.price.toLocaleString()} MT\n⏰ Validade: ${newService.validity} meses\n🔄 Renovação: ${newService.autoRenew ? 'Automática' : 'Manual'}\n📅 Criado em: ${new Date().toLocaleString('pt-PT')}\n🟢 Status: Ativo`);
+      setTaxRates([...taxRates, newRate]);
+      alert(`✅ Nova taxa de imposto "${newRate.name}" criada!\n\n📊 Taxa: ${newRate.rate}%\n📋 Tipo: ${newRate.type.toUpperCase()}\n📅 Válida desde: ${newRate.validFrom}\n🟢 Status: Ativa`);
     }
-    setShowAddModal(false);
-    setEditingService(null);
+    setShowAddRateModal(false);
+    setEditingRate(null);
   };
 
-  const tabs = [
-    { id: 'services', label: 'Serviços', icon: Calendar },
-    { id: 'flows', label: 'Fluxos', icon: GitBranch },
-    { id: 'triggers', label: 'Gatilhos', icon: Clock }
-  ];
+  const handleDeleteTaxRate = (rateId: string) => {
+    if (confirm('Tem certeza que deseja eliminar esta taxa de imposto?')) {
+      setTaxRates(taxRates.filter(tr => tr.id !== rateId));
+      alert('Taxa de imposto eliminada com sucesso!');
+    }
+  };
 
-  const renderServicesContent = () => (
-    <>
+  const generateTaxReport = () => {
+    const report: TaxReport = {
+      period: 'Março 2024',
+      totalTaxCollected: taxCalculations.reduce((sum, tc) => sum + tc.taxAmount, 0),
+      ivaCollected: taxCalculations.filter(tc => tc.taxType.includes('IVA')).reduce((sum, tc) => sum + tc.taxAmount, 0),
+      irpsCollected: taxCalculations.filter(tc => tc.taxType.includes('IRPS')).reduce((sum, tc) => sum + tc.taxAmount, 0),
+      totalInvoices: taxCalculations.length,
+      averageTaxRate: taxCalculations.reduce((sum, tc) => sum + tc.taxRate, 0) / taxCalculations.length
+    };
+
+    alert(`📊 Relatório Fiscal - ${report.period}\n\n💰 Total de Impostos: ${report.totalTaxCollected.toLocaleString()} MT\n📋 IVA Coletado: ${report.ivaCollected.toLocaleString()} MT\n👥 IRPS Coletado: ${report.irpsCollected.toLocaleString()} MT\n📄 Total de Faturas: ${report.totalInvoices}\n📈 Taxa Média: ${report.averageTaxRate.toFixed(1)}%\n\n📥 Relatório gerado com sucesso!`);
+  };
+
+  const filteredCalculations = taxCalculations.filter(calc => {
+    const matchesSearch = calc.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         calc.serviceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         calc.invoiceId.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || calc.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  const renderTaxRates = () => (
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Gestão de Serviços</h2>
-        <button 
-          onClick={handleAddService}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
+        <h3 className="text-lg font-semibold text-gray-900">Configuração de Impostos</h3>
+        <button
+          onClick={() => setShowAddRateModal(true)}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
         >
-          <Plus size={20} />
-          Novo Serviço
+          <Plus size={16} />
+          Nova Taxa
         </button>
+      </div>
+
+      {/* Tax Rates Table */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Taxa</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Válido Desde</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Serviços</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {taxRates.map((rate) => (
+                <tr key={rate.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{rate.name}</div>
+                      <div className="text-sm text-gray-500">{rate.description}</div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">{getTaxTypeBadge(rate.type)}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-1">
+                      <Percent size={12} className="text-gray-400" />
+                      <span className="text-sm font-medium text-gray-900">{rate.rate}%</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{formatDate(rate.validFrom)}</td>
+                  <td className="px-6 py-4">
+                    <span className="text-sm text-gray-900">
+                      {rate.applicableServices.length === 0 ? 'Todos' : `${rate.applicableServices.length} serviços`}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                      rate.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {rate.isActive ? 'Ativa' : 'Inativa'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setEditingRate(rate);
+                          setShowAddRateModal(true);
+                        }}
+                        className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTaxRate(rate.id)}
+                        className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Tax Calculator */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Calculator className="text-green-600" size={20} />
+          Calculadora de Impostos
+        </h4>
+        
+        <div className="grid md:grid-cols-3 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Valor Base (MT)</label>
+            <input
+              type="number"
+              id="baseAmount"
+              placeholder="Ex: 5000"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Taxa de Imposto</label>
+            <select
+              id="taxRate"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Selecionar taxa</option>
+              {taxRates.filter(tr => tr.isActive).map((rate) => (
+                <option key={rate.id} value={rate.id}>
+                  {rate.name} ({rate.rate}%)
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-end">
+            <button
+              onClick={() => {
+                const baseAmountInput = document.getElementById('baseAmount') as HTMLInputElement;
+                const taxRateSelect = document.getElementById('taxRate') as HTMLSelectElement;
+                
+                const baseAmount = parseFloat(baseAmountInput.value);
+                const selectedRateId = taxRateSelect.value;
+                
+                if (!baseAmount || !selectedRateId) {
+                  alert('Preencha todos os campos');
+                  return;
+                }
+                
+                const { taxAmount, totalAmount } = calculateTax(baseAmount, selectedRateId);
+                const selectedRate = taxRates.find(tr => tr.id === selectedRateId);
+                
+                alert(`🧮 Cálculo de Impostos\n\n💰 Valor Base: ${baseAmount.toLocaleString()} MT\n📊 Taxa: ${selectedRate?.name} (${selectedRate?.rate}%)\n💸 Imposto: ${taxAmount.toLocaleString()} MT\n💵 Total: ${totalAmount.toLocaleString()} MT`);
+              }}
+              className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <Calculator size={16} />
+              Calcular
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderCalculations = () => (
+    <div className="space-y-6">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Calculado</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {taxCalculations.reduce((sum, tc) => sum + tc.taxAmount, 0).toLocaleString()} MT
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+              <Calculator size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">IVA Coletado</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {taxCalculations.filter(tc => tc.taxType.includes('IVA')).reduce((sum, tc) => sum + tc.taxAmount, 0).toLocaleString()} MT
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-green-100 text-green-600">
+              <DollarSign size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Faturas com Imposto</p>
+              <p className="text-2xl font-bold text-gray-900">{taxCalculations.length}</p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-purple-100 text-purple-600">
+              <FileText size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Taxa Média</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {(taxCalculations.reduce((sum, tc) => sum + tc.taxRate, 0) / taxCalculations.length).toFixed(1)}%
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-orange-100 text-orange-600">
+              <Percent size={24} />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Filters */}
@@ -175,7 +445,7 @@ export const ServicesTable: React.FC = () => {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           <input
             type="text"
-            placeholder="Pesquisar serviços..."
+            placeholder="Pesquisar cálculos..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -187,256 +457,168 @@ export const ServicesTable: React.FC = () => {
           className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           <option value="all">Todos os Status</option>
-          <option value="active">Ativos</option>
-          <option value="expiring">A Expirar</option>
-          <option value="expired">Expirados</option>
+          <option value="calculated">Calculado</option>
+          <option value="applied">Aplicado</option>
+          <option value="paid">Pago</option>
         </select>
+        <button
+          onClick={generateTaxReport}
+          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+        >
+          <BarChart3 size={16} />
+          Gerar Relatório
+        </button>
       </div>
 
-      {/* Table */}
+      {/* Calculations Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Serviço
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Preço
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Validade
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Renovação
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ações
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fatura</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Serviço</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor Base</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Imposto</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {paginatedServices.map((service) => {
-                
-                return (
-                  <tr key={service.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{service.name}</div>
-                        <div className="text-sm text-gray-500">{service.description}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 flex items-center gap-1">
-                        <DollarSign size={12} />
-                        {service.price.toLocaleString()} MT
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 flex items-center gap-1">
-                        <Clock size={12} />
-                        {service.validity} meses
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {service.autoRenew ? (
-                        <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
-                          Automática
-                        </span>
-                      ) : (
-                        <span className="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full">
-                          Manual
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(service.status)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex gap-2">
-                        <button 
-                          onClick={() => handleEditService(service)}
-                          className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteService(service.id)}
-                          className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+            <tbody className="divide-y divide-gray-200">
+              {filteredCalculations.map((calc) => (
+                <tr key={calc.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{calc.invoiceId}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{calc.clientName}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{calc.serviceName}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{calc.baseAmount.toLocaleString()} MT</td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900">
+                      {calc.taxAmount.toLocaleString()} MT
+                      <div className="text-xs text-gray-500">({calc.taxRate}% {calc.taxType})</div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{calc.totalAmount.toLocaleString()} MT</td>
+                  <td className="px-6 py-4">{getStatusBadge(calc.status)}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex gap-2">
+                      <button className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded">
+                        <Eye size={16} />
+                      </button>
+                      <button className="text-green-600 hover:text-green-900 p-1 hover:bg-green-50 rounded">
+                        <Download size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-          totalItems={filteredServices.length}
-          itemsPerPage={itemsPerPage}
-        />
       </div>
+    </div>
+  );
 
-      {/* Add/Edit Service Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 max-w-3xl w-full mx-4 max-h-[95vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              {editingService ? 'Editar Serviço' : 'Novo Serviço'}
-            </h3>
-            
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.currentTarget);
-              const serviceData = {
-                name: formData.get('name') as string,
-                description: formData.get('description') as string,
-                price: Number(formData.get('price')),
-                validity: Number(formData.get('validity')) as 1 | 3 | 6 | 12,
-                autoRenew: formData.get('autoRenew') === 'on',
-              };
-              handleSaveService(serviceData);
-            }} className="space-y-6">
-              {/* Informações Básicas */}
-              <div className="bg-gray-50 rounded-lg p-6">
-                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <FileText size={18} className="text-blue-600" />
-                  Informações do Serviço
-                </h4>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nome do Serviço *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    defaultValue={editingService?.name || ''}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Ex: Contabilidade Mensal"
-                    required
-                  />
-                </div>
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Descrição *
-                  </label>
-                  <textarea
-                    name="description"
-                    defaultValue={editingService?.description || ''}
-                    rows={4}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Descreva detalhadamente o serviço oferecido..."
-                    required
-                  />
-                </div>
-              </div>
+  const renderReports = () => (
+    <div className="space-y-6">
+      {/* Tax Summary */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-6">Resumo Fiscal</h3>
+        
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="bg-blue-50 rounded-lg p-6 text-center">
+            <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FileText className="text-white" size={24} />
+            </div>
+            <h4 className="font-semibold text-blue-900 mb-2">IVA a Pagar</h4>
+            <div className="text-2xl font-bold text-blue-900">
+              {taxCalculations.filter(tc => tc.taxType.includes('IVA')).reduce((sum, tc) => sum + tc.taxAmount, 0).toLocaleString()} MT
+            </div>
+            <p className="text-sm text-blue-700 mt-1">Este mês</p>
+          </div>
 
-              {/* Preço e Validade */}
-              <div className="bg-gray-50 rounded-lg p-6">
-                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <DollarSign size={18} className="text-green-600" />
-                  Preço e Validade
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Preço (MT) *
-                    </label>
-                    <input
-                      type="number"
-                      name="price"
-                      defaultValue={editingService?.price || ''}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Ex: 5000"
-                      min="0"
-                      step="0.01"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Período de Validade *
-                    </label>
-                    <select
-                      name="validity"
-                      defaultValue={editingService?.validity || 12}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    >
-                      <option value={1}>1 mês (Mensal)</option>
-                      <option value={3}>3 meses (Trimestral)</option>
-                      <option value={6}>6 meses (Semestral)</option>
-                      <option value={12}>12 meses (Anual)</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
+          <div className="bg-green-50 rounded-lg p-6 text-center">
+            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <BarChart3 className="text-white" size={24} />
+            </div>
+            <h4 className="font-semibold text-green-900 mb-2">Total de Impostos</h4>
+            <div className="text-2xl font-bold text-green-900">
+              {taxCalculations.reduce((sum, tc) => sum + tc.taxAmount, 0).toLocaleString()} MT
+            </div>
+            <p className="text-sm text-green-700 mt-1">Este mês</p>
+          </div>
 
-              {/* Configurações */}
-              <div className="bg-gray-50 rounded-lg p-6">
-                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Settings size={18} className="text-purple-600" />
-                  Configurações do Serviço
-                </h4>
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    name="autoRenew"
-                    id="autoRenew"
-                    defaultChecked={editingService?.autoRenew || false}
-                    className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-0.5"
-                  />
-                  <div>
-                    <label htmlFor="autoRenew" className="block text-sm font-medium text-gray-900">
-                      Renovação Automática
-                    </label>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Quando ativado, o serviço será renovado automaticamente no vencimento
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex gap-4 pt-6 border-t border-gray-200">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowAddModal(false);
-                    setEditingService(null);
-                  }}
-                  className="flex-1 border border-gray-300 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                >
-                  {editingService ? 'Atualizar' : 'Adicionar'}
-                </button>
-              </div>
-            </form>
+          <div className="bg-purple-50 rounded-lg p-6 text-center">
+            <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <DollarSign className="text-white" size={24} />
+            </div>
+            <h4 className="font-semibold text-purple-900 mb-2">Média de IVA</h4>
+            <div className="text-2xl font-bold text-purple-900">
+              {(taxCalculations.reduce((sum, tc) => sum + tc.taxRate, 0) / taxCalculations.length).toFixed(1)}%
+            </div>
+            <p className="text-sm text-purple-700 mt-1">Taxa média aplicada</p>
           </div>
         </div>
-      )}
-    </>
+      </div>
+
+      {/* Export Options */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h4 className="text-lg font-semibold text-gray-900 mb-4">Exportar Relatórios Fiscais</h4>
+        
+        <div className="grid md:grid-cols-3 gap-4">
+          <button
+            onClick={() => alert('Relatório de IVA exportado em PDF!')}
+            className="flex items-center justify-center gap-3 p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+          >
+            <FileText className="text-blue-600" size={24} />
+            <div className="text-left">
+              <p className="font-medium text-blue-900">Relatório de IVA</p>
+              <p className="text-sm text-blue-700">Declaração mensal em PDF</p>
+            </div>
+  ivaType: 'additional' | 'included';
+  ivaRate: number;
+  priceWithoutIva?: number;
+  ivaAmount?: number;
+          </button>
+          
+          <button
+            onClick={() => alert('Relatório de IRPS exportado em Excel!')}
+            className="flex items-center justify-center gap-3 p-4 border-2 border-green-200 rounded-lg hover:bg-green-50 transition-colors"
+          >
+            <BarChart3 className="text-green-600" size={24} />
+            <div className="text-left">
+              <p className="font-medium text-green-900">Relatório de IRPS</p>
+              <p className="text-sm text-green-700">Retenções em Excel</p>
+            </div>
+          </button>
+          
+          <button
+            onClick={() => alert('Resumo fiscal exportado em CSV!')}
+            className="flex items-center justify-center gap-3 p-4 border-2 border-purple-200 rounded-lg hover:bg-purple-50 transition-colors"
+          >
+            <Download className="text-purple-600" size={24} />
+            <div className="text-left">
+              <p className="font-medium text-purple-900">Resumo Fiscal</p>
+              <p className="text-sm text-purple-700">Dados completos em CSV</p>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
   );
+
+  const tabs = [
+    { id: 'rates', label: 'Taxas de Imposto', icon: Settings },
+    { id: 'calculations', label: 'Cálculos', icon: Calculator },
+    { id: 'reports', label: 'Relatórios', icon: BarChart3 }
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Header with Tabs */}
+      {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Gestão de Serviços</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Gestão de Impostos</h2>
         
         {/* Navigation Tabs */}
         <div className="border-b border-gray-200">
@@ -463,9 +645,154 @@ export const ServicesTable: React.FC = () => {
       </div>
 
       {/* Content */}
-      {activeTab === 'services' && renderServicesContent()}
-      {activeTab === 'flows' && <FlowsManagement />}
-      {activeTab === 'triggers' && <TriggersManagement />}
+      {activeTab === 'rates' && renderTaxRates()}
+      {activeTab === 'calculations' && renderCalculations()}
+      {activeTab === 'reports' && renderReports()}
+
+      {/* Add/Edit Tax Rate Modal */}
+      {showAddRateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              {editingRate ? 'Editar Taxa de Imposto' : 'Nova Taxa de Imposto'}
+            </h3>
+            
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const serviceIds = Array.from(formData.getAll('applicableServices')) as string[];
+              
+              const rateData = {
+                name: formData.get('name') as string,
+                rate: Number(formData.get('rate')),
+                type: formData.get('type') as 'iva' | 'irps' | 'irpc' | 'sisa' | 'custom',
+                description: formData.get('description') as string,
+                validFrom: formData.get('validFrom') as string,
+                validTo: formData.get('validTo') as string || undefined,
+                applicableServices: serviceIds,
+                isActive: formData.get('isActive') === 'on'
+              };
+              handleSaveTaxRate(rateData);
+            }} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Nome da Taxa</label>
+                  <input
+                    type="text"
+                    name="name"
+                    defaultValue={editingRate?.name || ''}
+                    placeholder="Ex: IVA Padrão"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Taxa (%)</label>
+                  <input
+                    type="number"
+                    name="rate"
+                    defaultValue={editingRate?.rate || ''}
+                    placeholder="Ex: 17"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Imposto</label>
+                  <select
+                    name="type"
+                    defaultValue={editingRate?.type || 'iva'}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="iva">IVA</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Válido Desde</label>
+                  <input
+                    type="date"
+                    name="validFrom"
+                    defaultValue={editingRate?.validFrom || new Date().toISOString().split('T')[0]}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
+                  <textarea
+                    name="description"
+                    defaultValue={editingRate?.description || ''}
+                    placeholder="Descrição da taxa de imposto..."
+                    rows={3}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Applicable Services */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Serviços Aplicáveis</label>
+                <div className="border border-gray-300 rounded-lg p-4 max-h-40 overflow-y-auto">
+                  <div className="space-y-2">
+                    {mockServices.map((service) => (
+                      <label key={service.id} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="applicableServices"
+                          value={service.id}
+                          defaultChecked={editingRate?.applicableServices.includes(service.id)}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                        <span className="ml-2 text-sm text-gray-700">{service.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Se nenhum serviço for selecionado, a taxa aplicará a todos os serviços
+                </p>
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="isActive"
+                  id="isActive"
+                  defaultChecked={editingRate?.isActive !== false}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor="isActive" className="ml-2 text-sm text-gray-700">
+                  Taxa ativa (será aplicada automaticamente)
+                </label>
+              </div>
+              
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddRateModal(false);
+                    setEditingRate(null);
+                  }}
+                  className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  {editingRate ? 'Atualizar' : 'Adicionar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
