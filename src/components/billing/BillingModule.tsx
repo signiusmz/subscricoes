@@ -403,13 +403,13 @@ export const BillingModule: React.FC = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Pendentes</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Valor Pago</p>
               <p className="text-2xl font-bold text-gray-900">
-                {invoices.filter(i => i.status === 'pending').length}
+                {invoices.reduce((total, inv) => total + (inv.paidAmount || 0), 0).toLocaleString()} MT
               </p>
             </div>
-            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-yellow-100 text-yellow-600">
-              <FileText size={24} />
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-green-100 text-green-600">
+              <DollarSign size={24} />
             </div>
           </div>
         </div>
