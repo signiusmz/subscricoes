@@ -10,6 +10,7 @@ import { SuperAdminDashboard } from './components/super-admin/SuperAdminDashboar
 import { DashboardHeader } from './components/dashboard/DashboardHeader';
 import { MetricsCards } from './components/dashboard/MetricsCards';
 import { RecentActivity } from './components/dashboard/RecentActivity';
+import { GrowthChart } from './components/dashboard/GrowthChart';
 import { ClientsTable } from './components/clients/ClientsTable';
 import { UsersTable } from './components/users/UsersTable';
 import { ServicesTable } from './components/services/ServicesTable';
@@ -86,12 +87,7 @@ const Dashboard = () => {
             <MetricsCards metrics={mockMetrics} />
             <div className="grid lg:grid-cols-2 gap-6">
               <RecentActivity />
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Gráfico de Crescimento</h3>
-                <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-                  <p className="text-gray-500">Gráfico de métricas (integração futura)</p>
-                </div>
-              </div>
+              <GrowthChart />
             </div>
           </div>
         );
