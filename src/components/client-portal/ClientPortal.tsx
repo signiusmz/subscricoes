@@ -963,6 +963,22 @@ export const ClientPortal: React.FC = () => {
         {activeTab === 'documents' && renderDocuments()}
       </div>
 
+      {/* System Footer */}
+      <footer className="bg-gray-50 border-t border-gray-200 py-4 px-8">
+        <div className="text-center">
+          <p className="text-xs text-gray-500">
+            Sistema Processado pelo Computador | Signius - Sistema de Gestão Comercial (
+            <a href="https://www.signius.co.mz" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700">
+              www.signius.co.mz
+            </a>
+            )
+          </p>
+          <p className="text-xs text-gray-500 mt-1">
+            Sistema Licenciado para: Transportes Maputo Lda
+          </p>
+        </div>
+      </footer>
+
       {/* NPS Modal */}
       {showNPSModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
