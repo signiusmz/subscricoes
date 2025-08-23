@@ -568,7 +568,6 @@ export const TaxManagement: React.FC = () => {
         
         <div className="grid md:grid-cols-3 gap-4">
           <button
-import { TaxManagement as App } from './App.tsx';
             className="flex items-center justify-center gap-3 p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
           >
             <FileText className="text-blue-600" size={24} />
