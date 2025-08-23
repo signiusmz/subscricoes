@@ -767,7 +767,7 @@ export const DigitalContracts: React.FC = () => {
             setEditingTemplate(null);
             setTemplateContent('');
             setShowTemplateModal(true);
-          }}
+          Gerar Contrato
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
         >
           <Plus size={16} />
