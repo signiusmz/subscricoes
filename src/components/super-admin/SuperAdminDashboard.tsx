@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Building, Users, CreditCard, TrendingUp, Plus, Edit, Trash2, Eye, Search, Filter, Settings, Shield, UserCheck, UserX, Mail, Phone, Calendar, Activity, BarChart3, AlertTriangle, CheckCircle, Clock, DollarSign } from 'lucide-react';
+import { Building, Users, CreditCard, TrendingUp, Plus, Edit, Trash2, Eye, Search, Filter, Settings, Shield, UserCheck, UserX, Mail, Phone, Calendar, Activity, BarChart3, AlertTriangle, CheckCircle, Clock, DollarSign, ArrowUp, ArrowDown } from 'lucide-react';
 import { LogOut, User } from 'lucide-react';
 import { Company, Plan, CompanySubscription } from '../../types';
 import { useAuth } from '../../context/AuthContext';
+import { MPesaPayment } from '../billing/MPesaPayment';
 
 const mockPlans: Plan[] = [
   {
@@ -194,6 +195,16 @@ export const SuperAdminDashboard: React.FC = () => {
   const [showMPesaConfigModal, setShowMPesaConfigModal] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
   const [users, setUsers] = useState(mockSystemUsers);
+  const [companies, setCompanies] = useState(mockCompanies);
+  const [showPlanChangeModal, setShowPlanChangeModal] = useState(false);
+  const [selectedCompanyForPlan, setSelectedCompanyForPlan] = useState<Company | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [planChangeData, setPlanChangeData] = useState<{
+    companyId: string;
+    currentPlan: string;
+    newPlan: string;
+    priceDifference: number;
+  } | null>(null);
   const [mpesaConfig, setMPesaConfig] = useState({
     apiKey: '',
     publicKey: '',
@@ -360,6 +371,82 @@ export const SuperAdminDashboard: React.FC = () => {
     }
     setShowAddUserModal(false);
     setEditingUser(null);
+  };
+
+  const handlePlanChange = (company: Company) => {
+    setSelectedCompanyForPlan(company);
+    setShowPlanChangeModal(true);
+  };
+
+  const handleConfirmPlanChange = (newPlan: 'basic' | 'professional' | 'enterprise') => {
+    if (!selectedCompanyForPlan) return;
+
+    const currentPlanPrice = selectedCompanyForPlan.planPrice;
+    const newPlanPrice = newPlan === 'basic' ? 750 : newPlan === 'professional' ? 1500 : 3500;
+    const priceDifference = newPlanPrice - currentPlanPrice;
+
+    if (priceDifference > 0) {
+      // Upgrade - requires payment
+      setPlanChangeData({
+        companyId: selectedCompanyForPlan.id,
+        currentPlan: selectedCompanyForPlan.plan,
+        newPlan,
+        priceDifference
+      });
+      setShowPlanChangeModal(false);
+      setShowPaymentModal(true);
+    } else {
+      // Downgrade - immediate
+      setCompanies(companies.map(c => 
+        c.id === selectedCompanyForPlan.id 
+          ? { ...c, plan: newPlan, planPrice: newPlanPrice as 750 | 1500 | 3500 }
+          : c
+      ));
+      setShowPlanChangeModal(false);
+      setSelectedCompanyForPlan(null);
+      alert(`Plano alterado para ${newPlan} com sucesso!`);
+    }
+  };
+
+  const handlePaymentSuccess = (transactionId: string) => {
+    if (!planChangeData) return;
+
+    // Update company plan after successful payment
+    setCompanies(companies.map(c => 
+      c.id === planChangeData.companyId 
+        ? { 
+            ...c, 
+            plan: planChangeData.newPlan as 'basic' | 'professional' | 'enterprise',
+            planPrice: (planChangeData.newPlan === 'basic' ? 750 : 
+                       planChangeData.newPlan === 'professional' ? 1500 : 3500) as 750 | 1500 | 3500
+          }
+        : c
+    ));
+
+    setShowPaymentModal(false);
+    setPlanChangeData(null);
+    setSelectedCompanyForPlan(null);
+    alert(`Upgrade para ${planChangeData.newPlan} realizado com sucesso! ID da transação: ${transactionId}`);
+  };
+
+  const handlePaymentError = (error: string) => {
+    alert(`Erro no pagamento: ${error}`);
+  };
+
+  const getPlanBadge = (plan: string) => {
+    const planConfig = {
+      basic: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Básico' },
+      professional: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Profissional' },
+      enterprise: { bg: 'bg-purple-100', text: 'text-purple-800', label: 'Empresarial' }
+    };
+    
+    const config = planConfig[plan as keyof typeof planConfig] || planConfig.basic;
+    
+    return (
+      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${config.bg} ${config.text}`}>
+        {config.label}
+      </span>
+    );
   };
 
   const renderOverview = () => (
@@ -601,7 +688,7 @@ export const SuperAdminDashboard: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {mockCompanies
+              {companies
                 .filter(company => 
                   company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                   company.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -615,9 +702,9 @@ export const SuperAdminDashboard: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div>
-                        <div className="text-sm text-gray-900 capitalize">{company.plan}</div>
-                        <div className="text-sm text-gray-500">{company.planPrice} MT/mês</div>
+                      <div className="flex items-center gap-2">
+                        {getPlanBadge(company.plan)}
+                        <span className="text-xs text-gray-500">{company.planPrice} MT/mês</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
@@ -630,6 +717,13 @@ export const SuperAdminDashboard: React.FC = () => {
                       <div className="flex gap-2">
                         <button className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded">
                           <Eye size={16} />
+                        </button>
+                        <button 
+                          onClick={() => handlePlanChange(company)}
+                          className="text-green-600 hover:text-green-900 p-1 hover:bg-green-50 rounded"
+                          title="Alterar Plano"
+                        >
+                          <ArrowUp size={16} />
                         </button>
                         <button className="text-green-600 hover:text-green-900 p-1 hover:bg-green-50 rounded">
                           <Edit size={16} />
@@ -645,6 +739,123 @@ export const SuperAdminDashboard: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Plan Change Modal */}
+      {showPlanChangeModal && selectedCompanyForPlan && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Alterar Plano - {selectedCompanyForPlan.name}
+            </h3>
+            
+            <div className="mb-6">
+              <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                <h4 className="font-medium text-gray-900 mb-2">Plano Atual</h4>
+                <div className="flex items-center gap-3">
+                  {getPlanBadge(selectedCompanyForPlan.plan)}
+                  <span className="text-sm text-gray-600">
+                    {selectedCompanyForPlan.planPrice} MT/mês
+                  </span>
+                </div>
+              </div>
+              
+              <h4 className="font-medium text-gray-900 mb-4">Escolher Novo Plano</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { id: 'basic', name: 'Básico', price: 750, features: ['Até 100 clientes', '1 utilizador', 'Suporte email'] },
+                  { id: 'professional', name: 'Profissional', price: 1500, features: ['Até 500 clientes', '5 utilizadores', 'Suporte prioritário'] },
+                  { id: 'enterprise', name: 'Empresarial', price: 3500, features: ['Clientes ilimitados', 'Utilizadores ilimitados', 'Suporte 24/7'] }
+                ].map((plan) => {
+                  const isCurrentPlan = selectedCompanyForPlan.plan === plan.id;
+                  const priceDifference = plan.price - selectedCompanyForPlan.planPrice;
+                  const isUpgrade = priceDifference > 0;
+                  const isDowngrade = priceDifference < 0;
+                  
+                  return (
+                    <div
+                      key={plan.id}
+                      className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                        isCurrentPlan 
+                          ? 'border-gray-300 bg-gray-50 cursor-not-allowed opacity-50'
+                          : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                      }`}
+                      onClick={() => !isCurrentPlan && handleConfirmPlanChange(plan.id as 'basic' | 'professional' | 'enterprise')}
+                    >
+                      <div className="text-center">
+                        <h5 className="font-semibold text-lg mb-2">{plan.name}</h5>
+                        <div className="text-2xl font-bold text-blue-600 mb-2">
+                          {plan.price} MT<span className="text-sm text-gray-500">/mês</span>
+                        </div>
+                        
+                        {!isCurrentPlan && (
+                          <div className={`text-sm font-medium mb-3 ${
+                            isUpgrade ? 'text-orange-600' : 'text-green-600'
+                          }`}>
+                            {isUpgrade ? (
+                              <div className="flex items-center justify-center gap-1">
+                                <ArrowUp size={14} />
+                                +{priceDifference} MT/mês
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-center gap-1">
+                                <ArrowDown size={14} />
+                                {priceDifference} MT/mês
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        
+                        <ul className="text-xs text-gray-600 space-y-1">
+                          {plan.features.map((feature, index) => (
+                            <li key={index}>• {feature}</li>
+                          ))}
+                        </ul>
+                        
+                        {isCurrentPlan && (
+                          <div className="mt-3 text-xs text-gray-500">
+                            Plano Atual
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowPlanChangeModal(false);
+                  setSelectedCompanyForPlan(null);
+                }}
+                className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Modal for Upgrades */}
+      {showPaymentModal && planChangeData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <MPesaPayment
+            companyId={planChangeData.companyId}
+            companyName={companies.find(c => c.id === planChangeData.companyId)?.name || ''}
+            planType={planChangeData.newPlan as 'basic' | 'professional' | 'enterprise'}
+            amount={planChangeData.priceDifference}
+            onPaymentSuccess={handlePaymentSuccess}
+            onPaymentError={handlePaymentError}
+            onCancel={() => {
+              setShowPaymentModal(false);
+              setPlanChangeData(null);
+              setSelectedCompanyForPlan(null);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 
@@ -1157,6 +1368,9 @@ export const SuperAdminDashboard: React.FC = () => {
                     />
                     <span className="ml-2 text-sm text-gray-700">Produção</span>
                   </label>
+                </div>
+              </div>
+
               {/* API Credentials */}
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center gap-2">
@@ -1192,7 +1406,7 @@ export const SuperAdminDashboard: React.FC = () => {
                   </div>
                 </div>
               </div>
-                </div>
+
               {/* Service Configuration */}
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center gap-2">
@@ -1241,7 +1455,7 @@ export const SuperAdminDashboard: React.FC = () => {
                   </div>
                 </div>
               </div>
-              </div>
+
               {/* Instructions */}
               <div className="bg-yellow-50 rounded-lg border border-yellow-200 p-4">
                 <h4 className="font-semibold text-yellow-900 mb-2 flex items-center gap-2">
