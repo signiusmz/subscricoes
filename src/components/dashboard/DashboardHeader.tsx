@@ -568,7 +568,7 @@ export const TaxManagement: React.FC = () => {
         
         <div className="grid md:grid-cols-3 gap-4">
           <button
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center cursor-pointer">
+            onClick={() => alert('Relatório de IVA exportado em PDF!')}
             className="flex items-center justify-center gap-3 p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
           >
             <FileText className="text-blue-600" size={24} />
@@ -747,11 +747,6 @@ export const TaxManagement: React.FC = () => {
                         <span className="ml-2 text-sm text-gray-700">{service.name}</span>
                       </label>
                     ))}
-              <div>
-                <p className="text-2xl font-bold text-white">🏆</p>
-                <p className="text-blue-200 text-sm">João Silva</p>
-                <p className="text-blue-100 text-xs">Vendedor do Mês</p>
-              </div>
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
