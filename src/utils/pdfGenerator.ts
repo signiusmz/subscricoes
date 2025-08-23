@@ -63,7 +63,7 @@ export interface ReportData {
   endDate: string;
   totalClients: number;
   totalRevenue: number;
-  averageNPS: number;
+  averageSatisfaction: number;
   data: any[];
 }
 
@@ -694,7 +694,7 @@ export class PDFGenerator {
     doc.setFont('helvetica', 'normal');
     doc.text(`Total de Clientes: ${reportData.totalClients}`, 25, currentY + 15);
     doc.text(`Receita Total: ${reportData.totalRevenue.toLocaleString()} MT`, 25, currentY + 20);
-    doc.text(`NPS Médio: ${reportData.averageNPS}`, 120, currentY + 15);
+    doc.text(`Satisfação Média: ${reportData.averageSatisfaction}`, 120, currentY + 15);
     doc.text(`Período: ${reportData.period}`, 120, currentY + 20);
     
     // Data table
@@ -735,8 +735,8 @@ export class PDFGenerator {
         doc.text(item.period || `Item ${index + 1}`, 25, currentY + 5);
         doc.text(`${(item.revenue || 0).toLocaleString()}`, 70, currentY + 5);
         doc.text(`${item.clients || 0}`, 110, currentY + 5);
-        doc.text(`${item.services || 0}`, 140, currentY + 5);
-        doc.text(`${item.nps || 0}`, 170, currentY + 5);
+        doc.text('Satisfação', 170, currentY + 5);
+        doc.text(`${item.satisfaction || 0}`, 170, currentY + 5);
         
         currentY += 8;
       });

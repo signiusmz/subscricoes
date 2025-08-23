@@ -11,6 +11,7 @@ import { DashboardHeader } from './components/dashboard/DashboardHeader';
 import { MetricsCards } from './components/dashboard/MetricsCards';
 import { RecentActivity } from './components/dashboard/RecentActivity';
 import { GrowthChart } from './components/dashboard/GrowthChart';
+import { TopClientsRanking } from './components/dashboard/TopClientsRanking';
 import { ClientsTable } from './components/clients/ClientsTable';
 import { UsersTable } from './components/users/UsersTable';
 import { ServicesTable } from './components/services/ServicesTable';
@@ -27,7 +28,7 @@ const mockMetrics: DashboardMetrics = {
   activeServices: 78,
   expiringServices: 12,
   expiredServices: 5,
-  averageNPS: 8.4,
+  averageSatisfaction: 8.4,
   monthlyRevenue: 234500,
   growthRate: 15.7
 };
@@ -85,9 +86,10 @@ const Dashboard = () => {
           <div className="space-y-6">
             <DashboardHeader />
             <MetricsCards metrics={mockMetrics} />
-            <div className="grid lg:grid-cols-2 gap-6">
+            <div className="grid lg:grid-cols-3 gap-6">
               <RecentActivity />
               <GrowthChart />
+              <TopClientsRanking />
             </div>
           </div>
         );

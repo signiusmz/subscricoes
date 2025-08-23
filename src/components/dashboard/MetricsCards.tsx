@@ -40,7 +40,7 @@ export const MetricsCards: React.FC<MetricsCardsProps> = ({ metrics }) => {
     },
     {
       title: 'Nível de Satisfação',
-      value: metrics.averageNPS,
+      value: metrics.averageSatisfaction,
       icon: Star,
       color: 'purple',
       suffix: '',

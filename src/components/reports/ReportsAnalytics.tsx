@@ -8,16 +8,16 @@ interface ReportData {
   revenue: number;
   clients: number;
   services: number;
-  nps: number;
+  satisfaction: number;
 }
 
 const mockReportData: ReportData[] = [
-  { period: 'Jan 2024', revenue: 180000, clients: 35, services: 65, nps: 8.2 },
-  { period: 'Fev 2024', revenue: 195000, clients: 38, services: 70, nps: 8.4 },
-  { period: 'Mar 2024', revenue: 210000, clients: 42, services: 75, nps: 8.6 },
-  { period: 'Abr 2024', revenue: 225000, clients: 45, services: 78, nps: 8.3 },
-  { period: 'Mai 2024', revenue: 240000, clients: 48, services: 82, nps: 8.7 },
-  { period: 'Jun 2024', revenue: 255000, clients: 52, services: 85, nps: 8.5 }
+  { period: 'Jan 2024', revenue: 180000, clients: 35, services: 65, satisfaction: 8.2 },
+  { period: 'Fev 2024', revenue: 195000, clients: 38, services: 70, satisfaction: 8.4 },
+  { period: 'Mar 2024', revenue: 210000, clients: 42, services: 75, satisfaction: 8.6 },
+  { period: 'Abr 2024', revenue: 225000, clients: 45, services: 78, satisfaction: 8.3 },
+  { period: 'Mai 2024', revenue: 240000, clients: 48, services: 82, satisfaction: 8.7 },
+  { period: 'Jun 2024', revenue: 255000, clients: 52, services: 85, satisfaction: 8.5 }
 ];
 
 const reportTypes = [
@@ -93,8 +93,8 @@ export const ReportsAnalytics: React.FC = () => {
     },
     {
       title: 'Satisfação Média',
-      value: currentData.nps.toString(),
-      growth: calculateGrowth(currentData.nps, previousData.nps),
+      value: currentData.satisfaction.toString(),
+      growth: calculateGrowth(currentData.satisfaction, previousData.satisfaction),
       icon: Star,
       color: 'orange'
     }
@@ -135,7 +135,7 @@ export const ReportsAnalytics: React.FC = () => {
         endDate: dateRange.end || new Date().toISOString().split('T')[0],
         totalClients: currentData.clients,
         totalRevenue: currentData.revenue,
-        averageNPS: currentData.nps,
+        averageSatisfaction: currentData.satisfaction,
         data: mockReportData
       };
       PDFGenerator.generateReport(reportData);
@@ -394,7 +394,7 @@ export const ReportsAnalytics: React.FC = () => {
               <div key={index} className="flex flex-col items-center gap-2">
                 <div 
                   className="bg-orange-500 rounded-full w-3 h-3 relative"
-                  style={{ marginBottom: `${(data.nps / 10) * 200}px` }}
+                  style={{ marginBottom: `${(data.satisfaction / 10) * 200}px` }}
                 >
                   {index > 0 && (
                     <div 
@@ -497,7 +497,7 @@ export const ReportsAnalytics: React.FC = () => {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receita</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Clientes</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Serviços</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Satisfação</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nível de Satisfação</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Crescimento</th>
               </tr>
             </thead>
@@ -513,7 +513,7 @@ export const ReportsAnalytics: React.FC = () => {
                     <td className="px-4 py-3 text-sm text-gray-900">{data.revenue.toLocaleString()} MT</td>
                     <td className="px-4 py-3 text-sm text-gray-900">{data.clients}</td>
                     <td className="px-4 py-3 text-sm text-gray-900">{data.services}</td>
-                    <td className="px-4 py-3 text-sm text-gray-900">{data.nps}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900">{data.satisfaction}</td>
                     <td className="px-4 py-3 text-sm">
                       <span className={`flex items-center gap-1 ${
                         isPositive ? 'text-green-600' : 'text-red-600'

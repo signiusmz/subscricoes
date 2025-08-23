@@ -87,7 +87,7 @@ export interface DashboardMetrics {
   activeServices: number;
   expiringServices: number;
   expiredServices: number;
-  averageNPS: number;
+  averageSatisfaction: number;
   monthlyRevenue: number;
   growthRate: number;
 }

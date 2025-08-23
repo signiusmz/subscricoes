@@ -672,7 +672,7 @@ export const SubscriptionsTable: React.FC = () => {
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Satisfação
+                  Nível de Satisfação
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
@@ -726,7 +726,7 @@ export const SubscriptionsTable: React.FC = () => {
                     {subscription.npsScore ? (
                       <div className="flex items-center gap-1">
                         <Star className="text-yellow-500" size={14} />
-                        <span className="text-sm font-medium text-gray-900">{subscription.npsScore}</span>
+                        <span className="text-sm font-medium text-gray-900">{subscription.npsScore}/10</span>
                       </div>
                     ) : (
                       <button
