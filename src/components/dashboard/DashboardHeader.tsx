@@ -241,7 +241,7 @@ export const DashboardHeader: React.FC = () => {
 
         {/* Quick Stats Bar */}
         <div className="mt-6 pt-6 border-t border-white border-opacity-20">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center cursor-pointer">
             <div>
               <p className="text-2xl font-bold text-white">45</p>
               <p className="text-blue-200 text-sm">Clientes Ativos</p>

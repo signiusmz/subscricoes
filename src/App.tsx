@@ -41,6 +41,7 @@ const Dashboard = () => {
   const [showActivityHistory, setShowActivityHistory] = useState(false);
   const [showClientPortal, setShowClientPortal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [navigationFilters, setNavigationFilters] = useState<any>({});
   const { company, user, updateUser } = useAuth();
 
   // Listen for upgrade modal trigger from sidebar - MOVED TO TOP
@@ -68,6 +69,18 @@ const Dashboard = () => {
     };
   }, []);
 
+  const handleNavigateFromDashboard = (tab: string, filters?: any) => {
+    setActiveTab(tab);
+    setNavigationFilters(filters || {});
+    
+    // Trigger filter application after tab change
+    setTimeout(() => {
+      const event = new CustomEvent('applyDashboardFilters', { 
+        detail: filters 
+      });
+      window.dispatchEvent(event);
+    }, 100);
+  };
   // Demo: Toggle to client portal
   if (showClientPortal) {
     return <ClientPortal />;
@@ -129,7 +142,7 @@ const Dashboard = () => {
         return (
           <div className="space-y-6">
             <DashboardHeader />
-            <MetricsCards metrics={mockMetrics} />
+            <MetricsCards metrics={mockMetrics} onNavigate={handleNavigateFromDashboard} />
             <div className="grid lg:grid-cols-3 gap-6">
               <RecentActivity />
               <GrowthChart />
@@ -138,13 +151,13 @@ const Dashboard = () => {
           </div>
         );
       case 'clients':
-        return <ClientsTable />;
+        return <ClientsTable initialFilters={navigationFilters} />;
       case 'services':
         return <ServicesTable />;
       case 'subscriptions':
-        return <SubscriptionsTable />;
+        return <SubscriptionsTable initialFilters={navigationFilters} />;
       case 'billing':
-        return <BillingModule />;
+        return <BillingModule initialFilters={navigationFilters} />;
       case 'sender':
         return <SenderModule />;
       case 'reports':

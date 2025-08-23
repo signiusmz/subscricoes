@@ -157,10 +157,20 @@ const mockSubscriptions: Subscription[] = [
   }
 ];
 
-export const SubscriptionsTable: React.FC = () => {
+interface SubscriptionsTableProps {
+  initialFilters?: {
+    statusFilter?: 'all' | 'active' | 'cancelled' | 'expired';
+    reminderFilter?: 'all' | 'sent' | 'pending';
+    npsFilter?: 'all' | 'high' | 'low';
+    searchTerm?: string;
+  };
+}
+
+export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({ initialFilters }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'cancelled' | 'expired'>('all');
-  const [reminderFilter, setReminderFilter] = useState<'all' | 'sent' | 'pending'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'cancelled' | 'expired'>(initialFilters?.statusFilter || 'all');
+  const [reminderFilter, setReminderFilter] = useState<'all' | 'sent' | 'pending'>(initialFilters?.reminderFilter || 'all');
+  const [npsFilter, setNpsFilter] = useState<'all' | 'high' | 'low'>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showNPSModal, setShowNPSModal] = useState(false);
   const [showRenewalModal, setShowRenewalModal] = useState(false);
@@ -172,6 +182,41 @@ export const SubscriptionsTable: React.FC = () => {
   const [npsComment, setNpsComment] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  // Listen for dashboard navigation filters
+  React.useEffect(() => {
+    const handleApplyFilters = (event: CustomEvent) => {
+      const filters = event.detail;
+      if (filters?.statusFilter) {
+        setStatusFilter(filters.statusFilter);
+      }
+      if (filters?.reminderFilter) {
+        setReminderFilter(filters.reminderFilter);
+      }
+      if (filters?.npsFilter) {
+        setNpsFilter(filters.npsFilter);
+      }
+      if (filters?.searchTerm) {
+        setSearchTerm(filters.searchTerm);
+      }
+    };
+
+    window.addEventListener('applyDashboardFilters', handleApplyFilters as EventListener);
+    
+    return () => {
+      window.removeEventListener('applyDashboardFilters', handleApplyFilters as EventListener);
+    };
+  }, []);
+
+  // Apply initial filters from dashboard navigation
+  React.useEffect(() => {
+    if (initialFilters?.statusFilter && initialFilters.statusFilter !== 'all') {
+      setStatusFilter(initialFilters.statusFilter);
+    }
+    if (initialFilters?.npsFilter) {
+      setNpsFilter(initialFilters.npsFilter);
+    }
+  }, [initialFilters]);
 
   const getExtendedSubscriptions = (): ExtendedSubscription[] => {
     return subscriptions.map(subscription => {
@@ -194,13 +239,25 @@ export const SubscriptionsTable: React.FC = () => {
     const matchesSearch = subscription.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          subscription.serviceName.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = statusFilter === 'all' || subscription.status === statusFilter;
+    let matchesStatus = statusFilter === 'all' || subscription.status === statusFilter;
+    
+    // Special handling for expiring subscriptions
+    if (statusFilter === 'expiring') {
+      matchesStatus = subscription.status === 'active' && subscription.daysUntilBilling <= 30 && subscription.daysUntilBilling > 0;
+    }
     
     const matchesReminder = reminderFilter === 'all' || 
                            (reminderFilter === 'sent' && subscription.reminderSent) ||
                            (reminderFilter === 'pending' && !subscription.reminderSent);
     
-    return matchesSearch && matchesStatus && matchesReminder;
+    let matchesNPS = true;
+    if (npsFilter === 'high') {
+      matchesNPS = subscription.npsScore ? subscription.npsScore >= 8 : false;
+    } else if (npsFilter === 'low') {
+      matchesNPS = subscription.npsScore ? subscription.npsScore < 7 : false;
+    }
+    
+    return matchesSearch && matchesStatus && matchesReminder && matchesNPS;
   });
 
   // Pagination
@@ -612,6 +669,7 @@ export const SubscriptionsTable: React.FC = () => {
             <option value="active">Ativas</option>
             <option value="cancelled">Canceladas</option>
             <option value="expired">Expiradas</option>
+            <option value="expiring">A Expirar (30 dias)</option>
           </select>
           <select
             value={reminderFilter}
@@ -621,6 +679,15 @@ export const SubscriptionsTable: React.FC = () => {
             <option value="all">Todos os Lembretes</option>
             <option value="sent">Lembrete Enviado</option>
             <option value="pending">Lembrete Pendente</option>
+          </select>
+          <select
+            value={npsFilter}
+            onChange={(e) => setNpsFilter(e.target.value as any)}
+            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="all">Todas as Satisfações</option>
+            <option value="high">Alta Satisfação (8+)</option>
+            <option value="low">Baixa Satisfação (&lt;7)</option>
           </select>
         </div>
         

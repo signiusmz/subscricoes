@@ -154,10 +154,17 @@ const paymentMethods = [
   { value: 'numerario', label: 'Numerário', icon: DollarSign }
 ];
 
-export const BillingModule: React.FC = () => {
+interface BillingModuleProps {
+  initialFilters?: {
+    statusFilter?: string;
+    searchTerm?: string;
+  };
+}
+
+export const BillingModule: React.FC<BillingModuleProps> = ({ initialFilters }) => {
   const [activeTab, setActiveTab] = useState('invoices');
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState(initialFilters?.statusFilter || 'all');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
@@ -181,6 +188,35 @@ export const BillingModule: React.FC = () => {
       window.removeEventListener('invoicesUpdated', handleInvoicesUpdate as EventListener);
     };
   }, []);
+
+  // Listen for dashboard navigation filters
+  React.useEffect(() => {
+    const handleApplyFilters = (event: CustomEvent) => {
+      const filters = event.detail;
+      if (filters?.statusFilter) {
+        setStatusFilter(filters.statusFilter);
+      }
+      if (filters?.searchTerm) {
+        setSearchTerm(filters.searchTerm);
+      }
+    };
+
+    window.addEventListener('applyDashboardFilters', handleApplyFilters as EventListener);
+    
+    return () => {
+      window.removeEventListener('applyDashboardFilters', handleApplyFilters as EventListener);
+    };
+  }, []);
+
+  // Apply initial filters from dashboard navigation
+  React.useEffect(() => {
+    if (initialFilters?.statusFilter) {
+      setStatusFilter(initialFilters.statusFilter);
+    }
+    if (initialFilters?.searchTerm) {
+      setSearchTerm(initialFilters.searchTerm);
+    }
+  }, [initialFilters]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-PT');

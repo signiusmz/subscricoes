@@ -4,23 +4,26 @@ import { DashboardMetrics } from '../../types';
 
 interface MetricsCardsProps {
   metrics: DashboardMetrics;
+  onNavigate: (tab: string, filter?: any) => void;
 }
 
-export const MetricsCards: React.FC<MetricsCardsProps> = ({ metrics }) => {
+export const MetricsCards: React.FC<MetricsCardsProps> = ({ metrics, onNavigate }) => {
   const cards = [
     {
       title: 'Total de Clientes',
       value: metrics.totalClients,
       icon: Users,
       color: 'blue',
-      suffix: ''
+      suffix: '',
+      onClick: () => onNavigate('clients', { statusFilter: 'all' })
     },
     {
       title: 'Serviços Ativos',
       value: metrics.activeServices,
       icon: Activity,
       color: 'green',
-      suffix: ''
+      suffix: '',
+      onClick: () => onNavigate('subscriptions', { statusFilter: 'active' })
     },
     {
       title: 'A Expirar (30 dias)',
@@ -28,7 +31,8 @@ export const MetricsCards: React.FC<MetricsCardsProps> = ({ metrics }) => {
       icon: AlertTriangle,
       color: 'orange',
       suffix: '',
-      trend: '+2 esta semana'
+      trend: '+2 esta semana',
+      onClick: () => onNavigate('subscriptions', { statusFilter: 'expiring' })
     },
     {
       title: 'Expirados',
@@ -36,7 +40,8 @@ export const MetricsCards: React.FC<MetricsCardsProps> = ({ metrics }) => {
       icon: CheckCircle,
       color: 'red',
       suffix: '',
-      trend: '-1 vs mês passado'
+      trend: '-1 vs mês passado',
+      onClick: () => onNavigate('subscriptions', { statusFilter: 'expired' })
     },
     {
       title: 'Nível de Satisfação',
@@ -44,7 +49,8 @@ export const MetricsCards: React.FC<MetricsCardsProps> = ({ metrics }) => {
       icon: Star,
       color: 'purple',
       suffix: '',
-      trend: '+0.3 este mês'
+      trend: '+0.3 este mês',
+      onClick: () => onNavigate('subscriptions', { npsFilter: 'high' })
     },
     {
       title: 'Receita Mensal',
@@ -52,7 +58,8 @@ export const MetricsCards: React.FC<MetricsCardsProps> = ({ metrics }) => {
       icon: DollarSign,
       color: 'emerald',
       suffix: ' MT',
-      trend: '+15.7% vs mês anterior'
+      trend: '+15.7% vs mês anterior',
+      onClick: () => onNavigate('billing', { statusFilter: 'paid' })
     }
   ];
 
@@ -75,10 +82,14 @@ export const MetricsCards: React.FC<MetricsCardsProps> = ({ metrics }) => {
         const isPositiveTrend = card.trend?.includes('+');
         
         return (
-          <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg hover:scale-105 transition-all duration-200">
+          <div 
+            key={index} 
+            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer group"
+            onClick={card.onClick}
+          >
             <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">{card.title}</p>
+                <p className="text-sm font-medium text-gray-600 mb-1 group-hover:text-gray-800 transition-colors">{card.title}</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {typeof card.value === 'number' ? card.value.toLocaleString() : card.value}{card.suffix}
                 </p>
@@ -91,7 +102,7 @@ export const MetricsCards: React.FC<MetricsCardsProps> = ({ metrics }) => {
                   </p>
                 )}
               </div>
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${getColorClasses(card.color)}`}>
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${getColorClasses(card.color)} group-hover:scale-110 transition-transform`}>
                 <Icon size={24} />
               </div>
             </div>
@@ -99,7 +110,7 @@ export const MetricsCards: React.FC<MetricsCardsProps> = ({ metrics }) => {
             {/* Progress bar for visual appeal */}
             <div className="w-full bg-gray-200 rounded-full h-1.5">
               <div 
-                className={`h-1.5 rounded-full transition-all duration-1000 ${
+                className={`h-1.5 rounded-full transition-all duration-1000 group-hover:shadow-sm ${
                   card.color === 'blue' ? 'bg-blue-500' :
                   card.color === 'green' ? 'bg-green-500' :
                   card.color === 'orange' ? 'bg-orange-500' :
@@ -109,6 +120,11 @@ export const MetricsCards: React.FC<MetricsCardsProps> = ({ metrics }) => {
                 }`}
                 style={{ width: `${Math.min(((typeof card.value === 'number' ? card.value : 0) / 100) * 100, 100)}%` }}
               ></div>
+            </div>
+            
+            {/* Click indicator */}
+            <div className="mt-3 text-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="text-xs text-gray-500">Clique para ver detalhes →</span>
             </div>
           </div>
         );

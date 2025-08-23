@@ -118,10 +118,18 @@ const mockUsers = [
   }
 ];
 
-export const ClientsTable: React.FC = () => {
+interface ClientsTableProps {
+  initialFilters?: {
+    statusFilter?: 'all' | 'active' | 'inactive';
+    salespersonFilter?: string;
+    searchTerm?: string;
+  };
+}
+
+export const ClientsTable: React.FC<ClientsTableProps> = ({ initialFilters }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  const [salespersonFilter, setSalespersonFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>(initialFilters?.statusFilter || 'all');
+  const [salespersonFilter, setSalespersonFilter] = useState(initialFilters?.salespersonFilter || 'all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showBulkActionsModal, setShowBulkActionsModal] = useState(false);
@@ -133,6 +141,28 @@ export const ClientsTable: React.FC = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  // Listen for dashboard navigation filters
+  React.useEffect(() => {
+    const handleApplyFilters = (event: CustomEvent) => {
+      const filters = event.detail;
+      if (filters?.statusFilter) {
+        setStatusFilter(filters.statusFilter);
+      }
+      if (filters?.salespersonFilter) {
+        setSalespersonFilter(filters.salespersonFilter);
+      }
+      if (filters?.searchTerm) {
+        setSearchTerm(filters.searchTerm);
+      }
+    };
+
+    window.addEventListener('applyDashboardFilters', handleApplyFilters as EventListener);
+    
+    return () => {
+      window.removeEventListener('applyDashboardFilters', handleApplyFilters as EventListener);
+    };
+  }, []);
 
   if (selectedClient) {
     return <ClientProfile client={selectedClient} onBack={() => setSelectedClient(null)} />;
