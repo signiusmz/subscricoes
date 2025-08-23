@@ -495,10 +495,6 @@ export const DigitalContracts: React.FC = () => {
   const [editingContract, setEditingContract] = useState<Contract | null>(null);
   const [editingTemplate, setEditingTemplate] = useState<ContractTemplate | null>(null);
   const [editContent, setEditContent] = useState('');
-  const [showTemplateModal, setShowTemplateModal] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<ContractTemplate | null>(null);
-  const [templateContent, setTemplateContent] = useState('');
-  const [templates, setTemplates] = useState<ContractTemplate[]>(mockTemplates);
   const [templateContent, setTemplateContent] = useState('');
   const [selectedClientId, setSelectedClientId] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -919,7 +915,7 @@ export const DigitalContracts: React.FC = () => {
         <p><strong>CONTRATADA:</strong> {empresa_nome}</p>
         <p><strong>VALOR:</strong> {contrato_valor_formatado}</p>
     let contractContent = baseContent
-      .replace(/\{contrato_numero\}/g, `CONT-2024-${String(contracts.length + 1).padStart(3, '0')}`)
+      .replace(/\{contrato_numero\}/g, \`CONT-2024-${String(contracts.length + 1).padStart(3, '0')}`)
       .replace(/\{cliente_nome\}/g, client.companyName)
       .replace(/\{cliente_representante\}/g, client.representative)
       .replace(/\{cliente_email\}/g, client.email)
@@ -935,7 +931,7 @@ export const DigitalContracts: React.FC = () => {
       .replace(/\{vendedor_email\}/g, salesperson?.email || 'vendedor@techsolutions.mz')
       .replace(/\{vendedor_telefone\}/g, salesperson?.phone || '+258 84 000 0000')
       .replace(/\{contrato_valor\}/g, totalValue.toString())
-      .replace(/\{contrato_valor_formatado\}/g, `${totalValue.toLocaleString()} MT`)
+      .replace(/\{contrato_valor_formatado\}/g, \`${totalValue.toLocaleString()} MT`)
       .replace(/\{contrato_valor_extenso\}/g, formatAmountInWords(totalValue))
       .replace(/\{servicos_lista\}/g, `<ul style="margin: 0; padding-left: 20px;">${servicesList}</ul>`)
       .replace(/\{contrato_data_inicio\}/g, new Date().toLocaleDateString('pt-PT'))
@@ -1349,7 +1345,6 @@ export const DigitalContracts: React.FC = () => {
 
   const tabs = [
     { id: 'contracts', label: 'Contratos', icon: FileText },
-    { id: 'templates', label: 'Templates', icon: PenTool }
     { id: 'templates', label: 'Templates', icon: Layout }
   ];
 
@@ -1385,7 +1380,6 @@ export const DigitalContracts: React.FC = () => {
 
       {/* Content */}
       {activeTab === 'contracts' && renderContracts()}
-      {activeTab === 'templates' && renderTemplates()}
       {activeTab === 'templates' && renderTemplates()}
 
       {/* Generate Contract Modal */}
