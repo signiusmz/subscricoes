@@ -43,6 +43,7 @@ interface Contract {
   createdAt: string;
   signedAt?: string;
   signatureHash?: string;
+  signerName?: string;
   templateId?: string;
   salespersonId?: string;
   salespersonName?: string;
