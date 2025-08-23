@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, CreditCard, Calendar, Download, Eye, RefreshCw, Star, User, LogOut, Edit, Camera, Upload, Save, X } from 'lucide-react';
+import { FileText, CreditCard, Calendar, Download, Eye, RefreshCw, Star, User, LogOut, Edit, Camera, Upload, Save, X, Receipt, FileCheck } from 'lucide-react';
 import { PDFGenerator, ClientInfo } from '../../utils/pdfGenerator';
 import { useAuth } from '../../context/AuthContext';
 
@@ -59,11 +59,78 @@ const mockContracts: Contract[] = [
   }
 ];
 
+const mockReceipts = [
+  {
+    id: '1',
+    number: 'REC-2024-001',
+    invoiceId: '1',
+    date: '2024-01-25',
+    amount: 5000,
+    paymentMethod: 'transfer',
+    serviceName: 'Contabilidade Mensal'
+  },
+  {
+    id: '2',
+    number: 'REC-2024-002',
+    invoiceId: '2',
+    date: '2024-02-20',
+    amount: 5000,
+    paymentMethod: 'mpesa',
+    serviceName: 'Contabilidade Mensal'
+  }
+];
+
+const mockContract = {
+  id: '1',
+  number: 'CONT-2024-001',
+  serviceName: 'Contabilidade Mensal',
+  startDate: '2024-01-01',
+  endDate: '2024-12-31',
+  price: 5000,
+  terms: `
+    <h3>CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE CONTABILIDADE</h3>
+    
+    <p><strong>CONTRATANTE:</strong> Transportes Maputo Lda</p>
+    <p><strong>CONTRATADA:</strong> TechSolutions Lda</p>
+    
+    <h4>CLÁUSULA 1ª - OBJETO</h4>
+    <p>O presente contrato tem por objeto a prestação de serviços de contabilidade mensal, incluindo:</p>
+    <ul>
+      <li>Escrituração contábil completa</li>
+      <li>Elaboração de demonstrações financeiras</li>
+      <li>Assessoria fiscal e tributária</li>
+      <li>Cumprimento de obrigações acessórias</li>
+    </ul>
+    
+    <h4>CLÁUSULA 2ª - PRAZO</h4>
+    <p>O contrato vigorará pelo período de 12 (doze) meses, de 01 de Janeiro de 2024 a 31 de Dezembro de 2024, renovável automaticamente por igual período.</p>
+    
+    <h4>CLÁUSULA 3ª - VALOR E FORMA DE PAGAMENTO</h4>
+    <p>O valor mensal dos serviços é de 5.000,00 MT (cinco mil meticais), a ser pago até o dia 30 de cada mês.</p>
+    
+    <h4>CLÁUSULA 4ª - OBRIGAÇÕES DAS PARTES</h4>
+    <p><strong>CONTRATANTE:</strong></p>
+    <ul>
+      <li>Fornecer documentação necessária até o dia 15 de cada mês</li>
+      <li>Efetuar pagamentos nas datas acordadas</li>
+      <li>Manter documentação organizada</li>
+    </ul>
+    
+    <p><strong>CONTRATADA:</strong></p>
+    <ul>
+      <li>Prestar serviços com qualidade e pontualidade</li>
+      <li>Manter sigilo das informações</li>
+      <li>Cumprir prazos legais</li>
+    </ul>
+  `
+};
+
 export const ClientPortal: React.FC = () => {
   const { logout } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showNPSModal, setShowNPSModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showContractModal, setShowContractModal] = useState(false);
   const [npsScore, setNpsScore] = useState(0);
   const [npsComment, setNpsComment] = useState('');
   const [clientData, setClientData] = useState({
@@ -265,12 +332,6 @@ export const ClientPortal: React.FC = () => {
             <p className="font-medium text-gray-900">Gerar Extrato</p>
             <p className="text-sm text-gray-600">Baixar extrato da conta</p>
           </button>
-          
-          <button className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors text-left">
-            <CreditCard className="text-purple-600 mb-2" size={24} />
-            <p className="font-medium text-gray-900">Pagamentos</p>
-            <p className="text-sm text-gray-600">Efetuar pagamentos</p>
-          </button>
         </div>
       </div>
     </div>
@@ -322,11 +383,6 @@ export const ClientPortal: React.FC = () => {
                       <button className="text-green-600 hover:text-green-900 p-1 hover:bg-green-50 rounded">
                         <Download size={16} />
                       </button>
-                      {invoice.status === 'pending' && (
-                        <button className="text-purple-600 hover:text-purple-900 p-1 hover:bg-purple-50 rounded">
-                          <CreditCard size={16} />
-                        </button>
-                      )}
                     </div>
                   </td>
                 </tr>
@@ -397,10 +453,163 @@ export const ClientPortal: React.FC = () => {
     </div>
   );
 
+  const renderDocuments = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold text-gray-900">Meus Documentos</h3>
+      </div>
+
+      {/* Contract Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <FileCheck className="text-blue-600" size={20} />
+          Contrato de Serviços
+        </h4>
+        
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium text-blue-900">{mockContract.serviceName}</p>
+              <p className="text-sm text-blue-700">
+                Contrato: {mockContract.number} • 
+                Vigência: {formatDate(mockContract.startDate)} - {formatDate(mockContract.endDate)}
+              </p>
+              <p className="text-sm text-blue-700">
+                Valor: {mockContract.price.toLocaleString()} MT/mês
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowContractModal(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+              >
+                <Eye size={16} />
+                Ver Contrato
+              </button>
+              <button
+                onClick={() => {
+                  // Generate contract PDF
+                  alert('Download do contrato iniciado!');
+                }}
+                className="border border-blue-600 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-2"
+              >
+                <Download size={16} />
+                Download
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Invoices Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <FileText className="text-green-600" size={20} />
+          Faturas
+        </h4>
+        
+        <div className="space-y-3">
+          {mockInvoices.map((invoice) => (
+            <div key={invoice.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div>
+                <p className="font-medium text-gray-900">{invoice.number}</p>
+                <p className="text-sm text-gray-600">{invoice.serviceName}</p>
+                <p className="text-sm text-gray-500">
+                  Emitida: {formatDate(invoice.date)} • Vencimento: {formatDate(invoice.dueDate)}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <p className="font-medium text-gray-900">{invoice.amount.toLocaleString()} MT</p>
+                  {getStatusBadge(invoice.status, 'invoice')}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      // Generate invoice PDF
+                      alert(`Visualizando fatura ${invoice.number}`);
+                    }}
+                    className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
+                    title="Visualizar"
+                  >
+                    <Eye size={16} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Download invoice PDF
+                      alert(`Download da fatura ${invoice.number} iniciado!`);
+                    }}
+                    className="text-green-600 hover:text-green-900 p-1 hover:bg-green-50 rounded"
+                    title="Download"
+                  >
+                    <Download size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Receipts Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Receipt className="text-purple-600" size={20} />
+          Recibos de Pagamento
+        </h4>
+        
+        <div className="space-y-3">
+          {mockReceipts.map((receipt) => (
+            <div key={receipt.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div>
+                <p className="font-medium text-gray-900">{receipt.number}</p>
+                <p className="text-sm text-gray-600">{receipt.serviceName}</p>
+                <p className="text-sm text-gray-500">
+                  Pagamento: {formatDate(receipt.date)} • Método: {receipt.paymentMethod === 'transfer' ? 'Transferência' : 'M-Pesa'}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <p className="font-medium text-gray-900">{receipt.amount.toLocaleString()} MT</p>
+                  <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                    Pago
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      // View receipt
+                      alert(`Visualizando recibo ${receipt.number}`);
+                    }}
+                    className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
+                    title="Visualizar"
+                  >
+                    <Eye size={16} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Download receipt PDF
+                      alert(`Download do recibo ${receipt.number} iniciado!`);
+                    }}
+                    className="text-green-600 hover:text-green-900 p-1 hover:bg-green-50 rounded"
+                    title="Download"
+                  >
+                    <Download size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: FileText },
     { id: 'invoices', label: 'Faturas', icon: CreditCard },
-    { id: 'contracts', label: 'Contratos', icon: FileText }
+    { id: 'contracts', label: 'Contratos', icon: FileText },
+    { id: 'documents', label: 'Documentos', icon: FileCheck }
   ];
 
   return (
@@ -448,7 +657,6 @@ export const ClientPortal: React.FC = () => {
               >
                 <Edit size={20} />
               </button>
-              </div>
               <button 
                 onClick={() => setShowNPSModal(true)}
                 className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2 text-sm font-medium"
@@ -464,6 +672,7 @@ export const ClientPortal: React.FC = () => {
                 <LogOut size={20} />
               </button>
             </div>
+          </div>
         </div>
       </div>
 
@@ -511,6 +720,7 @@ export const ClientPortal: React.FC = () => {
         {activeTab === 'dashboard' && renderDashboard()}
         {activeTab === 'invoices' && renderInvoices()}
         {activeTab === 'contracts' && renderContracts()}
+        {activeTab === 'documents' && renderDocuments()}
       </div>
 
       {/* NPS Modal */}
@@ -787,6 +997,67 @@ export const ClientPortal: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Contract Modal */}
+      {showContractModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <FileCheck size={20} className="text-blue-600" />
+                Contrato de Serviços
+              </h3>
+              <button
+                onClick={() => setShowContractModal(false)}
+                className="text-gray-400 hover:text-gray-600 p-1"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            {/* Contract Header */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-blue-700"><strong>Número:</strong> {mockContract.number}</p>
+                  <p className="text-blue-700"><strong>Serviço:</strong> {mockContract.serviceName}</p>
+                </div>
+                <div>
+                  <p className="text-blue-700"><strong>Vigência:</strong> {formatDate(mockContract.startDate)} - {formatDate(mockContract.endDate)}</p>
+                  <p className="text-blue-700"><strong>Valor:</strong> {mockContract.price.toLocaleString()} MT/mês</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Contract Content */}
+            <div className="prose max-w-none">
+              <div 
+                className="text-sm text-gray-700 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: mockContract.terms }}
+              />
+            </div>
+            
+            <div className="flex gap-3 pt-6 border-t border-gray-200 mt-6">
+              <button
+                onClick={() => setShowContractModal(false)}
+                className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Fechar
+              </button>
+              <button
+                onClick={() => {
+                  // Download contract PDF
+                  alert(`Download do contrato ${mockContract.number} iniciado!`);
+                }}
+                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <Download size={16} />
+                Download PDF
+              </button>
+            </div>
           </div>
         </div>
       )}
