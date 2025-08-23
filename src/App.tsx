@@ -320,7 +320,7 @@ const Dashboard = () => {
             onClick={() => setShowClientPortal(!showClientPortal)}
             className="text-sm hover:underline"
           >
-            🔄 Demo: Alternar para Portal do Cliente
+            🔄 Demo: {showClientPortal ? 'Voltar ao Sistema' : 'Portal do Cliente'}
           </button>
         </div>
         <div className="p-8">
