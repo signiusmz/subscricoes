@@ -198,9 +198,14 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
                 className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
               >
                 Registe-se
-          className="text-blue-600 hover:text-blue-700 font-medium"
+              </button>
             </p>
-          ← Voltar à Página Inicial
+            <p
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
+              ← Voltar à Página Inicial
+            </p>
+          </div>
         )}
       </div>
     </div>
