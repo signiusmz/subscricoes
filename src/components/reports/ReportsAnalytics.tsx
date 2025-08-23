@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BarChart3, TrendingUp, Download, Calendar, DollarSign, Users, Activity, Star, Filter, FileText, Mail, MessageSquare, Eye, RefreshCw } from 'lucide-react';
+import { BarChart3, TrendingUp, Download, Calendar, DollarSign, Users, Activity, Star, Filter, FileText, Mail, MessageSquare, Eye, RefreshCw, Clock, Play, Pause, Trash2 } from 'lucide-react';
 import { PDFGenerator, ReportData } from '../../utils/pdfGenerator';
 
 interface ReportData {
@@ -34,6 +34,19 @@ export const ReportsAnalytics: React.FC = () => {
   const [selectedClients, setSelectedClients] = useState<string[]>([]);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [scheduledReports, setScheduledReports] = useState<ScheduledReport[]>([]);
+
+  interface ScheduledReport {
+    id: string;
+    name: string;
+    reportType: string;
+    frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly';
+    recipients: string[];
+    nextRun: string;
+    isActive: boolean;
+    createdAt: string;
+  }
 
   const currentData = mockReportData[mockReportData.length - 1];
   const previousData = mockReportData[mockReportData.length - 2];
@@ -116,8 +129,44 @@ export const ReportsAnalytics: React.FC = () => {
     setShowExportModal(false);
   };
 
+  const handleSaveSchedule = (scheduleData: any) => {
+    const newSchedule: ScheduledReport = {
+      id: Date.now().toString(),
+      name: scheduleData.name,
+      reportType: scheduleData.reportType,
+      frequency: scheduleData.frequency,
+      recipients: scheduleData.recipients.split(',').map((email: string) => email.trim()),
+      nextRun: calculateNextRun(scheduleData.frequency),
+      isActive: true,
+      createdAt: new Date().toISOString()
+    };
+    
+    setScheduledReports([...scheduledReports, newSchedule]);
+    setShowScheduleModal(false);
+    alert(`Relatório agendado com sucesso! Próxima execução: ${new Date(newSchedule.nextRun).toLocaleDateString('pt-PT')}`);
+  };
+
+  const calculateNextRun = (frequency: string): string => {
+    const now = new Date();
+    switch (frequency) {
+      case 'daily':
+        now.setDate(now.getDate() + 1);
+        break;
+      case 'weekly':
+        now.setDate(now.getDate() + 7);
+        break;
+      case 'monthly':
+        now.setMonth(now.getMonth() + 1);
+        break;
+      case 'quarterly':
+        now.setMonth(now.getMonth() + 3);
+        break;
+    }
+    return now.toISOString().split('T')[0];
+  };
+
   const handleScheduleReport = () => {
-    alert('Funcionalidade de agendamento de relatórios será implementada em breve.');
+    setShowScheduleModal(true);
   };
 
   const mockClients = [
@@ -491,6 +540,221 @@ export const ReportsAnalytics: React.FC = () => {
                 Cancelar
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Schedule Modal */}
+      {showScheduleModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Agendar Relatório</h3>
+            
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const scheduleData = {
+                name: formData.get('name') as string,
+                reportType: formData.get('reportType') as string,
+                frequency: formData.get('frequency') as string,
+                recipients: formData.get('recipients') as string,
+                startDate: formData.get('startDate') as string
+              };
+              handleSaveSchedule(scheduleData);
+            }} className="space-y-6">
+              
+              {/* Basic Info */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Calendar size={18} className="text-blue-600" />
+                  Informações Básicas
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Nome do Agendamento *
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="Ex: Relatório Mensal de Receitas"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tipo de Relatório *
+                    </label>
+                    <select
+                      name="reportType"
+                      defaultValue={selectedReport}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    >
+                      {reportTypes.map((report) => (
+                        <option key={report.id} value={report.id}>{report.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Schedule Settings */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Clock size={18} className="text-green-600" />
+                  Configurações de Agendamento
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Frequência *
+                    </label>
+                    <select
+                      name="frequency"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    >
+                      <option value="daily">Diário</option>
+                      <option value="weekly">Semanal</option>
+                      <option value="monthly">Mensal</option>
+                      <option value="quarterly">Trimestral</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Primeira Execução *
+                    </label>
+                    <input
+                      type="date"
+                      name="startDate"
+                      min={new Date().toISOString().split('T')[0]}
+                      defaultValue={new Date().toISOString().split('T')[0]}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Recipients */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Mail size={18} className="text-purple-600" />
+                  Destinatários
+                </h4>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Emails dos Destinatários *
+                  </label>
+                  <textarea
+                    name="recipients"
+                    rows={3}
+                    placeholder="admin@empresa.mz, gestor@empresa.mz, diretor@empresa.mz"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Separe múltiplos emails com vírgulas
+                  </p>
+                </div>
+              </div>
+
+              {/* Preview */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                  <Eye size={18} className="text-blue-600" />
+                  Pré-visualização do Agendamento
+                </h4>
+                <div className="text-sm text-blue-800 space-y-1">
+                  <p><strong>Relatório:</strong> {reportTypes.find(r => r.id === selectedReport)?.name}</p>
+                  <p><strong>Formato:</strong> PDF por email</p>
+                  <p><strong>Horário:</strong> 08:00 (horário local)</p>
+                  <p><strong>Fuso:</strong> África/Maputo (CAT)</p>
+                </div>
+              </div>
+              
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowScheduleModal(false)}
+                  className="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Calendar size={16} />
+                  Agendar Relatório
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Scheduled Reports Section */}
+      {scheduledReports.length > 0 && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Calendar className="text-blue-600" size={20} />
+            Relatórios Agendados
+          </h3>
+          
+          <div className="space-y-3">
+            {scheduledReports.map((schedule) => (
+              <div key={schedule.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div>
+                  <p className="font-medium text-gray-900">{schedule.name}</p>
+                  <p className="text-sm text-gray-500">
+                    {reportTypes.find(r => r.id === schedule.reportType)?.name} • 
+                    {schedule.frequency === 'daily' ? 'Diário' :
+                     schedule.frequency === 'weekly' ? 'Semanal' :
+                     schedule.frequency === 'monthly' ? 'Mensal' : 'Trimestral'}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Próxima execução: {new Date(schedule.nextRun).toLocaleDateString('pt-PT')}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                    schedule.isActive 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {schedule.isActive ? 'Ativo' : 'Inativo'}
+                  </span>
+                  <div className="flex gap-1">
+                    <button 
+                      onClick={() => {
+                        setScheduledReports(scheduledReports.map(s => 
+                          s.id === schedule.id ? { ...s, isActive: !s.isActive } : s
+                        ));
+                      }}
+                      className="text-orange-600 hover:text-orange-700 p-1"
+                      title={schedule.isActive ? 'Desativar' : 'Ativar'}
+                    >
+                      {schedule.isActive ? <Pause size={16} /> : <Play size={16} />}
+                    </button>
+                    <button 
+                      onClick={() => {
+                        if (confirm('Tem certeza que deseja eliminar este agendamento?')) {
+                          setScheduledReports(scheduledReports.filter(s => s.id !== schedule.id));
+                          alert('Agendamento eliminado com sucesso!');
+                        }
+                      }}
+                      className="text-red-600 hover:text-red-700 p-1"
+                      title="Eliminar"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
