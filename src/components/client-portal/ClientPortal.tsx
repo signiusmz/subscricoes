@@ -217,15 +217,6 @@ export const ClientPortal: React.FC = () => {
     address: 'Av. Eduardo Mondlane, 567, Maputo'
   });
 
-  const clientInfo = {
-    companyName: 'Transportes Maputo Lda',
-    representative: 'João Macamo',
-    email: 'joao@transportesmaputo.mz',
-    nuit: '400567890'
-  };
-
-  const salesperson = {
-    name: 'Maria Silva',
     email: 'maria.silva@signius.com',
     phone: '+258 84 123 4567'
   };
