@@ -1,27 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  FileText, 
-  Download, 
-  Edit, 
-  Send, 
-  Eye, 
-  CheckCircle, 
-  Clock, 
-  AlertCircle,
-  Search,
-  Filter,
-  Calendar,
-  User,
-  Building,
-  DollarSign,
-  Signature,
-  Hash,
-  Users,
-  Plus,
-  X,
-  Save,
-  RefreshCw
-} from 'lucide-react';
+import { FileText, Download, Edit, Send, Eye, CheckCircle, Clock, AlertCircle, Search, Filter, Calendar, User, Building, DollarSign, FileSignature as Signature, Hash, Users, Plus, X, Save, RefreshCw } from 'lucide-react';
 import { PDFGenerator } from '../../utils/pdfGenerator';
 import { HTMLEditor } from '../common/HTMLEditor';
 import { Pagination } from '../common/Pagination';
