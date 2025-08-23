@@ -30,7 +30,6 @@ interface SidebarProps {
 const getMenuItems = (userRole: string) => [
   { id: 'dashboard', label: 'Dashboard', icon: Home },
   { id: 'clients', label: 'Clientes', icon: Users },
-  { id: 'services', label: 'Serviços', icon: FileText },
   { id: 'subscriptions', label: 'Subscrições', icon: CreditCard },
   { id: 'billing', label: 'Facturação', icon: Receipt },
   { id: 'tax', label: 'Impostos', icon: Calculator },
