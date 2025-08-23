@@ -339,7 +339,7 @@ export const FlowsManagement: React.FC = () => {
                       >
                         <Edit size={16} />
                       </button>
-                      {user?.role === 'admin' && (
+                      {(user?.role === 'admin') && (
                         <>
                           <button 
                             onClick={() => handleToggleStatus(flow.id)}

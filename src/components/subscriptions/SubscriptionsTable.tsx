@@ -827,13 +827,15 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableProps> = ({ initialF
                       >
                         <Edit size={16} />
                       </button>
-                      <button 
-                        onClick={() => handleDeleteSubscription(subscription.id)}
-                        className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
-                        title="Eliminar"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      {user?.role === 'admin' && (
+                        <button 
+                          onClick={() => handleDeleteSubscription(subscription.id)}
+                          className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
+                          title="Eliminar"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

@@ -304,7 +304,7 @@ export const UsersTable: React.FC = () => {
                       >
                         <Edit size={16} />
                       </button>
-                      {currentUser?.role === 'admin' && (
+                      {(currentUser?.role === 'admin') && (
                         <>
                           <button 
                             onClick={() => handleToggleStatus(user.id)}
