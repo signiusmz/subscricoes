@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { BarChart3, TrendingUp, Download, Calendar, DollarSign, Users, Activity, Star, Filter, FileText, Mail, MessageSquare, Eye, RefreshCw, Clock, Play, Pause, Trash2 } from 'lucide-react';
+import { BarChart3, TrendingUp, Download, Calendar, DollarSign, Users, Activity, Star, Filter, FileText, Mail, MessageSquare, Eye, RefreshCw, Clock, Play, Pause, Trash2, PieChart, Target } from 'lucide-react';
 import { PDFGenerator, ReportData } from '../../utils/pdfGenerator';
 import { Pagination } from '../common/Pagination';
 
-interface ReportData {
+interface ReportDataItem {
   period: string;
   revenue: number;
   clients: number;
@@ -11,7 +11,7 @@ interface ReportData {
   satisfaction: number;
 }
 
-const mockReportData: ReportData[] = [
+const mockReportData: ReportDataItem[] = [
   { period: 'Jan 2024', revenue: 180000, clients: 35, services: 65, satisfaction: 8.2 },
   { period: 'Fev 2024', revenue: 195000, clients: 38, services: 70, satisfaction: 8.4 },
   { period: 'Mar 2024', revenue: 210000, clients: 42, services: 75, satisfaction: 8.6 },
@@ -24,8 +24,19 @@ const reportTypes = [
   { id: 'revenue', name: 'Relatório de Receitas', description: 'Análise detalhada das receitas por período' },
   { id: 'clients', name: 'Relatório de Clientes', description: 'Crescimento e retenção de clientes' },
   { id: 'services', name: 'Relatório de Serviços', description: 'Performance e utilização dos serviços' },
-  { id: 'nps', name: 'Relatório de Satisfação', description: 'Análise de satisfação dos clientes' }
+  { id: 'satisfaction', name: 'Relatório de Satisfação', description: 'Análise de satisfação dos clientes' }
 ];
+
+interface ScheduledReport {
+  id: string;
+  name: string;
+  reportType: string;
+  frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly';
+  recipients: string[];
+  nextRun: string;
+  isActive: boolean;
+  createdAt: string;
+}
 
 export const ReportsAnalytics: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('6months');
@@ -40,17 +51,6 @@ export const ReportsAnalytics: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [scheduledCurrentPage, setScheduledCurrentPage] = useState(1);
   const itemsPerPage = 10;
-
-  interface ScheduledReport {
-    id: string;
-    name: string;
-    reportType: string;
-    frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly';
-    recipients: string[];
-    nextRun: string;
-    isActive: boolean;
-    createdAt: string;
-  }
 
   // Pagination for report data
   const reportDataTotalPages = Math.ceil(mockReportData.length / itemsPerPage);
@@ -227,7 +227,6 @@ export const ReportsAnalytics: React.FC = () => {
 
       {/* Advanced Filters */}
       {showAdvancedFilters && (
-        <React.Fragment>
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Filtros Avançados</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -296,7 +295,6 @@ export const ReportsAnalytics: React.FC = () => {
             </button>
           </div>
         </div>
-        </React.Fragment>
       )}
 
       {/* Period Selector */}
@@ -362,52 +360,131 @@ export const ReportsAnalytics: React.FC = () => {
 
       {/* Charts Section */}
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Revenue Chart */}
+        {/* Revenue Evolution Chart */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-900">Evolução da Receita</h3>
             <BarChart3 className="text-gray-400" size={20} />
           </div>
-          <div className="h-64 bg-gradient-to-t from-blue-50 to-transparent rounded-lg flex items-end justify-between p-4">
-            {mockReportData.map((data, index) => (
-              <div key={index} className="flex flex-col items-center gap-2">
-                <div 
-                  className="bg-blue-600 rounded-t-md w-8 transition-all hover:bg-blue-700"
-                  style={{ height: `${(data.revenue / 255000) * 200}px` }}
-                ></div>
-                <span className="text-xs text-gray-600 transform -rotate-45 origin-left">
-                  {data.period.split(' ')[0]}
-                </span>
-              </div>
-            ))}
+          <div className="h-64 bg-gradient-to-t from-blue-50 to-transparent rounded-lg flex items-end justify-between p-4 relative">
+            {/* Grid Lines */}
+            <div className="absolute inset-4">
+              {[...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-full border-t border-gray-200 border-dashed"
+                  style={{ top: `${i * 25}%` }}
+                />
+              ))}
+            </div>
+            
+            {/* Bars */}
+            <div className="relative h-full flex items-end justify-between gap-2 w-full">
+              {mockReportData.map((data, index) => {
+                const maxRevenue = Math.max(...mockReportData.map(d => d.revenue));
+                const barHeight = (data.revenue / maxRevenue) * 100;
+                
+                return (
+                  <div key={index} className="flex flex-col items-center gap-2 flex-1 group">
+                    <div 
+                      className="bg-gradient-to-t from-blue-600 to-blue-500 rounded-t-md w-full max-w-12 transition-all hover:shadow-lg hover:scale-105 cursor-pointer relative"
+                      style={{ height: `${barHeight}%`, minHeight: '8px' }}
+                      title={`${data.period}: ${data.revenue.toLocaleString()} MT`}
+                    >
+                      {/* Tooltip */}
+                      <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        <div className="font-medium">{data.period}</div>
+                        <div>{data.revenue.toLocaleString()} MT</div>
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-600 transform -rotate-45 origin-left">
+                      {data.period.split(' ')[0]}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Y-axis Labels */}
+            <div className="absolute left-0 top-4 bottom-8 flex flex-col justify-between text-xs text-gray-500">
+              {[...Array(5)].map((_, i) => {
+                const maxRevenue = Math.max(...mockReportData.map(d => d.revenue));
+                const value = maxRevenue - (maxRevenue * i / 4);
+                return (
+                  <span key={i} className="transform -translate-y-1/2">
+                    {(value / 1000).toFixed(0)}K
+                  </span>
+                );
+              })}
+            </div>
           </div>
         </div>
 
-        {/* NPS Trend */}
+        {/* Satisfaction Trend Chart */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-900">Tendência de Satisfação</h3>
             <Star className="text-gray-400" size={20} />
           </div>
-          <div className="h-64 bg-gradient-to-t from-orange-50 to-transparent rounded-lg flex items-end justify-between p-4">
-            {mockReportData.map((data, index) => (
-              <div key={index} className="flex flex-col items-center gap-2">
-                <div 
-                  className="bg-orange-500 rounded-full w-3 h-3 relative"
-                  style={{ marginBottom: `${(data.satisfaction / 10) * 200}px` }}
-                >
-                  {index > 0 && (
-                    <div 
-                      className="absolute top-1/2 right-3 h-0.5 bg-orange-500"
-                      style={{ width: '24px' }}
-                    ></div>
-                  )}
+          <div className="h-64 bg-gradient-to-t from-orange-50 to-transparent rounded-lg flex items-end justify-between p-4 relative">
+            {/* Grid Lines */}
+            <div className="absolute inset-4">
+              {[...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-full border-t border-gray-200 border-dashed"
+                  style={{ top: `${i * 25}%` }}
+                />
+              ))}
+            </div>
+            
+            {/* Line Chart */}
+            <div className="relative h-full flex items-end justify-between w-full">
+              <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 1 }}>
+                <polyline
+                  fill="none"
+                  stroke="#f97316"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  points={mockReportData.map((data, index) => {
+                    const x = (index / (mockReportData.length - 1)) * 100;
+                    const y = 100 - ((data.satisfaction / 10) * 100);
+                    return `${x}%,${y}%`;
+                  }).join(' ')}
+                />
+              </svg>
+              
+              {mockReportData.map((data, index) => (
+                <div key={index} className="flex flex-col items-center gap-2 flex-1 group relative" style={{ zIndex: 2 }}>
+                  <div 
+                    className="w-3 h-3 bg-orange-500 rounded-full border-2 border-white shadow-md cursor-pointer hover:scale-150 transition-transform"
+                    style={{ marginBottom: `${(data.satisfaction / 10) * 200}px` }}
+                    title={`${data.period}: ${data.satisfaction}/10`}
+                  >
+                    {/* Tooltip */}
+                    <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="font-medium">{data.period}</div>
+                      <div>{data.satisfaction}/10</div>
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                    </div>
+                  </div>
+                  <span className="text-xs text-gray-600 transform -rotate-45 origin-left">
+                    {data.period.split(' ')[0]}
+                  </span>
                 </div>
-                <span className="text-xs text-gray-600 transform -rotate-45 origin-left">
-                  {data.period.split(' ')[0]}
+              ))}
+            </div>
+
+            {/* Y-axis Labels */}
+            <div className="absolute left-0 top-4 bottom-8 flex flex-col justify-between text-xs text-gray-500">
+              {[10, 8, 6, 4, 2].map((value, i) => (
+                <span key={i} className="transform -translate-y-1/2">
+                  {value}
                 </span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -471,17 +548,109 @@ export const ReportsAnalytics: React.FC = () => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Analytics de Comunicação</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center p-4 bg-blue-50 rounded-lg col-span-1 md:col-span-1">
-            <Mail className="text-blue-600 mx-auto mb-2" size={32} />
-            <p className="text-2xl font-bold text-blue-900">2,847</p>
-            <p className="text-sm text-blue-700">Emails Enviados</p>
-            <p className="text-xs text-blue-600 mt-1">Taxa de abertura: 68%</p>
+          <div className="text-center p-6 bg-blue-50 rounded-lg border border-blue-200">
+            <Mail className="text-blue-600 mx-auto mb-3" size={32} />
+            <p className="text-3xl font-bold text-blue-900 mb-2">2,847</p>
+            <p className="text-sm text-blue-700 font-medium mb-2">Emails Enviados</p>
+            <div className="space-y-1 text-xs text-blue-600">
+              <p>Taxa de abertura: 68%</p>
+              <p>Taxa de clique: 12%</p>
+              <p>Bounces: 2.1%</p>
+            </div>
+            <div className="mt-4 w-full bg-blue-200 rounded-full h-2">
+              <div className="bg-blue-600 h-2 rounded-full" style={{ width: '68%' }}></div>
+            </div>
           </div>
-          <div className="text-center p-4 bg-green-50 rounded-lg col-span-1 md:col-span-2">
-            <MessageSquare className="text-purple-600 mx-auto mb-2" size={32} />
-            <p className="text-2xl font-bold text-purple-900">567</p>
-            <p className="text-sm text-purple-700">WhatsApp Enviados</p>
-            <p className="text-xs text-purple-600 mt-1">Taxa de leitura: 89%</p>
+          
+          <div className="text-center p-6 bg-green-50 rounded-lg border border-green-200">
+            <MessageSquare className="text-green-600 mx-auto mb-3" size={32} />
+            <p className="text-3xl font-bold text-green-900 mb-2">567</p>
+            <p className="text-sm text-green-700 font-medium mb-2">WhatsApp Enviados</p>
+            <div className="space-y-1 text-xs text-green-600">
+              <p>Taxa de entrega: 98%</p>
+              <p>Taxa de leitura: 89%</p>
+              <p>Respostas: 23%</p>
+            </div>
+            <div className="mt-4 w-full bg-green-200 rounded-full h-2">
+              <div className="bg-green-600 h-2 rounded-full" style={{ width: '89%' }}></div>
+            </div>
+          </div>
+          
+          <div className="text-center p-6 bg-purple-50 rounded-lg border border-purple-200">
+            <Phone className="text-purple-600 mx-auto mb-3" size={32} />
+            <p className="text-3xl font-bold text-purple-900 mb-2">234</p>
+            <p className="text-sm text-purple-700 font-medium mb-2">SMS Enviados</p>
+            <div className="space-y-1 text-xs text-purple-600">
+              <p>Taxa de entrega: 95%</p>
+              <p>Taxa de leitura: 78%</p>
+              <p>Respostas: 8%</p>
+            </div>
+            <div className="mt-4 w-full bg-purple-200 rounded-full h-2">
+              <div className="bg-purple-600 h-2 rounded-full" style={{ width: '78%' }}></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Communication Trends */}
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h4 className="font-semibold text-gray-900 mb-3">Melhor Horário de Envio</h4>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">09:00 - 11:00</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-16 bg-gray-200 rounded-full h-2">
+                    <div className="bg-green-500 h-2 rounded-full" style={{ width: '85%' }}></div>
+                  </div>
+                  <span className="text-sm font-medium text-gray-900">85%</span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">14:00 - 16:00</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-16 bg-gray-200 rounded-full h-2">
+                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: '72%' }}></div>
+                  </div>
+                  <span className="text-sm font-medium text-gray-900">72%</span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">19:00 - 21:00</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-16 bg-gray-200 rounded-full h-2">
+                    <div className="bg-orange-500 h-2 rounded-full" style={{ width: '58%' }}></div>
+                  </div>
+                  <span className="text-sm font-medium text-gray-900">58%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h4 className="font-semibold text-gray-900 mb-3">Canal Preferido por Idade</h4>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">18-30 anos</span>
+                <div className="flex items-center gap-2">
+                  <MessageSquare size={12} className="text-green-600" />
+                  <span className="text-sm font-medium text-gray-900">WhatsApp (78%)</span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">31-50 anos</span>
+                <div className="flex items-center gap-2">
+                  <Mail size={12} className="text-blue-600" />
+                  <span className="text-sm font-medium text-gray-900">Email (65%)</span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">50+ anos</span>
+                <div className="flex items-center gap-2">
+                  <Phone size={12} className="text-purple-600" />
+                  <span className="text-sm font-medium text-gray-900">SMS (82%)</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -497,8 +666,9 @@ export const ReportsAnalytics: React.FC = () => {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receita</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Clientes</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Serviços</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nível de Satisfação</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Satisfação</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Crescimento</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -513,7 +683,12 @@ export const ReportsAnalytics: React.FC = () => {
                     <td className="px-4 py-3 text-sm text-gray-900">{data.revenue.toLocaleString()} MT</td>
                     <td className="px-4 py-3 text-sm text-gray-900">{data.clients}</td>
                     <td className="px-4 py-3 text-sm text-gray-900">{data.services}</td>
-                    <td className="px-4 py-3 text-sm text-gray-900">{data.satisfaction}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900">
+                      <div className="flex items-center gap-1">
+                        <Star className="text-yellow-500" size={12} />
+                        {data.satisfaction}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-sm">
                       <span className={`flex items-center gap-1 ${
                         isPositive ? 'text-green-600' : 'text-red-600'
@@ -522,19 +697,50 @@ export const ReportsAnalytics: React.FC = () => {
                         {growth}%
                       </span>
                     </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-1">
+                        <button 
+                          onClick={() => alert(`Visualizando detalhes de ${data.period}`)}
+                          className="text-blue-600 hover:text-blue-700 p-1"
+                          title="Ver detalhes"
+                        >
+                          <Eye size={14} />
+                        </button>
+                        <button 
+                          onClick={() => {
+                            const reportData: ReportData = {
+                              title: `Relatório Detalhado - ${data.period}`,
+                              type: 'detailed',
+                              period: data.period,
+                              startDate: '2024-01-01',
+                              endDate: new Date().toISOString().split('T')[0],
+                              totalClients: data.clients,
+                              totalRevenue: data.revenue,
+                              averageSatisfaction: data.satisfaction,
+                              data: [data]
+                            };
+                            PDFGenerator.generateReport(reportData);
+                          }}
+                          className="text-green-600 hover:text-green-700 p-1"
+                          title="Baixar PDF"
+                        >
+                          <Download size={14} />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
         </div>
-       <Pagination
-         currentPage={currentPage}
-         totalPages={reportDataTotalPages}
-         onPageChange={setCurrentPage}
-         totalItems={mockReportData.length}
-         itemsPerPage={itemsPerPage}
-       />
+        <Pagination
+          currentPage={currentPage}
+          totalPages={reportDataTotalPages}
+          onPageChange={setCurrentPage}
+          totalItems={mockReportData.length}
+          itemsPerPage={itemsPerPage}
+        />
       </div>
 
       {/* Export Modal */}

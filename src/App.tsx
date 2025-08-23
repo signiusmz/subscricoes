@@ -12,6 +12,7 @@ import { MetricsCards } from './components/dashboard/MetricsCards';
 import { RecentActivity } from './components/dashboard/RecentActivity';
 import { GrowthChart } from './components/dashboard/GrowthChart';
 import { TopClientsRanking } from './components/dashboard/TopClientsRanking';
+import { ActivityHistory } from './components/dashboard/ActivityHistory';
 import { ClientsTable } from './components/clients/ClientsTable';
 import { ClientAnalytics } from './components/clients/ClientAnalytics';
 import { UsersTable } from './components/users/UsersTable';
@@ -37,6 +38,7 @@ const mockMetrics: DashboardMetrics = {
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showClientAnalytics, setShowClientAnalytics] = useState(false);
+  const [showActivityHistory, setShowActivityHistory] = useState(false);
   const [showClientPortal, setShowClientPortal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { company, user, updateUser } = useAuth();
@@ -54,6 +56,20 @@ const Dashboard = () => {
         <div className="ml-64">
           <div className="p-8">
             <ClientAnalytics onBack={() => setShowClientAnalytics(false)} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show activity history if requested
+  if (showActivityHistory) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <div className="ml-64">
+          <div className="p-8">
+            <ActivityHistory onBack={() => setShowActivityHistory(false)} />
           </div>
         </div>
       </div>
@@ -91,13 +107,19 @@ const Dashboard = () => {
     const handleOpenClientAnalytics = () => {
       setShowClientAnalytics(true);
     };
+    
+    const handleOpenActivityHistory = () => {
+      setShowActivityHistory(true);
+    };
 
     window.addEventListener('openUpgradeModal', handleOpenUpgradeModal);
     window.addEventListener('openClientAnalytics', handleOpenClientAnalytics);
+    window.addEventListener('openActivityHistory', handleOpenActivityHistory);
     
     return () => {
       window.removeEventListener('openUpgradeModal', handleOpenUpgradeModal);
       window.removeEventListener('openClientAnalytics', handleOpenClientAnalytics);
+      window.removeEventListener('openActivityHistory', handleOpenActivityHistory);
     };
   }, []);
 
