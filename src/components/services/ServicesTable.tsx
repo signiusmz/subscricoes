@@ -127,7 +127,7 @@ export const ServicesTable: React.FC = () => {
           ? { ...s, ...serviceData }
           : s
       ));
-      alert('Serviço atualizado com sucesso!');
+      alert(`✅ Serviço "${serviceData.name}" atualizado com sucesso!\n\n💰 Preço: ${serviceData.price?.toLocaleString()} MT\n⏰ Validade: ${serviceData.validity} meses\n🔄 Renovação: ${serviceData.autoRenew ? 'Automática' : 'Manual'}\n📅 Atualizado em: ${new Date().toLocaleString('pt-PT')}`);
     } else {
       // Add new service
       const newService: Service = {
@@ -141,7 +141,7 @@ export const ServicesTable: React.FC = () => {
         autoRenew: serviceData.autoRenew || false
       };
       setServices([...services, newService]);
-      alert('Serviço adicionado com sucesso!');
+      alert(`✅ Novo serviço "${newService.name}" criado com sucesso!\n\n💰 Preço: ${newService.price.toLocaleString()} MT\n⏰ Validade: ${newService.validity} meses\n🔄 Renovação: ${newService.autoRenew ? 'Automática' : 'Manual'}\n📅 Criado em: ${new Date().toLocaleString('pt-PT')}\n🟢 Status: Ativo`);
     }
     setShowAddModal(false);
     setEditingService(null);

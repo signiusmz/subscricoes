@@ -86,7 +86,8 @@ export const SenderModule: React.FC = () => {
   // Save SMTP configuration
   const saveSMTPConfig = () => {
     // Simulate save
-    alert('Configurações SMTP salvas com sucesso!');
+    localStorage.setItem('smtp_config', JSON.stringify(smtpConfig));
+    alert(`✅ Configurações SMTP salvas com sucesso!\n\n🌐 Servidor: ${smtpConfig.host}:${smtpConfig.port}\n👤 Usuário: ${smtpConfig.username}\n📧 Remetente: ${smtpConfig.fromName} <${smtpConfig.fromEmail}>\n🔒 Segurança: ${smtpConfig.secure ? 'TLS/SSL Ativo' : 'Não seguro'}\n📅 Salvo em: ${new Date().toLocaleString('pt-PT')}`);
   };
 
   const tabs = [

@@ -153,7 +153,7 @@ export const UsersTable: React.FC = () => {
           ? { ...u, ...userData }
           : u
       ));
-      alert('Utilizador atualizado com sucesso!');
+      alert(`✅ Utilizador "${userData.name}" atualizado com sucesso!\n\n📧 Email: ${userData.email}\n📱 Telefone: ${userData.phone}\n👤 Função: ${roleLabels[userData.role as keyof typeof roleLabels]}\n🔐 Permissões: ${userData.permissions?.includes('all') ? 'Todas' : userData.permissions?.length + ' específicas'}\n📅 Atualizado em: ${new Date().toLocaleString('pt-PT')}`);
     } else {
       // Add new user
       const newUser: UserType = {
@@ -168,7 +168,7 @@ export const UsersTable: React.FC = () => {
         permissions: userData.permissions || []
       };
       setUsers([...users, newUser]);
-      alert('Utilizador adicionado com sucesso!');
+      alert(`✅ Novo utilizador "${newUser.name}" criado com sucesso!\n\n📧 Email: ${newUser.email}\n📱 Telefone: ${newUser.phone}\n👤 Função: ${roleLabels[newUser.role as keyof typeof roleLabels]}\n🔐 Permissões: ${newUser.permissions.includes('all') ? 'Todas' : newUser.permissions.length + ' específicas'}\n📅 Criado em: ${new Date().toLocaleString('pt-PT')}\n🟢 Status: Ativo`);
     }
     setShowAddModal(false);
     setEditingUser(null);

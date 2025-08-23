@@ -457,6 +457,7 @@ export const FlowsManagement: React.FC = () => {
                     required
                   >
                     <option value="email">Email</option>
+                    <option value="whatsapp">WhatsApp</option>
                   </select>
                 </div>
               </div>

@@ -175,7 +175,7 @@ export const TriggersManagement: React.FC = () => {
           ? { ...t, ...triggerData }
           : t
       ));
-      alert('Gatilho atualizado com sucesso!');
+      alert(`✅ Gatilho "${triggerData.name}" atualizado com sucesso!\n\n🎯 Tipo: ${getTriggerTypeLabel(triggerData.triggerType || 'before_expiry', triggerData.triggerDays || 0)}\n🎨 Cor: ${triggerColors.find(c => c.value === triggerData.color)?.label}\n📅 Atualizado em: ${new Date().toLocaleString('pt-PT')}`);
     } else {
       // Add new trigger
       const newTrigger: Trigger = {
@@ -189,7 +189,7 @@ export const TriggersManagement: React.FC = () => {
         createdAt: new Date().toISOString()
       };
       setTriggers([...triggers, newTrigger]);
-      alert('Gatilho adicionado com sucesso!');
+      alert(`✅ Gatilho "${newTrigger.name}" criado com sucesso!\n\n🎯 Tipo: ${getTriggerTypeLabel(newTrigger.triggerType, newTrigger.triggerDays)}\n🎨 Cor: ${triggerColors.find(c => c.value === newTrigger.color)?.label}\n📅 Criado em: ${new Date().toLocaleString('pt-PT')}\n🟢 Status: Ativo`);
     }
     setShowAddModal(false);
     setEditingTrigger(null);
