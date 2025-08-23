@@ -41,6 +41,7 @@ const getMenuItems = (userRole: string) => [
   { id: 'reports', label: 'Relatórios', icon: BarChart3 },
   ...(userRole === 'admin' ? [
     { id: 'sender', label: 'Envios', icon: Send },
+    { id: 'users', label: 'Utilizadores', icon: User },
     { id: 'settings', label: 'Configurações', icon: Settings }
   ] : [])
 ];
