@@ -256,7 +256,7 @@ export class PDFGenerator {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.text('SALDO A PAGAR:', 125, currentY + 5);
-    doc.setTextColor(isFullyPaid ? 34, 197, 94 : 239, 68, 68);
+    doc.setTextColor(...(isFullyPaid ? [34, 197, 94] : [239, 68, 68]));
     doc.setFont('helvetica', 'bold');
     doc.text(`${Math.max(0, remainingAmount).toLocaleString()} MT`, 160, currentY + 5);
     
