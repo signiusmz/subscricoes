@@ -211,10 +211,10 @@ const Dashboard = () => {
         currentPlan={company?.plan}
         onUpgradeSuccess={handleUpgradeSuccess}
       />
+      
+      {/* Tawk.to Chat Widget */}
+      <TawkToChat />
     </div>
-    
-    {/* Tawk.to Chat Widget */}
-    <TawkToChat />
   );
 };
 
