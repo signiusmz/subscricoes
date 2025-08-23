@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, Plus, Edit, Trash2, Shield, User, Mail, Phone, Calendar } from 'lucide-react';
 import { User as UserType } from '../../types';
 import { useAuth } from '../../context/AuthContext';
+import { Pagination } from '../common/Pagination';
 
 const mockUsers: UserType[] = [
   {
@@ -59,11 +60,23 @@ export const UsersTable: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingUser, setEditingUser] = useState<UserType | null>(null);
   const [users, setUsers] = useState<UserType[]>(mockUsers);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Pagination
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
+
+  // Reset to first page when search changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-PT');
@@ -217,7 +230,7 @@ export const UsersTable: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredUsers.map((user) => (
+              {paginatedUsers.map((user) => (
                 <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-3">
@@ -312,6 +325,13 @@ export const UsersTable: React.FC = () => {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filteredUsers.length}
+          itemsPerPage={itemsPerPage}
+        />
       </div>
 
       {/* Add/Edit User Modal */}

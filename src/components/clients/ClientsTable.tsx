@@ -3,6 +3,7 @@ import { Search, Plus, Edit, Trash2, Mail, Phone, MapPin, Calendar, Eye, Users, 
 import { Client } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { ClientProfile } from './ClientProfile';
+import { Pagination } from '../common/Pagination';
 
 const countryCodes = [
   { code: '+258', country: 'Moçambique', flag: '🇲🇿' },
@@ -130,6 +131,8 @@ export const ClientsTable: React.FC = () => {
   const [selectedClients, setSelectedClients] = useState<string[]>([]);
   const [sortField, setSortField] = useState<'name' | 'date' | 'salesperson'>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   if (selectedClient) {
     return <ClientProfile client={selectedClient} onBack={() => setSelectedClient(null)} />;
@@ -178,6 +181,16 @@ export const ClientsTable: React.FC = () => {
       return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
     }
   });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredClients.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedClients = filteredClients.slice(startIndex, startIndex + itemsPerPage);
+
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, salespersonFilter]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-PT');
@@ -558,7 +571,7 @@ export const ClientsTable: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredClients.map((client) => (
+              {paginatedClients.map((client) => (
                 <tr key={client.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4">
                     <input
@@ -637,6 +650,13 @@ export const ClientsTable: React.FC = () => {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filteredClients.length}
+          itemsPerPage={itemsPerPage}
+        />
       </div>
 
       {/* Import Modal */}

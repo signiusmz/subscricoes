@@ -3,6 +3,7 @@ import { Search, Plus, Edit, Trash2, Calendar, Clock, DollarSign, GitBranch, Fil
 import { Service } from '../../types';
 import { FlowsManagement } from './FlowsManagement';
 import { TriggersManagement } from './TriggersManagement';
+import { Pagination } from '../common/Pagination';
 
 const mockServices: Service[] = [
   {
@@ -53,6 +54,8 @@ export const ServicesTable: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [services, setServices] = useState<Service[]>(mockServices);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const filteredServices = mockServices.filter(service => {
     const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -61,6 +64,16 @@ export const ServicesTable: React.FC = () => {
     if (statusFilter === 'all') return matchesSearch;
     return matchesSearch && service.status === statusFilter;
   });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredServices.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedServices = filteredServices.slice(startIndex, startIndex + itemsPerPage);
+
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-PT');
@@ -205,7 +218,7 @@ export const ServicesTable: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredServices.map((service) => {
+              {paginatedServices.map((service) => {
                 
                 return (
                   <tr key={service.id} className="hover:bg-gray-50 transition-colors">
@@ -263,6 +276,13 @@ export const ServicesTable: React.FC = () => {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filteredServices.length}
+          itemsPerPage={itemsPerPage}
+        />
       </div>
 
       {/* Add/Edit Service Modal */}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, Plus, Edit, Trash2, Calendar, Clock, DollarSign, Users, CheckCircle, AlertCircle, XCircle, RefreshCw, Star, Eye, Send, Filter, Download } from 'lucide-react';
 import { Subscription, Service, Client } from '../../types';
 import { addInvoiceToGlobal } from '../billing/BillingModule';
+import { Pagination } from '../common/Pagination';
 
 interface ExtendedSubscription extends Subscription {
   clientName: string;
@@ -169,6 +170,8 @@ export const SubscriptionsTable: React.FC = () => {
   const [selectedSubscriptions, setSelectedSubscriptions] = useState<string[]>([]);
   const [npsScore, setNpsScore] = useState(0);
   const [npsComment, setNpsComment] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const getExtendedSubscriptions = (): ExtendedSubscription[] => {
     return subscriptions.map(subscription => {
@@ -199,6 +202,16 @@ export const SubscriptionsTable: React.FC = () => {
     
     return matchesSearch && matchesStatus && matchesReminder;
   });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredSubscriptions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedSubscriptions = filteredSubscriptions.slice(startIndex, startIndex + itemsPerPage);
+
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, reminderFilter]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-PT');
@@ -667,7 +680,7 @@ export const SubscriptionsTable: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredSubscriptions.map((subscription) => (
+              {paginatedSubscriptions.map((subscription) => (
                 <tr key={subscription.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4">
                     <input
@@ -761,6 +774,13 @@ export const SubscriptionsTable: React.FC = () => {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filteredSubscriptions.length}
+          itemsPerPage={itemsPerPage}
+        />
       </div>
 
       {/* Add/Edit Subscription Modal */}
