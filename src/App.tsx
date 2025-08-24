@@ -32,6 +32,7 @@ import { TemplateEditor } from './components/automation/TemplateEditor';
 import { TaxManagement } from './components/billing/TaxManagement';
 import { DigitalContracts } from './components/contracts/DigitalContracts';
 import { TawkToChat } from './components/common/TawkToChat';
+import { ErrorBoundary, SimpleErrorFallback } from './components/common/ErrorBoundary';
 import { DashboardMetrics } from './types';
 
 const mockMetrics: DashboardMetrics = {
@@ -297,7 +298,17 @@ const Dashboard = () => {
       case 'tax':
         return <TaxManagement />;
       case 'contracts':
-        return <DigitalContracts />;
+        return (
+          <ErrorBoundary 
+            fallback={<SimpleErrorFallback message="Erro ao carregar contratos digitais." />}
+            onError={(error, errorInfo) => {
+              console.error('Erro no módulo de Contratos Digitais:', error);
+              // Em produção, enviar para serviço de monitoramento
+            }}
+          >
+            <DigitalContracts />
+          </ErrorBoundary>
+        );
       case 'sender':
         return <SenderModule />;
       case 'reports':
