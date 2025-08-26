@@ -34,7 +34,6 @@ const getMenuItems = (userRole: string) => [
   { id: 'subscriptions', label: 'Subscrições', icon: CreditCard },
   { id: 'billing', label: 'Facturação', icon: Receipt },
   { id: 'tax', label: 'Impostos', icon: Calculator },
-  { id: 'contracts', label: 'Contratos', icon: PenTool },
   { id: 'reports', label: 'Relatórios', icon: BarChart3 },
   { id: 'sales', label: 'Vendas', icon: Send },
   ...(userRole === 'admin' ? [
