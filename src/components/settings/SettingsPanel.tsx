@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { 
-  Settings, 
-  Building, 
+import {
+  Settings,
+  Building,
   Save,
   Crown,
   Users,
@@ -20,9 +20,15 @@ import {
   Calendar,
   Star,
   Award,
-  Upload
+  Upload,
+  Calculator,
+  Send,
+  User
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { TaxManagement } from '../billing/TaxManagement';
+import { UsersTable } from '../users/UsersTable';
+import { SenderModule } from '../sender/SenderModule';
 
 interface CompanySettings {
   name: string;
@@ -114,6 +120,7 @@ const plans = [
 
 export const SettingsPanel: React.FC = () => {
   const { user, company, updateUser } = useAuth();
+  const [activeTab, setActiveTab] = useState<'company' | 'taxes' | 'users' | 'sender'>('company');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showCompanyEdit, setShowCompanyEdit] = useState(false);
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
@@ -214,13 +221,62 @@ export const SettingsPanel: React.FC = () => {
     alert(`Plano atualizado para ${planId} com sucesso! ID da transação: ${transactionId}`);
   };
 
+  const tabs = [
+    { id: 'company', label: 'Empresa', icon: Building },
+    { id: 'taxes', label: 'Impostos', icon: Calculator },
+    { id: 'users', label: 'Utilizadores', icon: User },
+    { id: 'sender', label: 'Envios', icon: Send }
+  ];
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Configurações</h2>
-        <p className="text-gray-600">Gerir informações da empresa e plano de subscrição</p>
+        <p className="text-gray-600">Gerir informações da empresa e configurações do sistema</p>
       </div>
+
+      {/* Tabs */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="border-b border-gray-200">
+          <nav className="flex gap-2 p-2">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
+                    activeTab === tab.id
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Icon size={18} />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'taxes' && (
+        <TaxManagement />
+      )}
+
+      {activeTab === 'users' && (
+        <UsersTable />
+      )}
+
+      {activeTab === 'sender' && (
+        <SenderModule />
+      )}
+
+      {activeTab === 'company' && (
+        <>
+      {/* Company Settings Content */}
 
       {/* Current Plan Card */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -953,6 +1009,8 @@ export const SettingsPanel: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

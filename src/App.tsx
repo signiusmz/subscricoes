@@ -21,13 +21,11 @@ import { SubscriptionsTable } from './components/subscriptions/SubscriptionsTabl
 import { BillingModule } from './components/billing/BillingModule';
 import { SettingsPanel } from './components/settings/SettingsPanel';
 import { ClientPortal } from './components/client-portal/ClientPortal';
-import { SenderModule } from './components/sender/SenderModule';
 import { AdvancedDashboard } from './components/analytics/AdvancedDashboard';
 import { ChurnAnalysis } from './components/analytics/ChurnAnalysis';
 import { ClientSegmentation } from './components/analytics/ClientSegmentation';
 import { FlowBuilder } from './components/automation/FlowBuilder';
 import { TemplateEditor } from './components/automation/TemplateEditor';
-import { TaxManagement } from './components/billing/TaxManagement';
 import { TawkToChat } from './components/common/TawkToChat';
 import { ErrorBoundary, SimpleErrorFallback } from './components/common/ErrorBoundary';
 import { DashboardMetrics } from './types';
@@ -271,10 +269,6 @@ const Dashboard = () => {
         return <SubscriptionsTable initialFilters={navigationFilters} />;
       case 'billing':
         return <BillingModule initialFilters={navigationFilters} />;
-      case 'tax':
-        return <TaxManagement />;
-      case 'sender':
-        return <SenderModule />;
       case 'settings':
         return <SettingsPanel />;
       default:
