@@ -94,12 +94,6 @@ export const TaxManagement: React.FC = () => {
     }
   };
 
-  const calculateTax = (baseAmount: number, taxRate: number) => {
-    const taxAmount = (baseAmount * taxRate) / 100;
-    const totalAmount = baseAmount + taxAmount;
-    return { taxAmount, totalAmount };
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -178,64 +172,6 @@ export const TaxManagement: React.FC = () => {
               ))}
             </tbody>
           </table>
-        </div>
-      </div>
-
-      {/* Tax Calculator */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Calculator className="text-green-600" size={20} />
-          Calculadora de Impostos
-        </h4>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Valor Base (MT)</label>
-            <input
-              type="number"
-              id="baseAmount"
-              placeholder="Ex: 5000"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Taxa de Imposto</label>
-            <select
-              id="taxRate"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">Selecionar taxa</option>
-              {taxRates.filter(tr => tr.isActive).map((rate) => (
-                <option key={rate.id} value={rate.rate}>
-                  {rate.name} ({rate.rate}%)
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-end">
-            <button
-              onClick={() => {
-                const baseAmountInput = document.getElementById('baseAmount') as HTMLInputElement;
-                const taxRateSelect = document.getElementById('taxRate') as HTMLSelectElement;
-
-                const baseAmount = parseFloat(baseAmountInput.value);
-                const selectedTaxRate = parseFloat(taxRateSelect.value);
-
-                if (!baseAmount || !selectedTaxRate) {
-                  alert('Preencha todos os campos');
-                  return;
-                }
-
-                const { taxAmount, totalAmount } = calculateTax(baseAmount, selectedTaxRate);
-
-                alert(`Cálculo de Impostos\n\nValor Base: ${baseAmount.toLocaleString()} MT\nTaxa: ${selectedTaxRate}%\nImposto: ${taxAmount.toLocaleString()} MT\nTotal: ${totalAmount.toLocaleString()} MT`);
-              }}
-              className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-            >
-              <Calculator size={16} />
-              Calcular
-            </button>
-          </div>
         </div>
       </div>
 
