@@ -162,12 +162,12 @@ const mockClientsLTV: ClientLTV[] = [
 ];
 
 export const TopClientsRanking: React.FC = () => {
-  const [activeRanking, setActiveRanking] = useState<'oldest' | 'revenue' | 'ltv'>('ltv');
+  const [activeRanking, setActiveRanking] = useState<'oldest' | 'revenue'>('revenue');
 
   const formatAccountAge = (days: number) => {
     const years = Math.floor(days / 365);
     const months = Math.floor((days % 365) / 30);
-    
+
     if (years > 0) {
       return `${years}a ${months}m`;
     } else if (months > 0) {
@@ -191,10 +191,6 @@ export const TopClientsRanking: React.FC = () => {
         return [...mockClientsLTV]
           .sort((a, b) => b.totalRevenue - a.totalRevenue)
           .slice(0, 5);
-      case 'ltv':
-        return [...mockClientsLTV]
-          .sort((a, b) => b.ltv - a.ltv)
-          .slice(0, 5);
       default:
         return mockClientsLTV.slice(0, 5);
     }
@@ -206,8 +202,6 @@ export const TopClientsRanking: React.FC = () => {
         return 'Clientes Mais Antigos';
       case 'revenue':
         return 'Maior Faturação';
-      case 'ltv':
-        return 'Maior LTV (Lifetime Value)';
       default:
         return 'Ranking de Clientes';
     }
@@ -232,8 +226,6 @@ export const TopClientsRanking: React.FC = () => {
         return formatAccountAge(client.accountAge);
       case 'revenue':
         return `${client.totalRevenue.toLocaleString()} MT`;
-      case 'ltv':
-        return `${client.ltv.toLocaleString()} MT`;
       default:
         return '';
     }
@@ -245,8 +237,6 @@ export const TopClientsRanking: React.FC = () => {
         return 'Tempo de Conta';
       case 'revenue':
         return 'Faturação Total';
-      case 'ltv':
-        return 'LTV Estimado';
       default:
         return '';
     }
@@ -273,7 +263,6 @@ export const TopClientsRanking: React.FC = () => {
         {/* Ranking Type Selector */}
         <div className="flex bg-gray-100 rounded-lg p-1">
           {[
-            { type: 'ltv' as const, label: 'LTV', icon: TrendingUp },
             { type: 'revenue' as const, label: 'Receita', icon: DollarSign },
             { type: 'oldest' as const, label: 'Antiguidade', icon: Clock }
           ].map((option) => {

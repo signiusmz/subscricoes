@@ -110,7 +110,7 @@ export const GrowthChart: React.FC = () => {
   const getTitle = () => {
     switch (activeChart) {
       case 'revenue':
-        return 'Crescimento de Receita';
+        return 'Receita Mensal';
       case 'clients':
         return 'Crescimento de Clientes';
       case 'services':
