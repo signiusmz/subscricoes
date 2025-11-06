@@ -10,7 +10,6 @@ import { SuperAdminDashboard } from './components/super-admin/SuperAdminDashboar
 import { DashboardHeader } from './components/dashboard/DashboardHeader';
 import { MetricsCards } from './components/dashboard/MetricsCards';
 import { RecentActivity } from './components/dashboard/RecentActivity';
-import { GrowthChart } from './components/dashboard/GrowthChart';
 import { ActivityHistory } from './components/dashboard/ActivityHistory';
 import { ClientsTable } from './components/clients/ClientsTable';
 import { ClientAnalytics } from './components/clients/ClientAnalytics';
@@ -251,10 +250,7 @@ const Dashboard = () => {
           <div className="space-y-6">
             <DashboardHeader />
             <MetricsCards metrics={mockMetrics} onNavigate={handleNavigateFromDashboard} />
-            <div className="grid lg:grid-cols-2 gap-6">
-              <RecentActivity />
-              <GrowthChart />
-            </div>
+            <RecentActivity />
           </div>
         );
       case 'clients':
