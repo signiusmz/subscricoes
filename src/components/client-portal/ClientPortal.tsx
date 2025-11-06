@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { 
-  FileText, 
-  Download, 
-  Eye, 
-  PenTool, 
-  CheckCircle, 
-  Clock, 
+import {
+  FileText,
+  Download,
+  Eye,
+  PenTool,
+  CheckCircle,
+  Clock,
   DollarSign,
   Calendar,
   User,
@@ -22,7 +22,10 @@ import {
   Settings,
   Bell,
   Search,
-  Filter
+  Filter,
+  Edit,
+  X,
+  Check
 } from 'lucide-react';
 import { PDFGenerator } from '../../utils/pdfGenerator';
 
@@ -72,6 +75,9 @@ export const ClientPortal: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'paid' | 'overdue'>('all');
+  const [clientInfo, setClientInfo] = useState(mockClientInfo);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editedInfo, setEditedInfo] = useState(mockClientInfo);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-PT');
@@ -95,6 +101,17 @@ export const ClientPortal: React.FC = () => {
     );
   };
 
+  const handleSaveProfile = () => {
+    setClientInfo(editedInfo);
+    setIsEditingProfile(false);
+    alert('Dados atualizados com sucesso!');
+  };
+
+  const handleCancelEdit = () => {
+    setEditedInfo(clientInfo);
+    setIsEditingProfile(false);
+  };
+
 
   const renderDashboard = () => (
     <div className="space-y-6">
@@ -105,8 +122,8 @@ export const ClientPortal: React.FC = () => {
             <Building className="text-white" size={32} />
           </div>
           <div>
-            <h2 className="text-2xl font-bold mb-2">Bem-vindo, {mockClientInfo.representative}!</h2>
-            <p className="text-blue-100 text-lg">{mockClientInfo.companyName}</p>
+            <h2 className="text-2xl font-bold mb-2">Bem-vindo, {clientInfo.representative}!</h2>
+            <p className="text-blue-100 text-lg">{clientInfo.companyName}</p>
             <p className="text-blue-200 text-sm">Portal do Cliente - TechSolutions Lda</p>
           </div>
         </div>
@@ -256,56 +273,151 @@ export const ClientPortal: React.FC = () => {
   const renderProfile = () => (
     <div className="space-y-6">
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Informações da Empresa</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Building className="text-gray-400" size={20} />
-              <div>
-                <p className="text-sm text-gray-600">Nome da Empresa</p>
-                <p className="font-medium text-gray-900">{mockClientInfo.companyName}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <User className="text-gray-400" size={20} />
-              <div>
-                <p className="text-sm text-gray-600">Representante</p>
-                <p className="font-medium text-gray-900">{mockClientInfo.representative}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Mail className="text-gray-400" size={20} />
-              <div>
-                <p className="text-sm text-gray-600">Email</p>
-                <p className="font-medium text-gray-900">{mockClientInfo.email}</p>
-              </div>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Phone className="text-gray-400" size={20} />
-              <div>
-                <p className="text-sm text-gray-600">Telefone</p>
-                <p className="font-medium text-gray-900">{mockClientInfo.phone}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <FileText className="text-gray-400" size={20} />
-              <div>
-                <p className="text-sm text-gray-600">NUIT</p>
-                <p className="font-medium text-gray-900">{mockClientInfo.nuit}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <MapPin className="text-gray-400" size={20} />
-              <div>
-                <p className="text-sm text-gray-600">Endereço</p>
-                <p className="font-medium text-gray-900">{mockClientInfo.address}</p>
-              </div>
-            </div>
-          </div>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-semibold text-gray-900">Informações da Empresa</h3>
+          {!isEditingProfile && (
+            <button
+              onClick={() => {
+                setEditedInfo(clientInfo);
+                setIsEditingProfile(true);
+              }}
+              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Edit size={16} />
+              Editar
+            </button>
+          )}
         </div>
+
+        {isEditingProfile ? (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Nome da Empresa</label>
+                  <input
+                    type="text"
+                    value={editedInfo.companyName}
+                    onChange={(e) => setEditedInfo({ ...editedInfo, companyName: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Representante</label>
+                  <input
+                    type="text"
+                    value={editedInfo.representative}
+                    onChange={(e) => setEditedInfo({ ...editedInfo, representative: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <input
+                    type="email"
+                    value={editedInfo.email}
+                    onChange={(e) => setEditedInfo({ ...editedInfo, email: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
+                  <input
+                    type="tel"
+                    value={editedInfo.phone}
+                    onChange={(e) => setEditedInfo({ ...editedInfo, phone: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">NUIT</label>
+                  <input
+                    type="text"
+                    value={editedInfo.nuit}
+                    onChange={(e) => setEditedInfo({ ...editedInfo, nuit: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Endereço</label>
+                  <input
+                    type="text"
+                    value={editedInfo.address}
+                    onChange={(e) => setEditedInfo({ ...editedInfo, address: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={handleCancelEdit}
+                className="flex items-center gap-2 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <X size={16} />
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveProfile}
+                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+              >
+                <Check size={16} />
+                Salvar Alterações
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Building className="text-gray-400" size={20} />
+                <div>
+                  <p className="text-sm text-gray-600">Nome da Empresa</p>
+                  <p className="font-medium text-gray-900">{clientInfo.companyName}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <User className="text-gray-400" size={20} />
+                <div>
+                  <p className="text-sm text-gray-600">Representante</p>
+                  <p className="font-medium text-gray-900">{clientInfo.representative}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Mail className="text-gray-400" size={20} />
+                <div>
+                  <p className="text-sm text-gray-600">Email</p>
+                  <p className="font-medium text-gray-900">{clientInfo.email}</p>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Phone className="text-gray-400" size={20} />
+                <div>
+                  <p className="text-sm text-gray-600">Telefone</p>
+                  <p className="font-medium text-gray-900">{clientInfo.phone}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <FileText className="text-gray-400" size={20} />
+                <div>
+                  <p className="text-sm text-gray-600">NUIT</p>
+                  <p className="font-medium text-gray-900">{clientInfo.nuit}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <MapPin className="text-gray-400" size={20} />
+                <div>
+                  <p className="text-sm text-gray-600">Endereço</p>
+                  <p className="font-medium text-gray-900">{clientInfo.address}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
