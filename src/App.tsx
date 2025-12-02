@@ -9,7 +9,6 @@ import { UpgradeModal } from './components/layout/UpgradeModal';
 import { SuperAdminDashboard } from './components/super-admin/SuperAdminDashboard';
 import { DashboardHeader } from './components/dashboard/DashboardHeader';
 import { MetricsCards } from './components/dashboard/MetricsCards';
-import { RecentActivity } from './components/dashboard/RecentActivity';
 import { ActivityHistory } from './components/dashboard/ActivityHistory';
 import { ClientsTable } from './components/clients/ClientsTable';
 import { ClientAnalytics } from './components/clients/ClientAnalytics';
@@ -250,7 +249,6 @@ const Dashboard = () => {
           <div className="space-y-6">
             <DashboardHeader />
             <MetricsCards metrics={mockMetrics} onNavigate={handleNavigateFromDashboard} />
-            <RecentActivity />
           </div>
         );
       case 'clients':
