@@ -592,36 +592,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
               );
             })}
           </div>
-          
-          {/* Technology Highlights */}
-          <div className="mt-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
-            <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold mb-4">Tecnologias de Ponta</h3>
-              <p className="text-blue-100 text-lg">Desenvolvido com as mais modernas tecnologias para máxima performance</p>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-              <div className="bg-white bg-opacity-10 rounded-lg p-4">
-                <div className="text-2xl mb-2">🤖</div>
-                <p className="font-semibold">IA Preditiva</p>
-                <p className="text-sm text-blue-100">Análise de churn</p>
-              </div>
-              <div className="bg-white bg-opacity-10 rounded-lg p-4">
-                <div className="text-2xl mb-2">📱</div>
-                <p className="font-semibold">Multi-Canal</p>
-                <p className="text-sm text-blue-100">WhatsApp + Email</p>
-              </div>
-              <div className="bg-white bg-opacity-10 rounded-lg p-4">
-                <div className="text-2xl mb-2">📊</div>
-                <p className="font-semibold">Real-Time</p>
-                <p className="text-sm text-blue-100">Analytics ao vivo</p>
-              </div>
-              <div className="bg-white bg-opacity-10 rounded-lg p-4">
-                <div className="text-2xl mb-2">🔒</div>
-                <p className="font-semibold">Multi-Tenant</p>
-                <p className="text-sm text-blue-100">Segurança total</p>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
