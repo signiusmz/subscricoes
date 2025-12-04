@@ -511,40 +511,33 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
             </span>
           </div>
         </div>
-        
-        {/* Logo Section */}
-        <div className="bg-white py-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="mb-6">
-              <img 
-                src="https://cdn.signius.pl/wp-content/uploads/2022/09/signius_logo_rgb.svg" 
-                alt="Signius Logo" 
-                className="w-32 h-24 object-contain filter brightness-0 invert"
-              />
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Sistema Integrado de Gestão de Subscrições
-            </h2>
-            <p className="text-xl text-gray-600 max-w-4xl mx-auto">
-              A solução completa para automatizar seu negócio e nunca mais perder uma renovação
-            </p>
-          </div>
-        </div>
       </header>
 
       {/* Sobre */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              A Plataforma Mais Avançada para Gestão de Subscrições
+            <div className="mb-6">
+              <img
+                src="https://cdn.signius.pl/wp-content/uploads/2022/09/signius_logo_rgb.svg"
+                alt="Signius Logo"
+                className="w-32 h-24 object-contain filter brightness-0 invert mx-auto"
+              />
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Sistema Integrado de Gestão de Subscrições
             </h2>
-            <p className="text-xl text-gray-600 max-w-4xl mx-auto">
-              Desenvolvido especificamente para o mercado moçambicano, o SIGNIUS combina inteligência artificial, 
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto mb-8">
+              A solução completa para automatizar seu negócio e nunca mais perder uma renovação
+            </p>
+            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
+              A Plataforma Mais Avançada para Gestão de Subscrições
+            </h3>
+            <p className="text-lg text-gray-600 max-w-4xl mx-auto">
+              Desenvolvido especificamente para o mercado moçambicano, o SIGNIUS combina inteligência artificial,
               automação avançada e analytics em tempo real para revolucionar a gestão do seu negócio de subscrições.
             </p>
           </div>
-          
         </div>
       </section>
 
