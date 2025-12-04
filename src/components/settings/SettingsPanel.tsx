@@ -22,13 +22,11 @@ import {
   Award,
   Upload,
   Calculator,
-  Send,
   User
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { TaxManagement } from '../billing/TaxManagement';
 import { UsersTable } from '../users/UsersTable';
-import { SenderModule } from '../sender/SenderModule';
 
 interface CompanySettings {
   name: string;
@@ -120,7 +118,7 @@ const plans = [
 
 export const SettingsPanel: React.FC = () => {
   const { user, company, updateUser } = useAuth();
-  const [activeTab, setActiveTab] = useState<'company' | 'taxes' | 'users' | 'sender' | 'payment'>('company');
+  const [activeTab, setActiveTab] = useState<'company' | 'taxes' | 'users'>('company');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showCompanyEdit, setShowCompanyEdit] = useState(false);
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
@@ -224,8 +222,7 @@ export const SettingsPanel: React.FC = () => {
   const tabs = [
     { id: 'company', label: 'Empresa', icon: Building },
     { id: 'taxes', label: 'Impostos', icon: Calculator },
-    { id: 'users', label: 'Utilizadores', icon: User },
-    { id: 'sender', label: 'Envios', icon: Send }
+    { id: 'users', label: 'Utilizadores', icon: User }
   ];
 
   return (
@@ -268,10 +265,6 @@ export const SettingsPanel: React.FC = () => {
 
       {activeTab === 'users' && (
         <UsersTable />
-      )}
-
-      {activeTab === 'sender' && (
-        <SenderModule />
       )}
 
       {activeTab === 'company' && (

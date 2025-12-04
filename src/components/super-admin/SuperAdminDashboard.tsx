@@ -30,6 +30,7 @@ import { Pagination } from '../common/Pagination';
 import { useAuth } from '../../context/AuthContext';
 import { PlansManagement } from './PlansManagement';
 import { PaymentSettings } from '../settings/PaymentSettings';
+import { NotificationSettings } from '../settings/NotificationSettings';
 
 interface Company {
   id: string;
@@ -678,7 +679,12 @@ export const SuperAdminDashboard: React.FC = () => {
       {activeTab === 'companies' && renderCompanies()}
       {activeTab === 'plans' && <PlansManagement />}
       {activeTab === 'payments' && renderPayments()}
-      {activeTab === 'settings' && <PaymentSettings />}
+      {activeTab === 'settings' && (
+        <div className="space-y-6">
+          <NotificationSettings />
+          <PaymentSettings />
+        </div>
+      )}
 
       {/* Plan Change Modal */}
       {showPlanModal && selectedCompany && (
