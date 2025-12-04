@@ -23,11 +23,13 @@ import {
   Shield,
   ExternalLink,
   LogOut,
-  User
+  User,
+  Package
 } from 'lucide-react';
 import { MPesaPayment } from '../billing/MPesaPayment';
 import { Pagination } from '../common/Pagination';
 import { useAuth } from '../../context/AuthContext';
+import { PlansManagement } from './PlansManagement';
 
 interface Company {
   id: string;
@@ -654,6 +656,7 @@ export const SuperAdminDashboard: React.FC = () => {
   const tabs = [
     { id: 'overview', label: 'Visão Geral', icon: TrendingUp },
     { id: 'companies', label: 'Empresas', icon: Building2 },
+    { id: 'plans', label: 'Planos', icon: Package },
     { id: 'payments', label: 'Pagamentos', icon: CreditCard }
   ];
 
@@ -713,6 +716,7 @@ export const SuperAdminDashboard: React.FC = () => {
       {/* Content */}
       {activeTab === 'overview' && renderOverview()}
       {activeTab === 'companies' && renderCompanies()}
+      {activeTab === 'plans' && <PlansManagement />}
       {activeTab === 'payments' && renderPayments()}
 
       {/* M-Pesa Configuration Modal */}

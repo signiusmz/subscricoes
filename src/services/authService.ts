@@ -32,7 +32,7 @@ export const authService = {
     if (!authData.user) throw new Error('Failed to create user');
 
     const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+    trialEndsAt.setDate(trialEndsAt.getDate() + 3);
 
     const { data: company, error: companyError } = await supabase
       .from('companies')

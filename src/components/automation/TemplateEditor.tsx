@@ -513,7 +513,7 @@ export const TemplateEditor: React.FC = () => {
             <Layout className="text-blue-600" size={28} />
             Editor de Templates
           </h2>
-          <p className="text-gray-600">Crie templates personalizados para Email, WhatsApp e SMS</p>
+          <p className="text-gray-600">Crie templates personalizados para Email e WhatsApp</p>
         </div>
         <button
           onClick={handleCreateTemplate}

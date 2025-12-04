@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { 
-  ArrowRight, 
-  CheckCircle, 
-  Users, 
-  Bell, 
-  Shield, 
-  Zap, 
+import React, { useState, useEffect } from 'react';
+import {
+  ArrowRight,
+  CheckCircle,
+  Users,
+  Bell,
+  Shield,
+  Zap,
   CreditCard,
   Star,
   ChevronDown,
@@ -28,19 +28,31 @@ import {
   Calculator,
   BarChart3,
   TrendingUp,
-  MessageSquare
+  MessageSquare,
+  Sparkles
 } from 'lucide-react';
 import { TawkToChat } from '../common/TawkToChat';
+import { supabase } from '../../lib/supabase';
 
 interface LandingPageProps {
   onLogin: () => void;
   onRegister: () => void;
 }
 
+interface Plan {
+  id: string;
+  name: string;
+  price: string;
+  description: string;
+  features: string[];
+  is_popular: boolean;
+}
+
 const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [planos, setPlanos] = useState<Plan[]>([]);
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
@@ -117,6 +129,39 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
     setCurrentSlide(index);
   };
 
+  // Fetch plans from database
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('subscription_plans')
+          .select('*')
+          .eq('is_visible', true)
+          .order('sort_order');
+
+        if (error) throw error;
+
+        if (data) {
+          const mappedPlans: Plan[] = data.map((plan) => ({
+            id: plan.id,
+            name: plan.name,
+            price: parseFloat(plan.price).toFixed(0),
+            description: plan.description || '',
+            features: plan.features || [],
+            is_popular: plan.is_popular || false,
+          }));
+          setPlanos(mappedPlans);
+        }
+      } catch (error) {
+        console.error('Error fetching plans:', error);
+        // Fallback to empty array if fetch fails
+        setPlanos([]);
+      }
+    };
+
+    fetchPlans();
+  }, []);
+
   // Auto-advance slides
   React.useEffect(() => {
     const interval = setInterval(nextSlide, 5000); // Change slide every 5 seconds
@@ -149,7 +194,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
     {
       icon: Bell,
       titulo: 'Comunicação Multi-Canal',
-      descricao: 'Fluxos personalizados de comunicação via Email, WhatsApp e SMS com templates dinâmicos'
+      descricao: 'Fluxos personalizados de comunicação via Email e WhatsApp com templates dinâmicos'
     },
     {
       icon: Shield,
@@ -164,7 +209,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
     {
       icon: CreditCard,
       titulo: 'Facturação Inteligente',
-      descricao: 'Geração automática de facturas, recibos em PDF e integração completa com M-Pesa'
+      descricao: 'Geração automática de facturas e recibos em PDF com QR codes para pagamento fácil'
     },
     {
       icon: BarChart3,
@@ -181,72 +226,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
   const beneficios = [
     'Automação completa: Nunca mais perca renovações ou pagamentos',
     'CRM Avançado: Segmentação automática e análise de valor vitalício (LTV)',
-    'Comunicação Inteligente: Fluxos personalizados multi-canal com WhatsApp',
-    'Facturação Digital: PDFs automáticos com QR codes e integração M-Pesa',
+    'Comunicação Inteligente: Fluxos personalizados multi-canal (Email + WhatsApp)',
+    'Facturação Digital: PDFs automáticos com QR codes para pagamentos',
     'Analytics em Tempo Real: Dashboards interativos e relatórios agendados',
     'Portal do Cliente: Experiência self-service completa',
     'Segurança Empresarial: Sistema multi-tenant com auditoria completa',
     'Escalabilidade Total: Planos que crescem com seu negócio'
   ];
 
-  const planos = [
-    {
-      nome: 'Start',
-      preco: '750',
-      descricao: 'Perfeito para pequenas empresas iniciantes',
-      trial: 'Teste gratuito 3 dias',
-      recursos: [
-        'Até 100 clientes',
-        'CRM básico com segmentação',
-        'Comunicação por email',
-        'Facturação automática em PDF',
-        'Dashboard com métricas essenciais',
-        '1 utilizador',
-        'Suporte por email',
-        'Portal básico do cliente'
-      ],
-      destaque: false
-    },
-    {
-      nome: 'Pro',
-      preco: '1.500',
-      descricao: 'Ideal para empresas em expansão',
-      trial: 'Teste gratuito 3 dias',
-      recursos: [
-        'Até 500 clientes',
-        'CRM avançado com análise de LTV',
-        'Comunicação multi-canal (Email + WhatsApp)',
-        'Facturação inteligente com QR codes',
-        'Analytics completos e relatórios',
-        'Fluxos de automação personalizados',
-        '5 utilizadores',
-        'Suporte prioritário',
-        'Portal completo do cliente',
-        'Integração M-Pesa básica'
-      ],
-      destaque: true
-    },
-    {
-      nome: 'Premium',
-      preco: '3.500',
-      descricao: 'Solução completa para grandes empresas',
-      trial: 'Teste gratuito 3 dias',
-      recursos: [
-        'Clientes ilimitados',
-        'CRM empresarial com IA preditiva',
-        'Comunicação omnichannel completa',
-        'Facturação avançada multi-empresa',
-        'Analytics empresariais em tempo real',
-        'Automação completa de processos',
-        'API personalizada e integrações',
-        'Suporte 24/7',
-        'Portal white-label do cliente',
-        'Integração M-Pesa empresarial',
-        'Gestor de conta dedicado'
-      ],
-      destaque: false
-    }
-  ];
 
   const testemunhos = [
     {
@@ -276,7 +263,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
     {
       nome: 'Ana Costa',
       empresa: 'Farmácia Central',
-      texto: 'O sistema multi-tenant nos permite gerir todas as nossas filiais numa única plataforma. A integração com M-Pesa facilitou muito os pagamentos dos nossos clientes.',
+      texto: 'O sistema multi-tenant nos permite gerir todas as nossas filiais numa única plataforma. A facturação automática e o portal do cliente facilitaram muito o nosso dia-a-dia.',
       cargo: 'Gestora de Operações',
       rating: 5,
       metrics: 'Gestão centralizada de 8 filiais'
@@ -297,16 +284,24 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
       resposta: 'Cada cliente tem acesso a um portal personalizado onde pode ver contratos, faturas, fazer pagamentos e comunicar diretamente com sua empresa.'
     },
     {
-      pergunta: 'A integração M-Pesa é automática?',
-      resposta: 'Sim! Integração completa com M-Pesa para pagamentos automáticos, notificações de confirmação e reconciliação automática de faturas.'
+      pergunta: 'Quais canais de comunicação estão disponíveis?',
+      resposta: 'O sistema oferece comunicação multi-canal através de Email e WhatsApp, com templates personalizados e automação completa de mensagens.'
     },
     {
       pergunta: 'Posso personalizar os fluxos de comunicação?',
-      resposta: 'Totalmente! Crie fluxos personalizados com gatilhos específicos, templates dinâmicos e comunicação multi-canal (Email, WhatsApp, SMS).'
+      resposta: 'Totalmente! Crie fluxos personalizados com gatilhos específicos, templates dinâmicos e comunicação multi-canal (Email + WhatsApp).'
     },
     {
       pergunta: 'Como funciona a segmentação automática de clientes?',
       resposta: 'O sistema analisa automaticamente o comportamento, valor e histórico dos clientes, segmentando-os em Premium, Gold, Silver e Bronze para estratégias direcionadas.'
+    },
+    {
+      pergunta: 'Posso mudar de plano a qualquer momento?',
+      resposta: 'Sim! Você pode fazer upgrade ou downgrade do seu plano a qualquer momento. Todos os seus dados são preservados e a migração é instantânea.'
+    },
+    {
+      pergunta: 'Como funciona a facturação automática?',
+      resposta: 'O sistema gera automaticamente facturas em PDF com QR codes, envia por email aos clientes e acompanha o status de pagamento em tempo real.'
     }
   ];
 
@@ -336,19 +331,26 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
                 Funcionalidades
               </button>
               <button
+                onClick={() => scrollToSection('planos')}
+                className="relative bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg flex items-center gap-2"
+              >
+                <Sparkles size={16} />
+                Planos
+              </button>
+              <button
                 onClick={() => scrollToSection('contactos')}
                 className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
               >
                 Contactos
               </button>
               <div className="flex items-center space-x-3 ml-8">
-                <button 
+                <button
                   onClick={onLogin}
                   className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
                 >
                   Entrar
                 </button>
-                <button 
+                <button
                   onClick={onRegister}
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
                 >
@@ -391,19 +393,26 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
                   Funcionalidades
                 </button>
                 <button
+                  onClick={() => scrollToSection('planos')}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-md w-fit flex items-center gap-2"
+                >
+                  <Sparkles size={16} />
+                  Planos
+                </button>
+                <button
                   onClick={() => scrollToSection('contactos')}
                   className="text-gray-700 hover:text-blue-600 font-medium transition-colors text-left"
                 >
                   Contactos
                 </button>
                 <hr className="border-gray-200" />
-                <button 
+                <button
                   onClick={onLogin}
                   className="text-blue-600 hover:text-blue-700 font-medium transition-colors text-left"
                 >
                   Entrar
                 </button>
-                <button 
+                <button
                   onClick={onRegister}
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors w-fit"
                 >
@@ -634,7 +643,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
       </section>
 
       {/* Planos */}
-      <section className="py-20 bg-gray-50">
+      <section id="planos" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
@@ -644,57 +653,63 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
               Escolha o plano ideal e desbloqueie funcionalidades avançadas conforme sua empresa cresce
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {planos.map((plano, index) => (
-              <div key={index} className={`bg-white rounded-xl shadow-sm border-2 p-8 transition-all hover:shadow-lg hover:scale-105 ${
-                plano.destaque ? 'border-blue-500 relative shadow-lg scale-105' : 'border-gray-200'
-              }`}>
-                {plano.destaque && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
-                      🔥 MAIS POPULAR
-                    </span>
+          {planos.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {planos.map((plano) => (
+                <div key={plano.id} className={`bg-white rounded-xl shadow-sm border-2 p-8 transition-all hover:shadow-lg hover:scale-105 ${
+                  plano.is_popular ? 'border-blue-500 relative shadow-lg scale-105' : 'border-gray-200'
+                }`}>
+                  {plano.is_popular && (
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                      <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+                        MAIS POPULAR
+                      </span>
+                    </div>
+                  )}
+                  <div className="text-center mb-8">
+                    <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
+                      plano.is_popular ? 'bg-gradient-to-r from-blue-500 to-purple-500' : 'bg-gray-100'
+                    }`}>
+                      <span className={`text-2xl ${plano.is_popular ? 'text-white' : 'text-gray-600'}`}>
+                        {plano.name === 'Start' ? '🚀' : plano.name === 'Pro' ? '⭐' : '👑'}
+                      </span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Plano {plano.name}</h3>
+                    <p className="text-gray-600 mb-4">{plano.description}</p>
+                    <div className="text-4xl font-bold text-blue-600 mb-2">
+                      {plano.price} MT<span className="text-lg text-gray-500">/mês</span>
+                    </div>
+                    <div className="text-sm text-green-600 font-medium mb-4 bg-green-50 rounded-full px-4 py-2">
+                      Teste gratuito 3 dias
+                    </div>
                   </div>
-                )}
-                <div className="text-center mb-8">
-                  <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
-                    plano.destaque ? 'bg-gradient-to-r from-blue-500 to-purple-500' : 'bg-gray-100'
-                  }`}>
-                    <span className={`text-2xl ${plano.destaque ? 'text-white' : 'text-gray-600'}`}>
-                      {plano.nome === 'Start' ? '🚀' : plano.nome === 'Pro' ? '⭐' : '👑'}
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Plano {plano.nome}</h3>
-                  <p className="text-gray-600 mb-4">{plano.descricao}</p>
-                  <div className="text-4xl font-bold text-blue-600 mb-2">
-                    {plano.preco} MT<span className="text-lg text-gray-500">/mês</span>
-                  </div>
-                  <div className="text-sm text-green-600 font-medium mb-4 bg-green-50 rounded-full px-4 py-2">
-                    🎁 {plano.trial}
-                  </div>
+                  <ul className="space-y-3 mb-8">
+                    {plano.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-center gap-3">
+                        <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="text-green-600" size={12} />
+                        </div>
+                        <span className="text-gray-700">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <button className={`w-full py-4 px-6 rounded-lg font-semibold transition-all hover:scale-105 ${
+                    plano.is_popular
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg'
+                      : 'border-2 border-blue-600 text-blue-600 hover:bg-blue-50'
+                  }`}
+                  onClick={onRegister}
+                  >
+                    {plano.is_popular ? 'Começar Agora' : 'Escolher Plano'}
+                  </button>
                 </div>
-                <ul className="space-y-3 mb-8">
-                  {plano.recursos.map((recurso, idx) => (
-                    <li key={idx} className="flex items-center gap-3">
-                      <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="text-green-600" size={12} />
-                      </div>
-                      <span className="text-gray-700">{recurso}</span>
-                    </li>
-                  ))}
-                </ul>
-                <button className={`w-full py-4 px-6 rounded-lg font-semibold transition-all hover:scale-105 ${
-                  plano.destaque 
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg' 
-                    : 'border-2 border-blue-600 text-blue-600 hover:bg-blue-50'
-                }`}
-                onClick={onRegister}
-                >
-                  {plano.destaque ? '🚀 Começar Agora' : 'Escolher Plano'}
-                </button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-600">A carregar planos...</p>
+            </div>
+          )}
           
           {/* Plan comparison note */}
           <div className="mt-12 text-center">
@@ -762,13 +777,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
 
       {/* FAQ */}
       <section className="py-20 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
               Perguntas Frequentes
             </h2>
           </div>
-          <div className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-6">
             {faqs.map((faq, index) => (
               <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200">
                 <button
@@ -777,9 +792,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
                 >
                   <span className="font-semibold text-gray-900">{faq.pergunta}</span>
                   {openFaq === index ? (
-                    <ChevronUp className="text-gray-500" size={20} />
+                    <ChevronUp className="text-gray-500 flex-shrink-0 ml-2" size={20} />
                   ) : (
-                    <ChevronDown className="text-gray-500" size={20} />
+                    <ChevronDown className="text-gray-500 flex-shrink-0 ml-2" size={20} />
                   )}
                 </button>
                 {openFaq === index && (
