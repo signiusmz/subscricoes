@@ -18,6 +18,7 @@ import { SubscriptionsTable } from './components/subscriptions/SubscriptionsTabl
 import { BillingModule } from './components/billing/BillingModule';
 import { SettingsPanel } from './components/settings/SettingsPanel';
 import { ClientPortal } from './components/client-portal/ClientPortal';
+import { RemindersPanel } from './components/reminders/RemindersPanel';
 import { AdvancedDashboard } from './components/analytics/AdvancedDashboard';
 import { ChurnAnalysis } from './components/analytics/ChurnAnalysis';
 import { ClientSegmentation } from './components/analytics/ClientSegmentation';
@@ -261,6 +262,8 @@ const Dashboard = () => {
         return <SubscriptionsTable initialFilters={navigationFilters} />;
       case 'billing':
         return <BillingModule initialFilters={navigationFilters} />;
+      case 'reminders':
+        return <RemindersPanel />;
       case 'settings':
         return <SettingsPanel />;
       default:
