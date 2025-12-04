@@ -16,8 +16,9 @@
 
 **Como fazer login:**
 1. Acesse a página de login
-2. Use as credenciais acima
-3. Terá acesso ao painel de Super Admin
+2. Clique no card "Super Administrador" na seção "Acesso Rápido"
+3. Ou marque a caixa "Acesso Super Admin" e use as credenciais
+4. Terá acesso ao painel de Super Admin
 
 ---
 
@@ -35,8 +36,9 @@
 
 **Como fazer login:**
 1. Acesse a página de login
-2. Use as credenciais acima
-3. Terá acesso ao dashboard normal da empresa
+2. Clique no card "Administrador da Empresa" na seção "Acesso Rápido"
+3. Ou digite as credenciais manualmente
+4. Terá acesso ao dashboard normal da empresa
 
 ---
 

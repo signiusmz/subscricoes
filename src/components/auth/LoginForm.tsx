@@ -16,8 +16,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
     {
       title: 'Super Administrador',
       description: 'Acesso completo ao sistema - Gestão de todas as empresas',
-      email: 'admin@signius.com',
-      password: 'superadmin123',
+      email: 'admin@dzumuka.com',
+      password: 'Admin123!@#',
       color: 'bg-purple-50 border-purple-200 hover:bg-purple-100',
       textColor: 'text-purple-800',
       isSuperAdmin: true
@@ -25,19 +25,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
     {
       title: 'Administrador da Empresa',
       description: 'Gestão completa da empresa - Todos os módulos',
-      email: 'admin@suaempresa.mz',
-      password: 'admin123',
+      email: 'admin@empresa.com',
+      password: 'Admin123!@#',
       color: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
       textColor: 'text-blue-800',
-      isSuperAdmin: false
-    },
-    {
-      title: 'Gestor/Manager',
-      description: 'Gestão de clientes, serviços e relatórios',
-      email: 'gestor@suaempresa.mz',
-      password: 'manager123',
-      color: 'bg-green-50 border-green-200 hover:bg-green-100',
-      textColor: 'text-green-800',
       isSuperAdmin: false
     }
   ];
@@ -86,7 +77,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder={isSuperAdminLogin ? "admin@signius.com" : "seu@email.com"}
+              placeholder={isSuperAdminLogin ? "admin@dzumuka.com" : "seu@email.com"}
               required
             />
           </div>
@@ -100,7 +91,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder={isSuperAdminLogin ? "superadmin123" : "••••••••"}
+              placeholder={isSuperAdminLogin ? "Admin123!@#" : "••••••••"}
               required
             />
           </div>
@@ -113,11 +104,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
               onChange={(e) => {
                 setIsSuperAdminLogin(e.target.checked);
                 if (e.target.checked) {
-                  setEmail('admin@signius.com');
-                  setPassword('superadmin123');
+                  setEmail('admin@dzumuka.com');
+                  setPassword('Admin123!@#');
                 } else {
-                  setEmail('admin@techsolutions.mz');
-                  setPassword('password123');
+                  setEmail('admin@empresa.com');
+                  setPassword('Admin123!@#');
                 }
               }}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
