@@ -33,7 +33,7 @@ interface FlowFormData {
 export const RemindersFlowsManagement: React.FC = () => {
   const { user } = useAuth();
   const { flows, isLoading, createFlow, updateFlow, deleteFlow, autoSubscribeClients, loadFlows } = useReminders(user?.company_id || '');
-  const { services, loadServices } = useServices(user?.company_id || '');
+  const { services, refresh } = useServices();
 
   const [showModal, setShowModal] = useState(false);
   const [editingFlow, setEditingFlow] = useState<ReminderFlow | null>(null);
@@ -51,7 +51,7 @@ export const RemindersFlowsManagement: React.FC = () => {
   });
 
   useEffect(() => {
-    loadServices();
+    refresh();
   }, []);
 
   const handleOpenModal = (flow?: ReminderFlow) => {
