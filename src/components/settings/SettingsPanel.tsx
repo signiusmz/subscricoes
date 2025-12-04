@@ -27,6 +27,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { TaxManagement } from '../billing/TaxManagement';
 import { UsersTable } from '../users/UsersTable';
+import { MPGSPayment } from '../billing/MPGSPayment';
 
 interface CompanySettings {
   name: string;
@@ -120,8 +121,10 @@ export const SettingsPanel: React.FC = () => {
   const { user, company, updateUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'company' | 'taxes' | 'users'>('company');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showCompanyEdit, setShowCompanyEdit] = useState(false);
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
+  const [selectedPlanForUpgrade, setSelectedPlanForUpgrade] = useState<typeof plans[0] | null>(null);
   
   const [companySettings, setCompanySettings] = useState<CompanySettings>({
     name: company?.name || '',
@@ -197,26 +200,41 @@ export const SettingsPanel: React.FC = () => {
     setCompanyLogo(null);
   };
 
-  const handleUpgradeSuccess = (planId: string, transactionId: string) => {
-    // Update company plan in context
-    if (company) {
+  const handleSelectPlan = (plan: typeof plans[0]) => {
+    setSelectedPlanForUpgrade(plan);
+    setShowUpgradeModal(false);
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentSuccess = (transactionId: string) => {
+    if (company && selectedPlanForUpgrade) {
       const updatedCompany = {
         ...company,
-        plan: planId as 'basic' | 'professional' | 'enterprise',
-        planPrice: planId === 'basic' ? 750 : planId === 'professional' ? 1500 : 3500,
+        plan: selectedPlanForUpgrade.id as 'basic' | 'professional' | 'enterprise',
+        planPrice: selectedPlanForUpgrade.price,
         isTrialActive: false,
         trialEndDate: undefined
       };
-      
-      // Update localStorage
+
       localStorage.setItem('company', JSON.stringify(updatedCompany));
-      
-      // Force page reload to update context
+
+      setShowPaymentModal(false);
+      setSelectedPlanForUpgrade(null);
+
+      alert(`Plano atualizado para ${selectedPlanForUpgrade.name} com sucesso!\nID da transação: ${transactionId}`);
+
       window.location.reload();
     }
-    
-    setShowUpgradeModal(false);
-    alert(`Plano atualizado para ${planId} com sucesso! ID da transação: ${transactionId}`);
+  };
+
+  const handlePaymentError = (error: string) => {
+    alert(`Erro no pagamento: ${error}\n\nPor favor, tente novamente.`);
+  };
+
+  const handlePaymentCancel = () => {
+    setShowPaymentModal(false);
+    setSelectedPlanForUpgrade(null);
+    setShowUpgradeModal(true);
   };
 
   const tabs = [
@@ -960,7 +978,7 @@ export const SettingsPanel: React.FC = () => {
                       <button
                         onClick={() => {
                           if (!isCurrentPlan) {
-                            handleUpgradeSuccess(plan.id, `DEMO_${Date.now()}`);
+                            handleSelectPlan(plan);
                           }
                         }}
                         disabled={isCurrentPlan}
@@ -999,6 +1017,62 @@ export const SettingsPanel: React.FC = () => {
                   <p className="text-sm text-gray-600">Equipe pronta para ajudar</p>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Modal */}
+      {showPaymentModal && selectedPlanForUpgrade && company && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white p-6 rounded-t-2xl relative">
+              <button
+                onClick={handlePaymentCancel}
+                className="absolute top-4 right-4 text-white hover:text-gray-200 text-2xl w-8 h-8 flex items-center justify-center"
+              >
+                ×
+              </button>
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                  <CreditCard size={32} className="text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold">Upgrade para Plano {selectedPlanForUpgrade.name}</h2>
+                  <p className="text-green-100">Processamento seguro via MPGS</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <h3 className="font-semibold text-gray-900 mb-3">Resumo do Pagamento</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Plano:</span>
+                    <span className="font-semibold text-gray-900">{selectedPlanForUpgrade.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Empresa:</span>
+                    <span className="font-semibold text-gray-900">{company.name}</span>
+                  </div>
+                  <div className="border-t border-gray-300 my-2"></div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-semibold text-gray-900">Total:</span>
+                    <span className="text-2xl font-bold text-green-600">{selectedPlanForUpgrade.price.toLocaleString()} MT</span>
+                  </div>
+                </div>
+              </div>
+
+              <MPGSPayment
+                companyId={company.id}
+                companyName={company.name}
+                planType={selectedPlanForUpgrade.id as 'basic' | 'professional' | 'enterprise'}
+                amount={selectedPlanForUpgrade.price}
+                onPaymentSuccess={handlePaymentSuccess}
+                onPaymentError={handlePaymentError}
+                onCancel={handlePaymentCancel}
+              />
             </div>
           </div>
         </div>
