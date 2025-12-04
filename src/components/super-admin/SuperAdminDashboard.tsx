@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { 
-  Building2, 
-  Users, 
-  DollarSign, 
-  TrendingUp, 
-  Settings, 
+import {
+  Building2,
+  Users,
+  DollarSign,
+  TrendingUp,
+  Settings,
   CreditCard,
   ArrowUpCircle,
   Eye,
@@ -17,7 +17,6 @@ import {
   RefreshCw,
   CheckCircle,
   AlertCircle,
-  Smartphone,
   Key,
   Globe,
   Shield,
@@ -43,22 +42,13 @@ interface Company {
   nextPayment: string;
 }
 
-interface MPesaConfig {
-  apiKey: string;
-  publicKey: string;
-  serviceProviderCode: string;
-  initiatorIdentifier: string;
-  securityCredential: string;
-  environment: 'sandbox' | 'production';
-}
-
 interface Transaction {
   id: string;
   companyId: string;
   companyName: string;
   amount: number;
   status: 'success' | 'pending' | 'failed';
-  method: 'mpesa';
+  method: 'card';
   reference: string;
   date: string;
 }
@@ -106,8 +96,8 @@ const mockTransactions: Transaction[] = [
     companyName: 'TechSolutions Lda',
     amount: 1500,
     status: 'success',
-    method: 'mpesa',
-    reference: 'MP240301001',
+    method: 'card',
+    reference: 'MPGS240301001',
     date: '2024-03-01'
   },
   {
@@ -116,8 +106,8 @@ const mockTransactions: Transaction[] = [
     companyName: 'Construções Maputo SA',
     amount: 3500,
     status: 'success',
-    method: 'mpesa',
-    reference: 'MP240315001',
+    method: 'card',
+    reference: 'MPGS240315001',
     date: '2024-03-15'
   }
 ];
@@ -152,19 +142,10 @@ export const SuperAdminDashboard: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>(mockCompanies);
   const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showMPesaConfig, setShowMPesaConfig] = useState(false);
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<string>('');
-  const [mpesaConfig, setMPesaConfig] = useState<MPesaConfig>({
-    apiKey: '',
-    publicKey: '',
-    serviceProviderCode: '',
-    initiatorIdentifier: '',
-    securityCredential: '',
-    environment: 'sandbox'
-  });
   const [currentPage, setCurrentPage] = useState(1);
   const [transactionsCurrentPage, setTransactionsCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -272,7 +253,7 @@ export const SuperAdminDashboard: React.FC = () => {
       companyName: selectedCompany.name,
       amount: newPlan.price,
       status: 'success',
-      method: 'mpesa',
+      method: 'card',
       reference: transactionId,
       date: new Date().toISOString().split('T')[0]
     };
@@ -288,21 +269,6 @@ export const SuperAdminDashboard: React.FC = () => {
   const handlePaymentError = (error: string) => {
     alert(`Erro no pagamento: ${error}`);
     setShowPaymentModal(false);
-  };
-
-  const saveMPesaConfig = () => {
-    // Simular salvamento das configurações
-    localStorage.setItem('mpesa_config', JSON.stringify(mpesaConfig));
-    setShowMPesaConfig(false);
-    alert('Configurações M-Pesa salvas com sucesso!');
-  };
-
-  const testMPesaConnection = async () => {
-    // Simular teste de conexão
-    alert('Testando conexão M-Pesa...');
-    setTimeout(() => {
-      alert('Conexão M-Pesa testada com sucesso!');
-    }, 2000);
   };
 
   const renderOverview = () => (
@@ -370,7 +336,7 @@ export const SuperAdminDashboard: React.FC = () => {
             <div key={transaction.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div>
                 <p className="font-medium text-gray-900">{transaction.companyName}</p>
-                <p className="text-sm text-gray-500">Pagamento via M-Pesa</p>
+                <p className="text-sm text-gray-500">Pagamento via Visa/MasterCard</p>
               </div>
               <div className="text-right">
                 <p className="font-medium text-gray-900">{transaction.amount.toLocaleString()} MT</p>
@@ -470,52 +436,44 @@ export const SuperAdminDashboard: React.FC = () => {
 
   const renderPayments = () => (
     <div className="space-y-6">
-      {/* M-Pesa Configuration Status */}
+      {/* MPGS Configuration Status */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <Smartphone className="text-green-600" size={24} />
-            Configuração M-Pesa
+            <CreditCard className="text-blue-600" size={24} />
+            Configuração MPGS (Visa/MasterCard)
           </h3>
-          <div className="flex gap-3">
-            <button
-              onClick={testMPesaConnection}
-              className="border border-green-600 text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 transition-colors flex items-center gap-2"
-            >
-              <RefreshCw size={16} />
-              Testar Conexão
-            </button>
-            <button
-              onClick={() => setShowMPesaConfig(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-            >
-              <Settings size={16} />
-              Configurar
-            </button>
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2">
+            <p className="text-sm text-yellow-800">
+              <strong>Nota:</strong> Configure as credenciais MPGS na aba{' '}
+              <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('overview'); }} className="text-blue-600 hover:underline">
+                Configurações → Pagamentos
+              </a>
+            </p>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-green-50 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <CheckCircle className="text-green-600" size={16} />
-              <span className="font-medium text-green-900">API Configurada</span>
-            </div>
-            <p className="text-sm text-green-700">Ambiente: {mpesaConfig.environment}</p>
-          </div>
           <div className="bg-blue-50 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
-              <DollarSign className="text-blue-600" size={16} />
-              <span className="font-medium text-blue-900">Pagamentos Ativos</span>
+              <CreditCard className="text-blue-600" size={16} />
+              <span className="font-medium text-blue-900">Gateway MPGS</span>
             </div>
-            <p className="text-sm text-blue-700">Sistema operacional</p>
+            <p className="text-sm text-blue-700">Pagamentos via Visa/MasterCard</p>
+          </div>
+          <div className="bg-green-50 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <DollarSign className="text-green-600" size={16} />
+              <span className="font-medium text-green-900">Pagamentos Recorrentes</span>
+            </div>
+            <p className="text-sm text-green-700">Subscrições automáticas</p>
           </div>
           <div className="bg-purple-50 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <Shield className="text-purple-600" size={16} />
-              <span className="font-medium text-purple-900">Segurança</span>
+              <span className="font-medium text-purple-900">PCI Compliant</span>
             </div>
-            <p className="text-sm text-purple-700">Credenciais protegidas</p>
+            <p className="text-sm text-purple-700">Certificado Level 1</p>
           </div>
         </div>
       </div>
@@ -628,24 +586,24 @@ export const SuperAdminDashboard: React.FC = () => {
       <div className="bg-blue-50 rounded-xl border border-blue-200 p-6">
         <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
           <ExternalLink className="text-blue-600" size={20} />
-          Documentação M-Pesa
+          Documentação MPGS
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <h5 className="font-medium text-blue-900 mb-2">Links Úteis</h5>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• <a href="https://developer.vm.co.mz" target="_blank" rel="noopener noreferrer" className="hover:underline">Portal do Desenvolvedor Vodacom</a></li>
-              <li>• <a href="https://developer.vm.co.mz/docs" target="_blank" rel="noopener noreferrer" className="hover:underline">Documentação da API</a></li>
-              <li>• <a href="https://developer.vm.co.mz/sandbox" target="_blank" rel="noopener noreferrer" className="hover:underline">Ambiente Sandbox</a></li>
+              <li>• <a href="https://gateway.mastercard.com/api/documentation" target="_blank" rel="noopener noreferrer" className="hover:underline">Documentação da API MPGS</a></li>
+              <li>• <a href="https://test-gateway.mastercard.com" target="_blank" rel="noopener noreferrer" className="hover:underline">Ambiente de Teste</a></li>
+              <li>• <a href="https://gateway.mastercard.com/checkout" target="_blank" rel="noopener noreferrer" className="hover:underline">Hosted Checkout</a></li>
             </ul>
           </div>
           <div>
             <h5 className="font-medium text-blue-900 mb-2">Como Obter Credenciais</h5>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Registar-se no portal do desenvolvedor</li>
-              <li>• Criar uma aplicação</li>
-              <li>• Obter API Key e Public Key</li>
-              <li>• Configurar Service Provider Code</li>
+              <li>• Aceder ao Merchant Administration Portal</li>
+              <li>• Ir em Admin → Integration Settings</li>
+              <li>• Ativar autenticação e gerar API Password</li>
+              <li>• Copiar Merchant ID, Username e Password</li>
             </ul>
           </div>
         </div>
@@ -718,124 +676,6 @@ export const SuperAdminDashboard: React.FC = () => {
       {activeTab === 'companies' && renderCompanies()}
       {activeTab === 'plans' && <PlansManagement />}
       {activeTab === 'payments' && renderPayments()}
-
-      {/* M-Pesa Configuration Modal */}
-      {showMPesaConfig && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Settings className="text-blue-600" size={20} />
-              Configuração M-Pesa
-            </h3>
-            
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              saveMPesaConfig();
-            }} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Key size={16} className="inline mr-1" />
-                    API Key *
-                  </label>
-                  <input
-                    type="text"
-                    value={mpesaConfig.apiKey}
-                    onChange={(e) => setMPesaConfig({...mpesaConfig, apiKey: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Sua API Key do M-Pesa"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Shield size={16} className="inline mr-1" />
-                    Public Key *
-                  </label>
-                  <input
-                    type="text"
-                    value={mpesaConfig.publicKey}
-                    onChange={(e) => setMPesaConfig({...mpesaConfig, publicKey: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Sua Public Key"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Service Provider Code *
-                  </label>
-                  <input
-                    type="text"
-                    value={mpesaConfig.serviceProviderCode}
-                    onChange={(e) => setMPesaConfig({...mpesaConfig, serviceProviderCode: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Ex: 171717"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Initiator Identifier *
-                  </label>
-                  <input
-                    type="text"
-                    value={mpesaConfig.initiatorIdentifier}
-                    onChange={(e) => setMPesaConfig({...mpesaConfig, initiatorIdentifier: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Ex: testapi"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Security Credential *
-                  </label>
-                  <input
-                    type="password"
-                    value={mpesaConfig.securityCredential}
-                    onChange={(e) => setMPesaConfig({...mpesaConfig, securityCredential: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Sua Security Credential"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Globe size={16} className="inline mr-1" />
-                    Ambiente *
-                  </label>
-                  <select
-                    value={mpesaConfig.environment}
-                    onChange={(e) => setMPesaConfig({...mpesaConfig, environment: e.target.value as 'sandbox' | 'production'})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  >
-                    <option value="sandbox">Sandbox (Testes)</option>
-                    <option value="production">Produção</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowMPesaConfig(false)}
-                  className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Salvar Configurações
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Plan Change Modal */}
       {showPlanModal && selectedCompany && (

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Crown, Check, X, Zap, Shield, Users, BarChart3, Smartphone, CreditCard } from 'lucide-react';
+import { Crown, Check, X, Zap, Shield, Users, BarChart3, CreditCard } from 'lucide-react';
 import { MPGSPayment } from '../billing/MPGSPayment';
 
 interface Plan {
@@ -79,7 +79,7 @@ const plans: Plan[] = [
       'Utilizadores ilimitados',
       'Suporte 24/7',
       'Portal do cliente',
-      'Integração M-Pesa',
+      'Gateway de pagamento',
       'Gestor dedicado'
     ],
     icon: Crown,
@@ -274,9 +274,9 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               <p className="text-sm text-gray-600">Dados protegidos com criptografia</p>
             </div>
             <div className="flex flex-col items-center gap-2">
-              <Smartphone className="text-blue-600" size={24} />
-              <h4 className="font-semibold text-gray-900">Pagamento M-Pesa</h4>
-              <p className="text-sm text-gray-600">Pague facilmente com M-Pesa</p>
+              <CreditCard className="text-blue-600" size={24} />
+              <h4 className="font-semibold text-gray-900">Pagamento Visa/MasterCard</h4>
+              <p className="text-sm text-gray-600">Pague com segurança via cartão</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <Users className="text-purple-600" size={24} />
