@@ -545,30 +545,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
             </p>
           </div>
           
-          {/* Key differentiators */}
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">🇲🇿</span>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">100% Moçambicano</h3>
-              <p className="text-gray-600">Desenvolvido em Moçambique, para empresas moçambicanas, com suporte local especializado</p>
-            </div>
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">🤖</span>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">IA Integrada</h3>
-              <p className="text-gray-600">Análise preditiva, segmentação automática e insights inteligentes para decisões estratégicas</p>
-            </div>
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">⚡</span>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Implementação Rápida</h3>
-              <p className="text-gray-600">Configure em minutos, não em semanas. Migração de dados automática e treinamento incluído</p>
-            </div>
-          </div>
         </div>
       </section>
 
