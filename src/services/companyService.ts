@@ -83,4 +83,21 @@ export const companyService = {
 
     return stats;
   },
+
+  async cancelSubscription(companyId: string) {
+    const now = new Date().toISOString();
+
+    const { data, error } = await supabase
+      .from('companies')
+      .update({
+        status: 'cancelled',
+        subscription_ends_at: now
+      })
+      .eq('id', companyId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
 };

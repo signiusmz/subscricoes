@@ -22,12 +22,17 @@ import {
   Award,
   Upload,
   Calculator,
-  User
+  User,
+  XCircle,
+  AlertTriangle,
+  RefreshCw,
+  CreditCard
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { TaxManagement } from '../billing/TaxManagement';
 import { UsersTable } from '../users/UsersTable';
 import { MPGSPayment } from '../billing/MPGSPayment';
+import { companyService } from '../../services/companyService';
 
 interface CompanySettings {
   name: string;
@@ -123,6 +128,8 @@ export const SettingsPanel: React.FC = () => {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showCompanyEdit, setShowCompanyEdit] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
   const [selectedPlanForUpgrade, setSelectedPlanForUpgrade] = useState<typeof plans[0] | null>(null);
   
@@ -235,6 +242,33 @@ export const SettingsPanel: React.FC = () => {
     setShowPaymentModal(false);
     setSelectedPlanForUpgrade(null);
     setShowUpgradeModal(true);
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!company?.id) return;
+
+    setIsCancelling(true);
+    try {
+      await companyService.cancelSubscription(company.id);
+
+      const updatedCompany = {
+        ...company,
+        status: 'cancelled',
+        subscription_ends_at: new Date().toISOString()
+      };
+
+      localStorage.setItem('company', JSON.stringify(updatedCompany));
+
+      setShowCancelModal(false);
+      alert('Plano cancelado com sucesso. Você não será mais cobrado.');
+
+      window.location.reload();
+    } catch (error) {
+      console.error('Error cancelling subscription:', error);
+      alert('Erro ao cancelar plano. Por favor, tente novamente.');
+    } finally {
+      setIsCancelling(false);
+    }
   };
 
   const tabs = [
@@ -821,7 +855,7 @@ export const SettingsPanel: React.FC = () => {
           <Calendar className="text-gray-600" size={20} />
           Histórico do Plano
         </h3>
-        
+
         <div className="space-y-3">
           <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
             <div className="flex items-center gap-3">
@@ -831,7 +865,7 @@ export const SettingsPanel: React.FC = () => {
               <div>
                 <p className="font-medium text-green-900">Plano {currentPlan.name} Ativo</p>
                 <p className="text-sm text-green-700">
-                  {company?.isTrialActive ? 'Trial ativo' : 'Subscrição paga'} • 
+                  {company?.isTrialActive ? 'Trial ativo' : 'Subscrição paga'} •
                   Desde {company?.createdAt ? new Date(company.createdAt).toLocaleDateString('pt-PT') : 'N/A'}
                 </p>
               </div>
@@ -841,7 +875,7 @@ export const SettingsPanel: React.FC = () => {
               <p className="text-sm text-green-700">por mês</p>
             </div>
           </div>
-          
+
           {company?.isTrialActive && (
             <div className="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
               <div className="flex items-center gap-3">
@@ -851,8 +885,8 @@ export const SettingsPanel: React.FC = () => {
                 <div>
                   <p className="font-medium text-yellow-900">Trial Gratuito</p>
                   <p className="text-sm text-yellow-700">
-                    Expira em {company.trialEndDate ? 
-                      Math.max(0, Math.ceil((new Date(company.trialEndDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))) 
+                    Expira em {company.trialEndDate ?
+                      Math.max(0, Math.ceil((new Date(company.trialEndDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
                       : 0
                     } dias
                   </p>
@@ -866,6 +900,70 @@ export const SettingsPanel: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Cancel Subscription Section */}
+      {company?.status !== 'cancelled' && !company?.isTrialActive && (
+        <div className="bg-white rounded-xl shadow-sm border border-red-200 p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <AlertTriangle className="text-red-600" size={24} />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Cancelar Plano</h3>
+              <p className="text-gray-600 mb-4">
+                Se cancelar o plano, você perderá acesso a todas as funcionalidades após o término do período de faturamento atual.
+                Seus dados serão mantidos por 30 dias caso deseje reativar.
+              </p>
+              <ul className="space-y-2 mb-4 text-sm text-gray-600">
+                <li className="flex items-center gap-2">
+                  <XCircle size={16} className="text-red-500" />
+                  <span>Perda imediata de acesso após o cancelamento</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <XCircle size={16} className="text-red-500" />
+                  <span>Não haverá mais cobranças automáticas</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle size={16} className="text-green-500" />
+                  <span>Dados mantidos por 30 dias para possível reativação</span>
+                </li>
+              </ul>
+              <button
+                onClick={() => setShowCancelModal(true)}
+                className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center gap-2"
+              >
+                <XCircle size={20} />
+                Cancelar Plano
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancelled Status Warning */}
+      {company?.status === 'cancelled' && (
+        <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+              <XCircle className="text-red-600" size={24} />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-red-900 mb-2">Plano Cancelado</h3>
+              <p className="text-red-700 mb-4">
+                Seu plano foi cancelado em {company.subscription_ends_at ? new Date(company.subscription_ends_at).toLocaleDateString('pt-PT') : 'N/A'}.
+                Para reativar o acesso, faça upgrade para um novo plano.
+              </p>
+              <button
+                onClick={() => setShowUpgradeModal(true)}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold flex items-center gap-2"
+              >
+                <Crown size={20} />
+                Reativar Plano
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Upgrade Modal */}
       {showUpgradeModal && (
@@ -1073,6 +1171,94 @@ export const SettingsPanel: React.FC = () => {
                 onPaymentError={handlePaymentError}
                 onCancel={handlePaymentCancel}
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Subscription Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full">
+            <div className="bg-red-600 text-white p-6 rounded-t-2xl">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                  <AlertTriangle size={32} className="text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold">Cancelar Plano</h2>
+                  <p className="text-red-100">Esta ação não pode ser desfeita</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Tem certeza que deseja cancelar?</h3>
+                <p className="text-gray-600 mb-4">
+                  Ao cancelar seu plano:
+                </p>
+                <ul className="space-y-3 mb-4">
+                  <li className="flex items-start gap-3">
+                    <XCircle className="text-red-500 flex-shrink-0 mt-0.5" size={20} />
+                    <span className="text-gray-700">
+                      Você perderá acesso imediato a todas as funcionalidades do sistema
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <XCircle className="text-red-500 flex-shrink-0 mt-0.5" size={20} />
+                    <span className="text-gray-700">
+                      Não haverá mais cobranças automáticas em sua conta
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="text-green-500 flex-shrink-0 mt-0.5" size={20} />
+                    <span className="text-gray-700">
+                      Seus dados serão mantidos por 30 dias, permitindo reativação futura
+                    </span>
+                  </li>
+                </ul>
+
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="text-yellow-600 flex-shrink-0 mt-0.5" size={20} />
+                    <div>
+                      <p className="font-semibold text-yellow-900 mb-1">Atenção</p>
+                      <p className="text-sm text-yellow-800">
+                        O cancelamento é imediato. Se você deseja continuar usando o serviço,
+                        não prossiga com esta ação.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowCancelModal(false)}
+                  disabled={isCancelling}
+                  className="flex-1 bg-gray-200 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors font-semibold disabled:opacity-50"
+                >
+                  Manter Plano
+                </button>
+                <button
+                  onClick={handleCancelSubscription}
+                  disabled={isCancelling}
+                  className="flex-1 bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isCancelling ? (
+                    <>
+                      <RefreshCw className="animate-spin" size={20} />
+                      Cancelando...
+                    </>
+                  ) : (
+                    <>
+                      <XCircle size={20} />
+                      Sim, Cancelar Plano
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
