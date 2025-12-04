@@ -189,6 +189,16 @@ export class MPGSService {
     );
   }
 
+  static getConfigFromEnv(): MPGSConfig {
+    return {
+      merchantId: import.meta.env.VITE_MPGS_MERCHANT_ID || '',
+      apiUsername: import.meta.env.VITE_MPGS_API_USERNAME || '',
+      apiPassword: import.meta.env.VITE_MPGS_API_PASSWORD || '',
+      gatewayUrl: import.meta.env.VITE_MPGS_GATEWAY_URL || 'https://gateway.mastercard.com',
+      environment: (import.meta.env.VITE_MPGS_ENVIRONMENT || 'production') as 'test' | 'production'
+    };
+  }
+
   static generateOrderId(companyId: string): string {
     const timestamp = Date.now();
     const random = Math.floor(Math.random() * 1000);
