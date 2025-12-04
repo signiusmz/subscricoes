@@ -23,14 +23,12 @@ import {
   Upload,
   Calculator,
   Send,
-  User,
-  CreditCard
+  User
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { TaxManagement } from '../billing/TaxManagement';
 import { UsersTable } from '../users/UsersTable';
 import { SenderModule } from '../sender/SenderModule';
-import { PaymentSettings } from './PaymentSettings';
 
 interface CompanySettings {
   name: string;
@@ -227,8 +225,7 @@ export const SettingsPanel: React.FC = () => {
     { id: 'company', label: 'Empresa', icon: Building },
     { id: 'taxes', label: 'Impostos', icon: Calculator },
     { id: 'users', label: 'Utilizadores', icon: User },
-    { id: 'sender', label: 'Envios', icon: Send },
-    { id: 'payment', label: 'Pagamentos', icon: CreditCard }
+    { id: 'sender', label: 'Envios', icon: Send }
   ];
 
   return (
@@ -275,10 +272,6 @@ export const SettingsPanel: React.FC = () => {
 
       {activeTab === 'sender' && (
         <SenderModule />
-      )}
-
-      {activeTab === 'payment' && (
-        <PaymentSettings />
       )}
 
       {activeTab === 'company' && (

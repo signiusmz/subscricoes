@@ -29,6 +29,7 @@ import { MPGSPayment } from '../billing/MPGSPayment';
 import { Pagination } from '../common/Pagination';
 import { useAuth } from '../../context/AuthContext';
 import { PlansManagement } from './PlansManagement';
+import { PaymentSettings } from '../settings/PaymentSettings';
 
 interface Company {
   id: string;
@@ -615,7 +616,8 @@ export const SuperAdminDashboard: React.FC = () => {
     { id: 'overview', label: 'Visão Geral', icon: TrendingUp },
     { id: 'companies', label: 'Empresas', icon: Building2 },
     { id: 'plans', label: 'Planos', icon: Package },
-    { id: 'payments', label: 'Pagamentos', icon: CreditCard }
+    { id: 'payments', label: 'Pagamentos', icon: CreditCard },
+    { id: 'settings', label: 'Configurações', icon: Settings }
   ];
 
   return (
@@ -676,6 +678,7 @@ export const SuperAdminDashboard: React.FC = () => {
       {activeTab === 'companies' && renderCompanies()}
       {activeTab === 'plans' && <PlansManagement />}
       {activeTab === 'payments' && renderPayments()}
+      {activeTab === 'settings' && <PaymentSettings />}
 
       {/* Plan Change Modal */}
       {showPlanModal && selectedCompany && (
