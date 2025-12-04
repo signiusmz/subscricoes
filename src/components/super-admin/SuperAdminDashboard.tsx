@@ -529,7 +529,7 @@ export const SuperAdminDashboard: React.FC = () => {
               </p>
             </div>
             <div className="w-12 h-12 rounded-full flex items-center justify-center bg-purple-100 text-purple-600">
-              <Smartphone size={24} />
+              <CreditCard size={24} />
             </div>
           </div>
         </div>
