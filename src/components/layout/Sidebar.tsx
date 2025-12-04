@@ -31,9 +31,9 @@ interface SidebarProps {
 const getMenuItems = (userRole: string) => [
   { id: 'dashboard', label: 'Dashboard', icon: Home },
   { id: 'clients', label: 'Clientes', icon: Users },
+  { id: 'reminders', label: 'Lembretes', icon: Bell },
   { id: 'subscriptions', label: 'Subscrições', icon: CreditCard },
   { id: 'billing', label: 'Facturação', icon: Receipt },
-  { id: 'reminders', label: 'Lembretes', icon: Bell },
   ...(userRole === 'admin' ? [
     { id: 'settings', label: 'Configurações', icon: Settings }
   ] : [])

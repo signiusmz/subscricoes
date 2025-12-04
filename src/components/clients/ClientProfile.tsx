@@ -455,81 +455,6 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({ client, onBack }) 
     </div>
   );
 
-  const renderContracts = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-900">Contratos e Subscrições</h3>
-      </div>
-
-      <div className="grid gap-6">
-        {mockSubscriptions.map((subscription) => {
-          const service = mockServices.find(s => s.id === subscription.serviceId);
-          if (!service) return null;
-
-          return (
-            <div key={subscription.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h4 className="text-lg font-semibold text-gray-900">{service.name}</h4>
-                  <p className="text-gray-600">{service.description}</p>
-                </div>
-                <div className="text-right">
-                  {getStatusBadge(subscription.status, 'subscription')}
-                  {service.autoRenew && (
-                    <div className="mt-2">
-                      <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
-                        Renovação Automática
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div>
-                  <p className="text-sm text-gray-600">Valor</p>
-                  <p className="text-lg font-semibold text-gray-900">{service.price.toLocaleString()} MT</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Validade</p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {service.validity === 1 ? 'Mensal' : 
-                     service.validity === 3 ? 'Trimestral' :
-                     service.validity === 6 ? 'Semestral' : 'Anual'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Próxima Cobrança</p>
-                  <p className="text-lg font-semibold text-gray-900">{formatDate(subscription.nextBilling)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Satisfação</p>
-                  <div className="flex items-center gap-1">
-                    {subscription.npsScore ? (
-                      <>
-                        <Star className="text-yellow-500" size={16} />
-                        <span className="text-lg font-semibold text-gray-900">{subscription.npsScore}</span>
-                      </>
-                    ) : (
-                      <span className="text-gray-400">Não avaliado</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {subscription.npsComment && (
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Comentário de Satisfação:</p>
-                  <p className="text-gray-900">"{subscription.npsComment}"</p>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-
   const renderAccountStatement = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -670,7 +595,6 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({ client, onBack }) 
 
   const tabs = [
     { id: 'overview', label: 'Visão Geral', icon: TrendingUp },
-    { id: 'contracts', label: 'Contratos', icon: FileText },
     { id: 'statement', label: 'Extrato da Conta', icon: CreditCard }
   ];
 
@@ -715,7 +639,6 @@ export const ClientProfile: React.FC<ClientProfileProps> = ({ client, onBack }) 
 
       {/* Content */}
       {activeTab === 'overview' && renderOverview()}
-      {activeTab === 'contracts' && renderContracts()}
       {activeTab === 'statement' && renderAccountStatement()}
     </div>
   );
