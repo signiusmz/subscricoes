@@ -23,12 +23,14 @@ import {
   Upload,
   Calculator,
   Send,
-  User
+  User,
+  CreditCard
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { TaxManagement } from '../billing/TaxManagement';
 import { UsersTable } from '../users/UsersTable';
 import { SenderModule } from '../sender/SenderModule';
+import { PaymentSettings } from './PaymentSettings';
 
 interface CompanySettings {
   name: string;
@@ -106,7 +108,7 @@ const plans = [
       'Suporte 24/7',
       'Relatórios avançados',
       'API completa',
-      'Integração M-Pesa',
+      'Pagamento com cartão',
       'Gestor dedicado',
       'Backup automático',
       'SLA garantido'
@@ -120,7 +122,7 @@ const plans = [
 
 export const SettingsPanel: React.FC = () => {
   const { user, company, updateUser } = useAuth();
-  const [activeTab, setActiveTab] = useState<'company' | 'taxes' | 'users' | 'sender'>('company');
+  const [activeTab, setActiveTab] = useState<'company' | 'taxes' | 'users' | 'sender' | 'payment'>('company');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showCompanyEdit, setShowCompanyEdit] = useState(false);
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
@@ -225,7 +227,8 @@ export const SettingsPanel: React.FC = () => {
     { id: 'company', label: 'Empresa', icon: Building },
     { id: 'taxes', label: 'Impostos', icon: Calculator },
     { id: 'users', label: 'Utilizadores', icon: User },
-    { id: 'sender', label: 'Envios', icon: Send }
+    { id: 'sender', label: 'Envios', icon: Send },
+    { id: 'payment', label: 'Pagamentos', icon: CreditCard }
   ];
 
   return (
@@ -272,6 +275,10 @@ export const SettingsPanel: React.FC = () => {
 
       {activeTab === 'sender' && (
         <SenderModule />
+      )}
+
+      {activeTab === 'payment' && (
+        <PaymentSettings />
       )}
 
       {activeTab === 'company' && (
@@ -996,9 +1003,9 @@ export const SettingsPanel: React.FC = () => {
                   <p className="text-sm text-gray-600">Dados protegidos com criptografia</p>
                 </div>
                 <div className="flex flex-col items-center gap-2">
-                  <Smartphone className="text-blue-600" size={24} />
-                  <h4 className="font-semibold text-gray-900">Pagamento M-Pesa</h4>
-                  <p className="text-sm text-gray-600">Pague facilmente com M-Pesa</p>
+                  <CreditCard className="text-blue-600" size={24} />
+                  <h4 className="font-semibold text-gray-900">Visa/MasterCard</h4>
+                  <p className="text-sm text-gray-600">Pagamento seguro com cartão</p>
                 </div>
                 <div className="flex flex-col items-center gap-2">
                   <Users className="text-purple-600" size={24} />

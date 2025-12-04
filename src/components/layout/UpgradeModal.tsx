@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Crown, Check, X, Zap, Shield, Users, BarChart3, Smartphone, CreditCard } from 'lucide-react';
-import { MPesaPayment } from '../billing/MPesaPayment';
+import { MPGSPayment } from '../billing/MPGSPayment';
 
 interface Plan {
   id: 'basic' | 'professional' | 'enterprise';
@@ -125,7 +125,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
     if (plan) {
       return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <MPesaPayment
+          <MPGSPayment
             companyId="1"
             companyName="TechSolutions Lda"
             planType={selectedPlan}

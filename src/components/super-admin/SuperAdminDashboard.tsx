@@ -26,7 +26,7 @@ import {
   User,
   Package
 } from 'lucide-react';
-import { MPesaPayment } from '../billing/MPesaPayment';
+import { MPGSPayment } from '../billing/MPGSPayment';
 import { Pagination } from '../common/Pagination';
 import { useAuth } from '../../context/AuthContext';
 import { PlansManagement } from './PlansManagement';
@@ -930,7 +930,7 @@ export const SuperAdminDashboard: React.FC = () => {
       {/* Payment Modal */}
       {showPaymentModal && selectedCompany && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <MPesaPayment
+          <MPGSPayment
             companyId={selectedCompany.id}
             companyName={selectedCompany.name}
             planType={selectedPlan as 'basic' | 'professional' | 'enterprise'}
