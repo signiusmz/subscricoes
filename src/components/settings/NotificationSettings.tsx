@@ -45,7 +45,7 @@ export const NotificationSettings: React.FC = () => {
       }
 
       if (data) {
-        setSettings({
+        const loadedSettings = {
           mailjetApiKey: data.smtp_user || '',
           mailjetSecretKey: data.smtp_password || '',
           mailjetApiUrl: data.smtp_host || 'https://api.mailjet.com/v3.1',
@@ -54,7 +54,14 @@ export const NotificationSettings: React.FC = () => {
           fromEmail: data.smtp_from_email || 'noreply@dzumuka.com',
           fromName: data.smtp_from_name || 'DZUMUKA',
           isActive: data.is_active ?? true
-        });
+        };
+        setSettings(loadedSettings);
+
+        if (!loadedSettings.mailjetApiKey || !loadedSettings.whatsappApiKey) {
+          setIsEditing(true);
+        } else {
+          setIsEditing(false);
+        }
       } else {
         const envSettings = {
           mailjetApiKey: import.meta.env.VITE_MAILJET_API_KEY || '',
@@ -68,10 +75,10 @@ export const NotificationSettings: React.FC = () => {
         };
         setSettings(envSettings);
 
-        if (envSettings.mailjetApiKey && envSettings.whatsappApiKey) {
-          setIsEditing(false);
-        } else {
+        if (!envSettings.mailjetApiKey || !envSettings.whatsappApiKey) {
           setIsEditing(true);
+        } else {
+          setIsEditing(false);
         }
       }
     } catch (error) {
@@ -232,7 +239,7 @@ export const NotificationSettings: React.FC = () => {
               <p className="text-gray-600">Configure SMTP e WhatsApp para notificações globais do sistema</p>
             </div>
           </div>
-          {!isEditing && settings.mailjetApiKey && (
+          {!isEditing && (
             <button
               onClick={() => setIsEditing(true)}
               className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -402,6 +409,16 @@ export const NotificationSettings: React.FC = () => {
 
           {isEditing && (
             <div className="flex gap-3 pt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditing(false);
+                  loadSettings();
+                }}
+                className="flex-1 border-2 border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+              >
+                Cancelar
+              </button>
               <button
                 type="submit"
                 disabled={isSaving}
