@@ -252,7 +252,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
     {
       nome: 'Maria Santos',
       empresa: 'Clínica Vida Saudável',
-      texto: 'O SIGNIUS revolucionou nossa gestão de pacientes. Com a automação de lembretes via WhatsApp, nossa taxa de renovação aumentou 40% e a satisfação dos pacientes melhorou significativamente.',
+      texto: 'O DZUMUKA revolucionou nossa gestão de pacientes. Com a automação de lembretes via WhatsApp, nossa taxa de renovação aumentou 40% e a satisfação dos pacientes melhorou significativamente.',
       cargo: 'Diretora Administrativa',
       rating: 5,
       metrics: 'Aumento de 40% nas renovações'
@@ -318,11 +318,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <img 
-                src="https://cdn.signius.pl/wp-content/uploads/2022/09/signius_logo_rgb.svg" 
-                alt="Signius Logo" 
-                className="w-40 h-16 object-contain"
-              />
+              <h1 className="text-3xl font-bold text-blue-600">DZUMUKA</h1>
             </div>
 
             {/* Desktop Menu */}
@@ -518,11 +514,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <div className="mb-6">
-              <img
-                src="https://cdn.signius.pl/wp-content/uploads/2022/09/signius_logo_rgb.svg"
-                alt="Signius Logo"
-                className="w-32 h-24 object-contain filter brightness-0 invert mx-auto"
-              />
+              <h1 className="text-5xl font-bold text-blue-600 mx-auto">DZUMUKA</h1>
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Sistema Integrado de Gestão de Subscrições
@@ -534,7 +526,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
               A Plataforma Mais Avançada para Gestão de Subscrições
             </h3>
             <p className="text-lg text-gray-600 max-w-4xl mx-auto">
-              Desenvolvido especificamente para o mercado moçambicano, o SIGNIUS combina inteligência artificial,
+              Desenvolvido especificamente para o mercado moçambicano, o DZUMUKA combina inteligência artificial,
               automação avançada e analytics em tempo real para revolucionar a gestão do seu negócio de subscrições.
             </p>
           </div>
@@ -617,7 +609,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
           <div className="mt-16 bg-gray-50 rounded-2xl p-8">
             <div className="text-center mb-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-4">Resultados dos Nossos Clientes</h3>
-              <p className="text-gray-600">Métricas reais de empresas que usam o Signius</p>
+              <p className="text-gray-600">Métricas reais de empresas que usam o Dzumuka</p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
               <div>
@@ -712,7 +704,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
                 Comece com qualquer plano e faça upgrade a qualquer momento. Todos os dados são preservados e a migração é instantânea.
               </p>
               <button 
-                onClick={() => alert('Consultor especializado entrará em contacto: suporte@signius.co.mz')}
+                onClick={() => alert('Consultor especializado entrará em contacto: suporte@dzumuka.com')}
                 className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
                 Falar com Consultor Gratuito
@@ -730,7 +722,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
               Histórias de Sucesso Reais
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Empresas de todos os tamanhos já transformaram seus negócios com o Signius
+              Empresas de todos os tamanhos já transformaram seus negócios com o Dzumuka
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -839,7 +831,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
               <ArrowRight size={20} />
             </button>
             <button 
-              onClick={() => alert('Entre em contacto connosco: suporte@signius.co.mz')}
+              onClick={() => alert('Entre em contacto connosco: suporte@dzumuka.com')}
               className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-600 transition-all hover:scale-105"
             >
               💬 Falar com Especialista
@@ -860,11 +852,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="col-span-1 md:col-span-2">
               <div className="mb-6">
-                <img 
-                  src="https://cdn.signius.pl/wp-content/uploads/2022/09/signius_logo_rgb.svg" 
-                  alt="Signius Logo" 
-                  className="w-48 h-32 object-contain filter brightness-0 invert"
-                />
+                <h2 className="text-4xl font-bold text-white">DZUMUKA</h2>
               </div>
               <p className="text-gray-400 mb-6">
                 Sistema Integrado de Gestão de Subscrições - A solução completa para automatizar 
@@ -886,7 +874,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
                 </div>
                 <div className="flex items-center gap-3">
                   <Mail size={16} className="text-gray-400" />
-                  <span className="text-gray-400">suporte@signius.co.mz</span>
+                  <span className="text-gray-400">suporte@dzumuka.com</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <MessageCircle size={16} className="text-gray-400" />
@@ -908,7 +896,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {
           
           <div className="border-t border-gray-800 mt-12 pt-8 text-center">
             <p className="text-gray-400">
-              © 2024 SIGNIUS. Todos os direitos reservados. Desenvolvido pela: <a href="https://www.easyhost.co.mz" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">Easyhost Moçambique, SA</a>
+              © 2024 DZUMUKA. Todos os direitos reservados. www.dzumuka.com
             </p>
           </div>
         </div>
