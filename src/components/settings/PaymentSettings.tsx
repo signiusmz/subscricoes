@@ -29,10 +29,16 @@ export const PaymentSettings: React.FC = () => {
   const loadSettings = async () => {
     try {
       setIsLoading(true);
+
+      if (!user?.companyId) {
+        throw new Error('Empresa não encontrada');
+      }
+
       const { data, error } = await supabase
         .from('payment_settings')
         .select('*')
         .eq('provider', 'mpgs')
+        .eq('company_id', user.companyId)
         .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
@@ -64,6 +70,10 @@ export const PaymentSettings: React.FC = () => {
     setSuccessMessage('');
 
     try {
+      if (!user?.companyId) {
+        throw new Error('Empresa não encontrada');
+      }
+
       if (!MPGSService.validateConfig(settings)) {
         throw new Error('Todos os campos são obrigatórios');
       }
@@ -72,6 +82,7 @@ export const PaymentSettings: React.FC = () => {
         .from('payment_settings')
         .select('id')
         .eq('provider', 'mpgs')
+        .eq('company_id', user.companyId)
         .maybeSingle();
 
       if (fetchError && fetchError.code !== 'PGRST116') {
@@ -80,6 +91,7 @@ export const PaymentSettings: React.FC = () => {
 
       const payload = {
         provider: 'mpgs',
+        company_id: user.companyId,
         merchant_id: settings.merchantId,
         api_username: settings.apiUsername,
         api_password: settings.apiPassword,
