@@ -103,7 +103,6 @@ async function completeAccounts() {
         email: account.email,
         full_name: account.fullName,
         role: account.role,
-        is_active: true,
       });
 
       if (userError) {
